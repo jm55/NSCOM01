@@ -52,10 +52,15 @@ public class server_udp{
         }
     }
 
-    public void activate_server_udp(int port) throws IOException{
+    private void liveBanner(){
         cls();
         System.out.println("Creating Server...");
-        showSystemIP(port);
+        showSystemIP(this.port);
+        System.out.println("Listening...");
+        System.out.println("==============================");
+    }
+
+    public void activate_server_udp(int port) throws IOException{
         runtime = true;
         //1. CREATING/OPENING A SOCKET TO LISTEN TO PORT SPECIFIED.
         socket = new DatagramSocket(port);
@@ -69,8 +74,7 @@ public class server_udp{
     }
 
     public void listen() throws Exception{
-        System.out.println("Listening...");
-        System.out.println("==============================");
+        liveBanner();
         while(runtime){
             //2. CREATE A DATAGRAMPACKET TO RECEIVE THE DATA.
             receive = new byte[65535]; //resetting contents
@@ -93,8 +97,7 @@ public class server_udp{
                 System.out.println("Request for server shutdown received...");
                 runtime = false;
             }else if(textData.equals("/hardcls")){
-                cls();
-                showSystemIP(this.port);
+                liveBanner();
             }else{
                 System.out.println("Client " + rec_ip + ":" + socket.getLocalPort() + " (" + rec_host + "): " + textData);
             }

@@ -61,10 +61,12 @@ public class client_udp{
         //DISPLAY SPECIAL COMMANDS
         System.out.println("==============================");
         System.out.println("Special Commands: ");
+        System.out.println("/bruteforce : Bruteforce Mode");
         System.out.println("/exit : Exit Client");
         System.out.println("/hardexit : Exit Client and Server");
         System.out.println("/cls : Perform cls on Client");
         System.out.println("/hardcls : Perform cls on Client and Server");
+        System.out.println("/lorem : Loremipsum Generator");
         System.out.println("==============================");
     }
 
@@ -118,6 +120,8 @@ public class client_udp{
                 String[] list = generateRandomWords(len);
                 for(int i = 0; i < list.length; i++)
                     transmit(list[i]);
+            }else if(in.equals("/lorem")){
+                   transmit("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
             }else //SEND ONE MESSAGE
                 transmit(in);
         }
