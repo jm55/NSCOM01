@@ -12,6 +12,7 @@ public class server_udp{
     private DatagramPacket packet;
     private byte[] receive;
     private boolean runtime = false;
+    private int port = -1;
 
     public static void main(String[] args){
         cls();
@@ -20,15 +21,14 @@ public class server_udp{
 
         Scanner sc = new Scanner(System.in);
         
-        int p = -1;
         do{
             System.out.print("Enter port # (Valid Range: 49152-65535): ");
-            p = Integer.parseInt(sc.nextLine());
-        }while(p < 49152 || p > 65535);
+            s.port = Integer.parseInt(sc.nextLine());
+        }while(s.port < 49152 || s.port > 65535);
         
         sc.close();
         try{
-            s.activate_server_udp(p);
+            s.activate_server_udp(s.port);
             s.listen();
 
             //4. CLOSING SOCKET
@@ -50,7 +50,6 @@ public class server_udp{
         } catch (Exception e) {
             System.out.println("Server Network/Local IP cannot be determined. It may require an internet connection");
         }
-        
     }
 
     public void activate_server_udp(int port) throws IOException{
@@ -82,18 +81,22 @@ public class server_udp{
             String rec_ip = packet.getAddress().getHostAddress();
             String rec_host = packet.getAddress().getHostName();
 
-            //DECOMPRESS DATA
+            //DECOMPRESS DATA AND CONVERT TO STRING
             compression c = new compression();
             byte[] decompressed = c.decompress(receive, false);
+            String textData = data(decompressed);
 
-            System.out.println("Client " + rec_ip + ":" + socket.getLocalPort() + " (" + rec_host + "): " + data(decompressed));
-
-            //EXIT:
-            if(data(decompressed).equals("/exit")){
+            //EXIT, CLS, PRINT
+            if(textData.equals("/exit")){
                 System.out.println("Client " + rec_ip + " has exited.");
-            }else if(data(decompressed).equals("/hardexit")){
+            }else if(textData.equals("/hardexit")){
                 System.out.println("Request for server shutdown received...");
                 runtime = false;
+            }else if(textData.equals("/hardcls")){
+                cls();
+                showSystemIP(this.port);
+            }else{
+                System.out.println("Client " + rec_ip + ":" + socket.getLocalPort() + " (" + rec_host + "): " + textData);
             }
         }
     }

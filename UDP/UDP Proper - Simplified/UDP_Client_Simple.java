@@ -10,8 +10,7 @@ public class UDP_Client_Simple{
         DatagramPacket packet = null;
         byte[] buffer = null;
         
-
-        InetAddress target = InetAddress.getByName("192.168.1.100");
+        InetAddress target = InetAddress.getByName("localhost");
         Scanner sc = new Scanner(System.in);
 
         // 1 CREATE SOCKET
@@ -27,6 +26,7 @@ public class UDP_Client_Simple{
         boolean runtime = true;
         String text = "";
         while(runtime){
+            System.out.print("Enter message: ");
             text = sc.nextLine();
 
             buffer = text.getBytes(); //CONVERT TEXT TO BYTE[]

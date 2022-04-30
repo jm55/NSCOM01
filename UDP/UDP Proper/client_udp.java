@@ -44,12 +44,31 @@ public class client_udp{
         }
     }
 
+    private void liveBanner() throws IOException{
+        cls();
+        System.out.println("Activating Client...");
+
+        //TELL USER IF TARGET IS REACHABLE OR NOT
+        if(this.tgtIP.isReachable(5000))
+            System.out.println(this.tgtIP.getHostName() + " is reachable.");
+        else
+            System.out.println(this.tgtIP.getHostName() + " is not reachable.");
+
+        //DISPLAY SOCKET INFORMATION
+        System.out.println("Socket is binded to: " + socket.getLocalPort());
+        System.out.println("Socket is connected to: " + this.tgtIP.getHostAddress() + ":" + socket.getPort());
+        
+        //DISPLAY SPECIAL COMMANDS
+        System.out.println("==============================");
+        System.out.println("Special Commands: ");
+        System.out.println("/exit : Exit Client");
+        System.out.println("/hardexit : Exit Client and Server");
+        System.out.println("/cls : Perform cls on Client");
+        System.out.println("/hardcls : Perform cls on Client and Server");
+        System.out.println("==============================");
+    }
+
     public boolean activate_client_udp(String target, int port) throws IOException{
-        { //JUST PRINTOUTS
-            cls();
-            System.out.println("Activating Client...");
-        }
-         
         //1. CREATE/OPEN A SOCKET
         this.socket = new DatagramSocket();
         
@@ -57,6 +76,7 @@ public class client_udp{
         this.port = port;
 
         //1.3 CONNECT SOCKET TO TARGET IP AND PORT
+        this.tgtIP = InetAddress.getByName(target);
         socket.connect(this.tgtIP, this.port);
 
         {//SETS IP ADDRESS DEPENDING ON INPUT, EITHER COMPUTER ON NETWORK OR LOCALHOST
@@ -64,13 +84,6 @@ public class client_udp{
             this.tgtIP = InetAddress.getLocalHost();
         else
             this.tgtIP = InetAddress.getByName(target);
-        }
-
-        {//TELL USER IF TARGET IS REACHABLE OR NOT
-            if(this.tgtIP.isReachable(5000))
-                System.out.println(this.tgtIP.getHostName() + " is reachable.");
-            else
-                System.out.println(this.tgtIP.getHostName() + " is not reachable.");
         }
                 
         return this.tgtIP.isReachable(5000);
@@ -81,17 +94,20 @@ public class client_udp{
         this.buffer =  null;
         this.runtime = true;
         
-        //DISPLAY SOCKET INFORMATION
-        System.out.println("Socket is binded to: " + socket.getLocalPort());
-        System.out.println("Socket is connected to: " + this.tgtIP.getHostAddress() + ":" + socket.getPort());
-
+        liveBanner();
+        
         //ASKS FOR INPUT CONTINOUSLY UNTIL EXIT FLAG ('/exit'); CALLS FOR transmit(<String>); WHEN ACTUALLY 'TALKING'.
         while(runtime){
             //GET INPUT
             System.out.print("Enter message: ");
             String in = sc.nextLine();
-
-            if(in.equals("/exit") || in.equals("/hardexit")){ //CLIENT ONLY EXIT FLAG
+            
+            if(in.equals("/cls")){
+                liveBanner();
+            }else if(in.equals("/hardcls")){
+                liveBanner();
+                transmit(in);  
+            }else if(in.equals("/exit") || in.equals("/hardexit")){ //CLIENT ONLY EXIT FLAG
                 if(in.equals("/hardexit"))
                     transmit(in);
                 scan.close();
@@ -116,7 +132,9 @@ public class client_udp{
         this.buffer = compressed;
         
         //2. CREATE UDP/DATAGRAM PACKET
-        this.packet = new DatagramPacket(this.buffer, this.buffer.length, this.tgtIP, this.port);
+        //IF SOCKET WAS NOT CONNECTED (1.3) PRIOR TO CREATING DATAGRAMPACKET, USE MUST
+        //USE NEW DATAGRAM PARAMS: (BUFFER, BUFFER.LENGTH, INETADDRES TARGET, PORT)
+        this.packet = new DatagramPacket(this.buffer, this.buffer.length);
 
         //3. SEND PACKET TO SERVER USING SOCKET
         this.socket.send(packet);
@@ -147,6 +165,6 @@ public class client_udp{
     }
 
     private final static void banner(){
-        System.out.println("==============================\n          UDP SERVER\n==============================");
+        System.out.println("==============================\n          UDP CLIENT\n==============================");
     }
 }

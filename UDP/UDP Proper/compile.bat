@@ -4,12 +4,10 @@ echo Compile
 echo ============================================
 
 echo Compiling server_udp...
-javac server_udp.java -verbose
-pause
+javac server_udp.java -Xlint
 
 echo Compiling client_udp...
-javac client_udp.java -verbose
-pause
+javac client_udp.java -Xlint
 
 echo Compile complete!
 pause
