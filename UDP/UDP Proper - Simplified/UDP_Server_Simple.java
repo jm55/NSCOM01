@@ -21,7 +21,7 @@ public class UDP_Server_Simple {
         System.out.println("Socket is binded to: " + socket.getLocalPort());
 
         /** WHY 65535 BYTES?
-         * UDP Max Payload Size: 65507 bytes (IPv4) and 65527 bytes (IPv6)
+         * UDP Max Payload Size: 65507 bytes (IPv4) & 65527 bytes (IPv6)
          * UDP Header Size: 8 bytes
          * UDP Total Size: 65515 bytes (IPv4) & 65535 bytes (IPv6)
          * Reference: https://erg.abdn.ac.uk/users/gorry/course/inet-pages/udp.html

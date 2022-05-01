@@ -32,8 +32,7 @@ public class UDP_Client_Simple{
             buffer = text.getBytes(); //CONVERT TEXT TO BYTE[]
 
             // 2 CREATE UDP/DATAGRAM PACKET
-            packet = new DatagramPacket(buffer, buffer.length, target, port);
-
+            packet = new DatagramPacket(buffer, buffer.length);
             // 3 SEND UDP PACKET USING SOCKET
             socket.send(packet);
 
