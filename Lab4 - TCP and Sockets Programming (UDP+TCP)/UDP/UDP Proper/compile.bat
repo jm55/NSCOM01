@@ -11,3 +11,4 @@ javac client_udp.java -Xlint
 
 echo Compile complete!
 pause
+cls

@@ -32,6 +32,7 @@ public class server_udp{
             s.listen();
 
             //4. CLOSING SOCKET
+            s.socket.close();
         }catch(Exception e){
             e.printStackTrace();
         }
