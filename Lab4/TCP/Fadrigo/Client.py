@@ -57,7 +57,7 @@ while RUNTIME:
         listlen = int(input("Enter random words to be generated and sent: "))
         strlen = int(input("Enter string length: "))
         for i in range(0,listlen):
-            sendMessage(''.join(random.choice(string.ascii_lowercase) for i in range(strlen)))
+            sendMessage(''.join(random.choice(string.ascii_lowercase) for i in range(strlen))) #https://www.educative.io/edpresso/how-to-generate-a-random-string-in-python
     else:
         sendMessage(message)
     
