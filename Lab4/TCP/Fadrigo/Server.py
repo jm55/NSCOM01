@@ -10,7 +10,12 @@ HEADER_LENGTH = 10
 
 print("====SERVER====")
 
-IP = socket.gethostbyname(socket.gethostname()) #replaced with live system hostname/ip; only works correctly if the computer has one network device
+IP = ""
+mode = input("'Network' Mode or 'Localhost' Mode?: ")
+if(mode.lower() == 'network'):
+    IP = socket.gethostbyname(socket.gethostname()) #replaced with live system hostname/ip; only works correctly if the computer has one network device
+else:
+    IP = "localhost"
 PORT = int(input("Enter port (Recommended: 49152 to 65535): "))
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,7 +27,7 @@ sockets_list = [server_socket]
 clients = {}
 
 print("Server listening @ port: {}".format(PORT))
-print("Server IP: {}".format(socket.gethostbyname(socket.gethostname()))) #https://www.geeksforgeeks.org/display-hostname-ip-address-python/
+print("Server IP: {}".format(IP)) #https://www.geeksforgeeks.org/display-hostname-ip-address-python/
 
 def receive_message(client_socket):
     try:
