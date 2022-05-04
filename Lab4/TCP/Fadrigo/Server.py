@@ -3,8 +3,6 @@
 #Researched by Fadrigo, Addison
 #Modified by Escalona, Jose
 
-from email import message_from_file
-from http import server
 import socket
 import select
 
@@ -12,13 +10,13 @@ HEADER_LENGTH = 10
 
 print("====SERVER====")
 
-IP = "127.0.0.1" #localhost since it is in a server role
+IP = socket.gethostbyname(socket.gethostname()) #replaced with live system hostname/ip; only works correctly if the computer has one network device
 PORT = int(input("Enter port (Recommended: 49152 to 65535): "))
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_socket.bind((IP, PORT))
-server_socket.listen()
+server_socket.listen(1)
 
 sockets_list = [server_socket]
 clients = {}

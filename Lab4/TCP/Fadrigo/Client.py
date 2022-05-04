@@ -5,7 +5,6 @@
 
 from random_word import RandomWords #abit slow, install using 'pip install random_word' but make sure to have 'pip install pyyaml' first
 import socket
-import select
 import errno
 import random
 import string
@@ -19,14 +18,19 @@ print("====CLIENT====")
 IP = input("Enter target IP (localhost if otherwise): ")
 PORT = int(input("Enter port #: "))
 USERNAME = input("Enter your username: ")
-print("===============================")
-print("Send /DISCONNECT to disconnect.")
-print("Send /RANDOM to send random strings.")
-print("Send /TERMINATESERVER to terminate server remotely.")
 
+print("Creating socket...")
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((IP,PORT))
+print("Attempting to connect to server...")
+try:
+    client_socket.connect((IP,PORT))
+    print("Connected to server...")
+except OSError as msg:
+    client_socket.close()
+    print(msg)
+    exit()
 client_socket.setblocking(False)
+print(client_socket.getpeername())
 
 def sendMessage(message):
     if message:
@@ -36,6 +40,11 @@ def sendMessage(message):
 
 INTRODUCED = False
 RUNTIME = True
+
+print("===============================")
+print("Send /DISCONNECT to disconnect.")
+print("Send /RANDOM to send random strings.")
+print("Send /TERMINATESERVER to terminate server remotely and close client.")
 
 while RUNTIME:
     if not INTRODUCED:
@@ -52,9 +61,10 @@ while RUNTIME:
         print("Remotely Terminating Server...")
         sendMessage(message)
         print("Terminating Client...")
-        client_socket()
     elif(message == "/RANDOM"):
-        listlen = int(input("Enter random words to be generated and sent: "))
+        listlen = int(input("Enter random words to be generated and sent (limited to 10000): "))
+        if(listlen > 10000):
+            listlen = 10000
         strlen = int(input("Enter string length: "))
         for i in range(0,listlen):
             sendMessage(''.join(random.choice(string.ascii_lowercase) for i in range(strlen))) #https://www.educative.io/edpresso/how-to-generate-a-random-string-in-python
