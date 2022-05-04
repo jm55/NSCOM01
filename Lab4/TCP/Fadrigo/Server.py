@@ -11,7 +11,7 @@ HEADER_LENGTH = 10
 print("====SERVER====")
 
 IP = ""
-mode = input("'Network' Mode or 'Localhost' Mode?: ")
+mode = input("'Network' Mode or 'Localhost' Mode? (Defaults to localhost if input is invalid): ")
 if(mode.lower() == 'network'):
     IP = socket.gethostbyname(socket.gethostname()) #replaced with live system hostname/ip; only works correctly if the computer has one network device
 else:
