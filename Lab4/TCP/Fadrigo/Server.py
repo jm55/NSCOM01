@@ -6,17 +6,30 @@
 import socket
 import select
 
+import click #for cls
+
 HEADER_LENGTH = 10
 
-print("====SERVER====")
+def printDisplayHeader():
+    print("====SERVER====")
+    print("Server IP listening @ port: {}:{}".format(IP,PORT)) #https://www.geeksforgeeks.org/display-hostname-ip-address-python/
+    print("==============")
 
+def cls():
+    click.clear()
+
+cls()
+print("====SERVER====")
 IP = ""
-mode = input("'Network' Mode or 'Localhost' Mode? (Defaults to localhost if input is invalid): ")
+mode = input("'Network' Mode or 'Localhost' Mode?\n(Defaults to localhost if input is invalid): ")
 if(mode.lower() == 'network'):
     IP = socket.gethostbyname(socket.gethostname()) #replaced with live system hostname/ip; only works correctly if the computer has one network device
 else:
     IP = "localhost"
 PORT = int(input("Enter port (Recommended: 49152 to 65535): "))
+
+cls()
+printDisplayHeader()
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -25,9 +38,6 @@ server_socket.listen(1)
 
 sockets_list = [server_socket]
 clients = {}
-
-print("Server listening @ port: {}".format(PORT))
-print("Server IP: {}".format(IP)) #https://www.geeksforgeeks.org/display-hostname-ip-address-python/
 
 def receive_message(client_socket):
     try:
@@ -42,6 +52,8 @@ def receive_message(client_socket):
         return False
 
 RUNTIME = True
+
+client_list = []
 
 while RUNTIME:
     read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
@@ -58,6 +70,7 @@ while RUNTIME:
             clients[client_socket] = user
 
             print("Accepted new connection from {}:{} with username: {}".format(*client_address, user['data'].decode('utf-8')))
+            client_list.append([client_socket.getpeername()[0],client_socket.getpeername()[1],clients[client_socket]['data'].decode('utf-8')])
         else:
             message = receive_message(notified_socket)
 
@@ -69,11 +82,14 @@ while RUNTIME:
 
             user = clients[notified_socket]
 
-            if(message  ["data"].decode("utf-8")=="/TERMINATESERVER"):   
+            if(message["data"].decode("utf-8")=="/TERMINATESERVER"): #TERMINATE SERVER VIA 'SSH'
                 print("Terminating Server...")
                 RUNTIME = False
                 server_socket.close()
-            else:
+            elif(message["data"].decode("utf-8")=="/HARDCLS"): #CLS SERVER VIA 'SSH'
+                cls()
+                printDisplayHeader()
+            else: #STANDARD MESSAGE
                 print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
                 for client_socket in clients:
                     if client_socket != notified_socket:

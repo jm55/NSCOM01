@@ -6,6 +6,8 @@
 from random_word import RandomWords #abit slow, install using 'pip install random_word' but make sure to have 'pip install pyyaml' first
 import socket
 import errno
+
+import click #for cls
 import random
 import string
 
@@ -13,15 +15,27 @@ import string
 
 HEADER_LENGTH = 10
 
-print("====CLIENT====")
+def printDisplayHeader():
+    print("====CLIENT====")
+    print("Peer: ", client_socket.getpeername())
+    print("===============================")
+    print("Send /DISCONNECT to disconnect.")
+    print("Send /CLS to clear screen on client.")
+    print("Send /HARDCLS to clear screen on client and server.")
+    print("Send /RANDOM to send random strings.")
+    print("Send /TERMINATESERVER to terminate server remotely and close client.")
 
+def cls():
+    click.clear()
+
+cls()
+print("====CLIENT====")
 IP = input("Enter target IP (localhost if otherwise): ")
 PORT = int(input("Enter port #: "))
 USERNAME = input("Enter your username: ")
 
-print("Creating socket...")
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print("Attempting to connect to server...")
+print("Socket created, attempting to connect to server...")
 try:
     client_socket.connect((IP,PORT))
     print("Connected to server...")
@@ -30,7 +44,6 @@ except OSError as msg:
     print(msg)
     exit()
 client_socket.setblocking(False)
-print(client_socket.getpeername())
 
 def sendMessage(message):
     if message:
@@ -41,10 +54,8 @@ def sendMessage(message):
 INTRODUCED = False
 RUNTIME = True
 
-print("===============================")
-print("Send /DISCONNECT to disconnect.")
-print("Send /RANDOM to send random strings.")
-print("Send /TERMINATESERVER to terminate server remotely and close client.")
+cls()
+printDisplayHeader()
 
 while RUNTIME:
     if not INTRODUCED:
@@ -53,7 +64,12 @@ while RUNTIME:
 
     message = input(f'{USERNAME} > ')
     
-    if(message == "/DISCONNECT"):
+    if(message=="/CLS" or message=="/HARDCLS"):
+        cls()
+        printDisplayHeader()
+        if(message=="/HARDCLS"):
+            sendMessage(message)
+    elif(message == "/DISCONNECT"):
         RUNTIME = False
         client_socket.close()
     elif(message == "/TERMINATESERVER"):
