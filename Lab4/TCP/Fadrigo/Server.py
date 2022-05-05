@@ -6,7 +6,8 @@
 import socket
 import select
 
-import click #for cls
+#import click #for cls
+import os
 
 HEADER_LENGTH = 10
 
@@ -16,7 +17,7 @@ def printDisplayHeader():
     print("==============")
 
 def cls():
-    click.clear()
+    _ = os.system('cls')
 
 cls()
 print("====SERVER====")

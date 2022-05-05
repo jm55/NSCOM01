@@ -7,7 +7,9 @@ from random_word import RandomWords #abit slow, install using 'pip install rando
 import socket
 import errno
 
-import click #for cls
+#import click #for cls
+import os
+
 import random
 import string
 
@@ -26,7 +28,7 @@ def printDisplayHeader():
     print("Send /TERMINATESERVER to terminate server remotely and close client.")
 
 def cls():
-    click.clear()
+    _ = os.system('cls')
 
 cls()
 print("====CLIENT====")
