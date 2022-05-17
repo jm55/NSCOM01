@@ -3,6 +3,7 @@
 //https://www.baeldung.com/java-write-byte-array-file
 //https://www.programiz.com/java-programming/examples/get-file-extension
 //https://stackoverflow.com/a/17011063
+//https://mkyong.com/java/how-to-convert-array-of-bytes-into-file
 package filebyte;
 
 import java.io.File;
@@ -183,30 +184,48 @@ public class FileByte {
      * @return Returns an arrayList containing chunks of byte[] at specified limit
      */
     public ArrayList<byte[]> splitByBytes(byte[] filebytes, int limit){
-
         ArrayList<byte[]> compilation = new ArrayList<byte[]>();
         int l = 0;
-        scratch = new byte[limit];
+        scratch = new byte[limit]; //assumes size of each chunk will reach limit
         
-
+        if(filebytes.length < limit){ //check if size of filebytes < limit
+            scratch = new byte[filebytes.length]; //set scratch to be of size filebytes[]
+        }
+        
+        //run through every bit of filebytes and split according to chunk limit
         for(int i = 0; i < filebytes.length; i++){
             scratch[l] = filebytes[i];
             l++;
             if(l >= limit){ //checks chunk limit if it has been reached
                 compilation.add(scratch);
-                scratch = new byte[limit];
+                if(filebytes.length-i < limit){ //if remaining bytes are not equal to limit
+                    scratch = new byte[filebytes.length-i-1];
+                }else{
+                    scratch = new byte[limit];
+                }
                 l = 0;
             }
         }
 
-        compilation.add(scratch);
-
-        compilation.add(new byte[1]); //TERMINATING BYTE
-        
+        compilation.add(scratch); //Add last scratch
+        compilation.add(getTerminatingByte()); //TERMINATING BYTE (any payload of less than 512 for TFTP)
         return compilation;
     }
 
-    public byte[] getSingleByte(){
+    public boolean isTerminating(byte[] sample){
+        byte[] t = getTerminatingByte();
+        if(sample.length  == t.length){
+            for(int i = 0; i < sample.length; i++){
+                if(sample[i] != t[i])
+                    return false;
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public byte[] getTerminatingByte(){
         return new byte[1];   
     }
 }
