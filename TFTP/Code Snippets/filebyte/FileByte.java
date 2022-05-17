@@ -7,6 +7,7 @@ package filebyte;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,12 +36,15 @@ public class FileByte {
 
     /**
      * Calls a JFileChooser and returns selected file as a File object.
-     * @return File object of the selected file.
+     * @return File object of the selected file. Returns null if the user choice has cancelled or the file chooser experienced an error opening a file.
      */
     public File getFile(){
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.showOpenDialog(null);
-        return fileChooser.getSelectedFile();
+        int choice = fileChooser.showOpenDialog(null);
+        if(choice == JFileChooser.APPROVE_OPTION)
+            return fileChooser.getSelectedFile();
+        else
+            return null;
     }
 
     /**
@@ -76,12 +80,22 @@ public class FileByte {
     }
 
     /**
+     * Return bytes as string using the specified charset.
+     * @param bytes Bytes of data to be printed.
+     * @param charsets Charset of the string. Use StandardCharsets.<FORMAT>
+     * @return String formatted as charsets.
+     */
+    public String getCharsetContents(byte[] bytes, Charset charsets){
+        return new String(bytes, charsets); 
+    }
+
+    /**
      * Shows UTF-8 Contents of the bytes[].
      * @param bytes byte[] to be printed in UTF-8.
      */
     public void showUTF8Contents(byte[] bytes){
         String fileContent = new String(bytes, StandardCharsets.UTF_8);
-        System.out.println("\nFile Content:");
+        System.out.println("File Content:");
         System.out.println(fileContent);
     }
 
@@ -149,7 +163,7 @@ public class FileByte {
 
     /**
      * Gets the file extension of a given file path.
-     * @param path 
+     * @param path Path that points to the file. Formatted as absolute path.
      * @return File extension of the file pointed by the file path.
      */
     private String getFileExt(String path){
@@ -160,26 +174,35 @@ public class FileByte {
         return extension;
     }
 
+    /**
+     * Splits the byte[] into chunks of size specified by the limit.
+     * TFTP requires to send 512 byte chunks of payload with the terminating being
+     * any payload size of less than 512 bytes.
+     * @param filebytes byte[] of File to be split into chunks.
+     * @param limit Chunk size of each byte[]
+     * @return Returns an arrayList containing chunks of byte[] at specified limit
+     */
     public ArrayList<byte[]> splitByBytes(byte[] filebytes, int limit){
 
         ArrayList<byte[]> compilation = new ArrayList<byte[]>();
         int l = 0;
-        scratch = new byte[512];
+        scratch = new byte[limit];
         
-        System.out.println("filebytes:scratch = " + filebytes.length + " : " + scratch.length);
-        System.out.println("batches: " + filebytes.length/scratch.length);
 
         for(int i = 0; i < filebytes.length; i++){
             scratch[l] = filebytes[i];
             l++;
-            if(l >= limit){
+            if(l >= limit){ //checks chunk limit if it has been reached
                 compilation.add(scratch);
-                scratch = new byte[512];
+                scratch = new byte[limit];
                 l = 0;
             }
         }
+
+        compilation.add(scratch);
+
+        compilation.add(new byte[1]); //TERMINATING BYTE
         
-        System.out.println("confirmed batches: " + compilation.size());
         return compilation;
     }
 
