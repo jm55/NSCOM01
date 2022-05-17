@@ -1,10 +1,15 @@
-//https://simplesolution.dev/java-convert-file-to-byte-array/
-//https://www.javatpoint.com/java-jfilechooser
-//https://www.baeldung.com/java-write-byte-array-file
-//https://www.programiz.com/java-programming/examples/get-file-extension
-//https://stackoverflow.com/a/17011063
-//https://mkyong.com/java/how-to-convert-array-of-bytes-into-file
-package filebyte;
+/**
+ * This class file will handle file related functions.
+ * 
+ * 
+ * References:
+ * https://simplesolution.dev/java-convert-file-to-byte-array/
+ * https://www.javatpoint.com/java-jfilechooser
+ * https://www.baeldung.com/java-write-byte-array-file
+ * https://www.programiz.com/java-programming/examples/get-file-extension
+ * https://stackoverflow.com/a/17011063
+ * https://mkyong.com/java/how-to-convert-array-of-bytes-into-file
+ */
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +22,6 @@ import java.util.*;
 import javax.swing.*;
 
 public class FileByte {
-    byte[] scratch;
-
     public FileByte(){
         System.out.println("FileByte");
     }
@@ -110,11 +113,8 @@ public class FileByte {
         JFileChooser fChooser = new JFileChooser();
         fChooser.showSaveDialog(null);
         File file = fChooser.getSelectedFile();
-
         if(file.exists()){
-            System.out.println("File exists");
             int choice = JOptionPane.showConfirmDialog(null, "Replace file?");
-                    
             if(choice == 0){ //choice being yes (0)
                 return writeFile(filebytes, file, extension);
             }else //choice being no (1) or cancel (2)
@@ -137,18 +137,17 @@ public class FileByte {
         System.out.println("writeFile = " + file.toString());
         if(extension != null)
             file = new File(file.toString() + extension);
+        
         try {
             if(!file.exists())
                 file.createNewFile();
-        }catch(IOException e) {
-            return false;
-        }
-        
-        try {
-            System.out.println("File Extension: " + getFileExt(file.getAbsolutePath()));
             Files.write(file.toPath(), filebytes);
+            filebytes = null;
+            file = null;
             return true;
         } catch (IOException e) {
+            filebytes = null;
+            file = null;
             return false;
         }
     }
@@ -186,7 +185,7 @@ public class FileByte {
     public ArrayList<byte[]> splitByBytes(byte[] filebytes, int limit){
         ArrayList<byte[]> compilation = new ArrayList<byte[]>();
         int l = 0;
-        scratch = new byte[limit]; //assumes size of each chunk will reach limit
+        byte[] scratch = new byte[limit]; //assumes size of each chunk will reach limit
         
         if(filebytes.length < limit){ //check if size of filebytes < limit
             scratch = new byte[filebytes.length]; //set scratch to be of size filebytes[]
@@ -209,9 +208,16 @@ public class FileByte {
 
         compilation.add(scratch); //Add last scratch
         compilation.add(getTerminatingByte()); //TERMINATING BYTE (any payload of less than 512 for TFTP)
+        
+        scratch = null;
         return compilation;
     }
 
+    /**
+     * Checks if a byte[] sample is equal to the determined terminatingByte.
+     * @param sample Byte[] to be checked
+     * @return True if equal, false if otherwise.
+     */
     public boolean isTerminating(byte[] sample){
         byte[] t = getTerminatingByte();
         if(sample.length  == t.length){
@@ -223,6 +229,31 @@ public class FileByte {
         }else{
             return false;
         }
+    }
+
+    public byte[] reassembleBytes(ArrayList<byte[]> collection){
+        if(collection.size() == 0 || collection == null)
+            return null;
+        /**
+         * Simulating receive through a for-loop
+         * Maybe for TFTP, the payload size is on the headers of the data packet so no need to compute.
+         * 
+         * Imagine every byte[] of split is the byte[] sent/received on a UDP socket.
+         * This shows the re-assembly process of byte[] into file.
+         */
+        int totalPacketSize = 0, ctr = 0;
+        for(int i = 0; i < collection.size(); i++)
+            totalPacketSize += collection.get(i).length;
+        byte[] receiveCompile = new byte[totalPacketSize-1];
+        for(int i = 0; i < collection.size(); i++){
+            if(!isTerminating(collection.get(i))){
+                for(int j = 0; j < collection.get(i).length; j++){
+                    receiveCompile[ctr] = collection.get(i)[j];
+                    ctr++;
+                }
+            }
+        }
+        return receiveCompile;
     }
 
     public byte[] getTerminatingByte(){
