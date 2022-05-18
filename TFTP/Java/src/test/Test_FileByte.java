@@ -12,12 +12,12 @@ import data.FileHandlers;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Driver_FileByte {
+public class Test_FileByte {
     static FileByte fb;
     static FileHandlers fh;
     static Scanner scan;
     
-    public Driver_FileByte(){
+    public Test_FileByte(){
         System.out.println("Driver_FileByte");
         scan = new Scanner(System.in);
         
