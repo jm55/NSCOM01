@@ -126,14 +126,26 @@ public class GUI extends JFrame{
 		return JOptionPane.showInputDialog(message);
 	}
 	
+	/**
+	 * Get input value for Server IP
+	 * @return String value of input for Server IP
+	 */
 	public String getServerIPInput() {
 		return getServerConfigInput()[0];
 	}
 	
+	/**
+	 * Get input value for Server port
+	 * @return String value of input for Server port
+	 */
 	public String getServerPortInput() {
 		return getServerConfigInput()[1];
 	}
 	
+	/**
+	 * Get String[] input value of Server configuration inputs
+	 * @return String[] containing {Server IP, Server port}
+	 */
 	public String[] getServerConfigInput() {
 		String[] config = {serverIPField.getText(), serverPortField.getText()};
 		return config;
