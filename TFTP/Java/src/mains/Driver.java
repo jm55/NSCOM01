@@ -11,20 +11,9 @@ public class Driver {
     	//new Test_FileByte();
         //new Test_Hasher();
     	
-    	buildGUI();
-    	showGUI();
+    	new Test_GUI();
     	
     	//System.exit(0);
     }
     
-    private static void showGUI() {
-    	g.setDefaultDisplay();
-    	g.updateConnectBtn(false);
-    }
-    
-    private static void buildGUI() {
-    	System.out.println("Initializing GUI...");
-		g = new GUI();
-		c = new Controller(g);
-    }
 }

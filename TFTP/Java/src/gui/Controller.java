@@ -24,5 +24,15 @@ public class Controller implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		System.out.println(e.getActionCommand());
+		/**
+		 * You can just check 
+		 * 	if(e.getActionCommand() == {foo.action}){
+		 *		foo();
+		 * 	}
+		 * 
+		 * 	if(e.getActionCommand() == {bar.action}){
+		 *		bar();
+		 * 	}
+		 */
 	}
 }
