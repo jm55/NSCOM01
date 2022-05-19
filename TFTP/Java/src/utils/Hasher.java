@@ -17,8 +17,19 @@ import java.io.File;
  *
  */
 public class Hasher {
+	private Monitor m = new Monitor(true);
+	private final String className = "Hasher";
+	
+	/**
+	 * Quick compare two Files.
+	 * Uses SHA-256.
+	 * @param a File A
+	 * @param b File B
+	 * @return True if hashes match, false if otherwise.
+	 */
 	public boolean quickCompare(File a, File b) {
 		FileByte fb = new FileByte();
+		m.printMessage(this.className, "quickCompare", "Comparing...");
 		return compareHash(fb.getBytesFromFile(a), fb.getBytesFromFile(b), "SHA-256");
 	}
 	
@@ -30,6 +41,7 @@ public class Hasher {
 	 * @return True if match, false if otherwise.
 	 */
 	public boolean compareHash(byte[] byteA, String hashB) {
+		m.printMessage(this.className, "compareHash(byteA, hashB)", "Comparing...");
 		return compareHash(byteA, hashB, "SHA-256");
 	}
 	
@@ -41,7 +53,8 @@ public class Hasher {
 	 * @param algorithm Specifies the algorithm to be used.
 	 * @return True if match, false if otherwise.
 	 */
-	public boolean compareHash(byte[] byteA, String hashB, String algorithm) {
+	public boolean compareHash(byte[] byteA, String hashB, String algorithm){
+		m.printMessage(this.className, "compareHash(byteA,hashB,algoritm)", "Comparing...");
 		return hashB.equals(computeHash(byteA,algorithm));
 	}
 	
@@ -52,6 +65,7 @@ public class Hasher {
 	 * @return True if match, false if otherwise.
 	 */
 	public boolean compareHash(byte[] byteA, byte[] byteB) {
+		m.printMessage(this.className, "compareHash(byteA,byteB)", "Comparing...");
 		return compareHash(byteA, byteB, "SHA-256");
 	}
 	
@@ -65,6 +79,7 @@ public class Hasher {
 	 * @return True if match, false if otherwise.
 	 */
 	public boolean compareHash(byte[] byteA, byte[] byteB, String algorithm) {
+		m.printMessage(this.className, "compareHash(byteA,byteB,algorithm)", "Comparing...");
 		String hashA = performHash(byteA, algorithm);
 		byteA = null;
 		return hashA.equals(performHash(byteB, algorithm));
@@ -79,6 +94,7 @@ public class Hasher {
 	 * @return True if match, false if otherwise.
 	 */
 	public String computeHash(byte[] bytes, String algorithm) {
+		m.printMessage(this.className, "computeHash(bytes,algorithm)", "Computing hash...");
 		String[] allowedAlgorithms = {"MD2", "MD5","SHA-1","SHA-224","SHA-256","SHA-384","SHA-512"};
 		boolean validAlgorithm = false;
 		String out = "";
@@ -97,18 +113,19 @@ public class Hasher {
 	}
 	
 	private String performHash(byte[] bytes, String algorithm) {
+		m.printMessage(this.className, "performHash(bytes,algorithm)", "Hashing...");
 		MessageDigest md;
 		try {
 			md = MessageDigest.getInstance(algorithm);
 			return hashHex(md.digest(bytes));
 		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Specified hashing algorithm is invalid.");
-			e.printStackTrace();
+			m.printMessage(this.className, "performHash(bytes,algorithm)", "TryCatch: Specified hashing algorithm is invalid.");
 			return null;
 		}
 	}
 	
 	private String hashHex(byte[] hash) {
+		m.printMessage(this.className, "hashHex(hash)", "Building hashHex...");
 		//Convert byte array into signum representation
         BigInteger number = new BigInteger(1, hash);
         // Convert message digest into hex value
@@ -116,6 +133,7 @@ public class Hasher {
         // Pad with leading zeros
         while (hexString.length() < 64)
         	hexString.insert(0, '0');
+        m.printMessage(this.className, "hashHex(hash)", "Returning hashHex...");
         return hexString.toString();
 	}
 	

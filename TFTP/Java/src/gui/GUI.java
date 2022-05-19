@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.BorderFactory;
 
 import mains.Controller;
+import utils.Monitor;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -17,6 +18,9 @@ import java.awt.event.*;
  *
  */
 public class GUI extends JFrame{
+	private Monitor m = new Monitor(true);
+	private final String className = "GUI";
+	
 	//PRIVATE GLOBAL VALUES
 	private boolean debug = false;
 	private final int WIDTH = 1024, HEIGHT = 620;
@@ -49,6 +53,7 @@ public class GUI extends JFrame{
 	 * @param c Controller object managing components the window.
 	 */
 	public void setListener(Controller c) {
+		m.printMessage(this.className, "setListener()", "Setting listener...");
 		listener = c;
 	}
 	
@@ -56,10 +61,12 @@ public class GUI extends JFrame{
 	 * Builds the default JPanel build of the program.
 	 */
 	public void setDefaultDisplay() {
+		m.printMessage(this.className, "setDefaultDisplay()", "Setting DefaultDisplay...");
 		JPanel panel = new JPanel();
 		panel.setLayout(null);
 		
 		//LABELS
+		m.printMessage(this.className, "setDefaultDisplay()", "Setting Labels...");
 		titleLabel = createLabel(WindowTitle, newFont(Font.BOLD, 24), WIDTH/2-200,24,400,32, SwingConstants.CENTER, SwingConstants.TOP);
 		panel.add(titleLabel);
 		serverIPLabel = createLabel("Server IP:", newFont(Font.BOLD, 16),32,64*1,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
@@ -70,6 +77,7 @@ public class GUI extends JFrame{
 		panel.add(outputLabel);
 		
 		//INPUT/OUTPUT FIELDS/AREAS
+		m.printMessage(this.className, "setDefaultDisplay()", "Setting I/O Fields...");
 		serverIPField = createTextField(newFont(Font.PLAIN, 12),32,(64*1)+32,256,32);
 		panel.add(serverIPField);
 		serverPortField = createTextField(newFont(Font.PLAIN, 12),32,(64*2)+32,256,32);
@@ -84,6 +92,7 @@ public class GUI extends JFrame{
 		//panel.add(csvCheckBox);
 		
 		//BUTTONS
+		m.printMessage(this.className, "setDefaultDisplay()", "Setting Buttons...");
 		connectBtn = createButton("", newFont(Font.BOLD,16),32,(64*4),this.BTNWIDTH,50,listener,"ServerConnection");
 		panel.add(connectBtn);
 		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"OpenFile");
@@ -102,6 +111,7 @@ public class GUI extends JFrame{
 	}
 	
 	public void updateConnectBtn(boolean connected) {
+		m.printMessage(this.className, "updateConnectBtn(Connected)", "Updating connect status (" + connected + ")...");
 		if(connected)
 			connectBtn.setText("Disconnect");
 		else

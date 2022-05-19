@@ -9,7 +9,7 @@ import utils.*;
 public class Test_FileCompression {
 	private String hashA, hashB;
 	public Test_FileCompression() {
-		System.out.println("===Test_FileCompression===");
+		System.out.println("Test_FileCompression");
 		
 		this.hashA = this.hashB = "";
 		
@@ -17,14 +17,10 @@ public class Test_FileCompression {
 		System.out.println("PERFORMING SEND:");
 		ArrayList<byte[]> packets = sender();
 		
-		System.out.println("======================");
-		
 		//Perform Receive();
 		System.out.println("PERFORMING RECEIVE:");
 		receive(packets);
 		packets = null;
-		
-		System.out.println("======================");
 		
 		//Confirmation: Check if hashes match
 		System.out.println("CONFIRMATION:");
@@ -49,7 +45,7 @@ public class Test_FileCompression {
 		
 		//Compress
 		System.out.println("Compressing...");
-		fb.setBytes(new Compression().compress(fb.getBytes(), Deflater.BEST_COMPRESSION, false));
+		fb.setBytes(new Compression().compress(fb.getBytes(), Deflater.BEST_COMPRESSION, true));
 		
 		//Return Split/Disassembled 'Packets'
 		System.out.println("Disassembling byte[] to 'packets'...");
@@ -59,7 +55,7 @@ public class Test_FileCompression {
 	private void receive(ArrayList<byte[]> packets) {
 		//Reassemble and Decompress
 		System.out.println("Decompressing 'packets'...");
-		byte[] receivedBytes = new Compression().decompress(new FileByte().reassembleBytes(packets),false);
+		byte[] receivedBytes = new Compression().decompress(new FileByte().directReassembleBytes(packets), true);
 		packets = null;
 		
 		//Check Hash

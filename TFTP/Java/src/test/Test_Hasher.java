@@ -3,24 +3,25 @@ package test;
 import data.FileHandlers;
 import data.FileByte;
 import utils.Hasher;
-import utils.Monitor;
 
 public class Test_Hasher {
 	Hasher hs;
 	public Test_Hasher() {
-		System.out.println("===Test_Hasher===");
+		System.out.println("Test_Hasher");
 		hs = new Hasher();
-		//testHash();
-		//testCompareHash();
+		testHash();
+		testCompareHash();
 		testQuickCompare();
 	}
 	public void testQuickCompare() {
+		System.out.println("testQuickCompare");
 		FileHandlers fh = new FileHandlers();
 		boolean match = hs.quickCompare(fh.openFile(), fh.openFile());
 		System.out.println("QuickCompare Match: " + match);
 	}
 	
 	public void testCompareHash() {
+		System.out.println("testCompareHash");
 		FileByte fb = new FileByte();
 		FileHandlers fh = new FileHandlers();
 		
@@ -37,6 +38,7 @@ public class Test_Hasher {
 	}
 	
 	public void testHash() {
+		System.out.println("testHash");
 		FileHandlers fh = new FileHandlers();
 		System.out.println("Opening File...");
 		

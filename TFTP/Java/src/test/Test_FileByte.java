@@ -18,33 +18,19 @@ public class Test_FileByte {
     static Scanner scan;
     
     public Test_FileByte(){
-    	System.out.println("===Test_FileByte===");
+    	System.out.println("Test_FileByte");
         scan = new Scanner(System.in);
         
         fb = new FileByte();
         fh = new FileHandlers();
         
-        //Menu Loop
-        int c = -1;
-        do {
-        	System.out.println("===============================");
-        	System.out.println("1 - Open File & Read Bytes\n2 - Split File Simulate\n3 - Save File");
-        	System.out.print("Enter choice: ");
-        	c = Integer.parseInt(scan.nextLine());
-        	if(c == 1)
-        		openFile(); //Sample of opening a File and turning it into bytes
-        	else if(c == 2)
-        		splitFile(); //Sample of splitting a File to ArrayList<bytes[]> and then reassembling+saving it back to File
-        	else if(c == 3)
-        		saveFile(); //Sample of saving a byte[] into a File
-        }while(c != 0);
-        
-        scan.close();
-        System.exit(0);
+		openFile(); //Sample of opening a File and turning it into bytes
+		splitFile(); //Sample of splitting a File to ArrayList<bytes[]> and then reassembling+saving it back to File
+		saveFile(); //Sample of saving a byte[] into a File
     }
 
     private static void saveFile(){
-    	System.out.println("Save File");
+    	System.out.println("saveFile");
 
         System.out.println("Enter text that will be saved as text file:");
         byte[] text = scan.nextLine().getBytes();
@@ -60,7 +46,7 @@ public class Test_FileByte {
     }
 
     private static void openFile(){
-    	System.out.println("Open File");
+    	System.out.println("openFile");
     	
     	fh = new FileHandlers();
     	String p = fh.getNewFilePath(false);
@@ -70,7 +56,7 @@ public class Test_FileByte {
     }
 
     private static void splitFile(){
-    	System.out.println("Split File");
+    	System.out.println("splitFile");
     	
     	fh = new FileHandlers();
     	System.out.println("Loading file...");
@@ -82,7 +68,7 @@ public class Test_FileByte {
         
         //Simulate writing collected byte[] into machine
         System.out.println("Reassembling file...");
-        if(fh.saveFile(fb.reassembleBytes(split),  "."+fh.getFileExt()))
+        if(fh.saveFile(fb.reassembleBytes(split), fh.getFileExt()))
         	System.out.println("File successfully saved at " + fh.getFilePath(false));
         else
         	System.out.println("Error occured saving file.");

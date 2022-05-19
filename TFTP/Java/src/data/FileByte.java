@@ -17,8 +17,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import utils.*;
+
 public class FileByte {
-	byte[] bytes = null;
+	private byte[] bytes = null;
+	private Monitor m = new Monitor(true);
+	private final String className = "FileByte";
 	
 	public FileByte(){
 		//
@@ -37,28 +41,51 @@ public class FileByte {
 	}
 	
 	public void setBytes(File f) {
+		m.printMessage(this.className, "setBytes(File)", "Setting bytes from File...");
 		this.bytes = this.getBytesFromFile(f);
 	}
 	
 	public void setBytes(String path) {
+		m.printMessage(this.className, "setBytes(path)", "Setting bytes from path...");
 		this.bytes = this.getBytesFromFilePath(path);
 	}
 	
 	public void setBytes(byte[] bytes) {
+		m.printMessage(this.className, "setBytes(byte[])", "Setting bytes from byte[]...");
 		this.bytes = bytes;
 	}
 
+	/**
+	 * Get byte[] held by this object.
+	 * @return byte[] of this object.
+	 */
 	public byte[] getBytes() {
+		m.printMessage(this.className, "getBytes()", "Returning this.bytes...");
 		if(this.bytes != null)
 			return this.bytes;
 		return null;
 	}
 	
+	/**
+	 * Get byte[] from File.
+	 * Does not assign as byte[] of this.
+	 * @param file File where byte[] will be extracted
+	 * @return Extracted byte[] from File.
+	 */
     public byte[] getBytesFromFile(File file){
+    	m.printMessage(this.className, "getBytesFromFile(File)", "Getting bytes from File...");
         return getBytesFromFilePath(file.getAbsolutePath());
     }
 
+    /**
+	 * Get byte[] from path of File.
+	 * Does not assign as byte[] of this.
+	 * Assumes absolute path was given.
+	 * @param path Path of File where byte[] will be extracted
+	 * @return Extracted byte[] from File pointed by path.
+	 */
     public byte[] getBytesFromFilePath(String path){
+    	m.printMessage(this.className, "getBytesFromFilePath(path)", "Getting bytes from path...");
         Path filePath = Paths.get(path);
         try {
 			return Files.readAllBytes(filePath);
@@ -68,38 +95,78 @@ public class FileByte {
 		}
     }
 
+    /**
+     * Prints the raw contents of the byte[] held by this object.
+     */
     public void printRawContents(){
+    	m.printMessage(this.className, "printRawContents()", "Printing raw contents of this.byte...");
         printRawContents(this.bytes);
     }
     
+    /**
+     * Prints the raw contents of the specified byte[].
+     * @param bytes byte[] to be printed in raw.
+     */
     public void printRawContents(byte[] bytes) {
+    	m.printMessage(this.className, "printRawContents(bytes)", "Printing raw contents of bytes...");
     	for(byte b: bytes)
     		System.out.print(b);
     	System.out.println("");
     }
     
+    /**
+     * Returns the charSet equivalent of the byte[] of this object.
+     * Valid Charset: Items found on StandardCharset
+     * @param charsets Charset interpretation of the byte[].
+     * @return Charset string equivalent of byte[] of this.
+     */
     public String getCharsetContents(Charset charsets){
+    	m.printMessage(this.className, "getCharsetContents(charsets)", "Printing charset interpretation of this.bytes...");
     	return getCharsetContents(this.bytes, charsets);
     }
     
+    /**
+     * eturns the charSet equivalent of the specified byte[].
+     * Valid Charset: Items found on StandardCharset
+     * @param bytes byte[] to be interpreted as Charset
+     * @param charsets Charset interpretation of the byte[].
+     * @return Charset string equivalent of byte[] specified
+     */
     public String getCharsetContents(byte[] bytes, Charset charsets){
+    	m.printMessage(this.className, "getCharsetContents(bytes, charsets)", "Printing charset interpretation of this bytes...");
         return new String(bytes, charsets); 
     }
     
+    /**
+     * Splits the bytes of byte[] of this.
+     * @param limit byte[] size limit of each chunk split.
+     * @return ArrayList byte[] of the split byte[] of this.
+     */
     public ArrayList<byte[]> splitByBytes(int limit){
+    	m.printMessage(this.className, "splitByBytes(limit)", "Spliting this.bytes @ " + limit + "...");
     	return splitByBytes(this.bytes, limit);
     }
 
+    /**
+     * Splits the bytes specified in filebytes[].
+     * @param filebytes byte[] to be split.
+     * @param limit byte[] size limit of each chunk split.
+     * @return ArrayList byte[] of the split filebytes[].
+     */
     public ArrayList<byte[]> splitByBytes(byte[] filebytes, int limit){
+    	m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Spliting filebytes @ " + limit + "...");
         ArrayList<byte[]> compilation = new ArrayList<byte[]>();
         int l = 0;
         byte[] scratch = new byte[limit]; //assumes size of each chunk will reach limit
         
+        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Checking if filebytes.length is < " + limit + "...");
         if(filebytes.length < limit){ //check if size of filebytes < limit
-            scratch = new byte[filebytes.length]; //set scratch to be of size filebytes[]
+        	m.printMessage(this.className, "splitByBytes(filebytes, limit)", "filebytes.length <" + limit + "...");
+        	scratch = new byte[filebytes.length]; //set scratch to be of size filebytes[]
         }
         
         //run through every bit of filebytes and split according to chunk limit
+        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Spliting filebytes...");
         for(int i = 0; i < filebytes.length; i++){
             scratch[l] = filebytes[i];
             l++;
@@ -114,15 +181,24 @@ public class FileByte {
             }
         }
 
+        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Finalizing split...");
         compilation.add(scratch); //Add last scratch
         compilation.add(getTerminatingByte()); //TERMINATING BYTE (any payload of less than 512 for TFTP)
         
         scratch = null;
+        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Returning split...");
         return compilation;
     }
 
+    /**
+     * Checks if the sample byte[] is the terminating byte[].
+     * Not the one for TFTP protocol but more of an internal filebyte management.
+     * @param sample byte[] to be sampled.
+     * @return True if equal to terminating byte[], false if otherwise.
+     */
     public boolean isTerminating(byte[] sample){
         byte[] t = getTerminatingByte();
+        //m.printMessage(this.className, "isTerminating(sample)", "Checking if terminating...");
         if(sample.length  == t.length){
             for(int i = 0; i < sample.length; i++){
                 if(sample[i] != t[i])
@@ -134,9 +210,28 @@ public class FileByte {
         }
     }
 
-    public byte[] reassembleBytes(ArrayList<byte[]> collection){
-        if(collection.size() == 0 || collection == null)
-            return null;
+    /**
+     * Reassembles collection as byte[], sets it as object's byte[], and returns it.
+     * @param collection ArrayList byte[] to be reassembled.
+     * @return byte[] of collection
+     */
+    public byte[] reassembleBytes(ArrayList<byte[]> collection) {
+    	m.printMessage(this.className, "reassembleBytes(collection)", "Reassembling collection to this.bytes...");
+    	this.bytes = directReassembleBytes(collection);
+    	return this.bytes;
+    }
+    
+    /**
+     * Reassembles collection as byte[] and returns it.
+     * @param collection ArrayList byte[] to be reassembled. 
+     * @return byte[] of collection.
+     */
+    public byte[] directReassembleBytes(ArrayList<byte[]> collection){
+    	m.printMessage(this.className, "reassembleBytes(collection)", "Reassembling collection...");
+        if(collection.size() == 0 || collection == null) {
+        	m.printMessage(this.className, "reassembleBytes(collection)", "collection is null...");
+        	return null;
+        }
         int totalPacketSize = 0, ctr = 0;
         for(int i = 0; i < collection.size(); i++)
             totalPacketSize += collection.get(i).length;
@@ -149,6 +244,8 @@ public class FileByte {
                 }
             }
         }
+        collection = null;
+        m.printMessage(this.className, "reassembleBytes(collection)", "Returning is reassebmled bytes...");
         return receiveCompile;
     }
 

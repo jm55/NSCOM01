@@ -4,20 +4,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Monitor {
-	boolean state;
-	DateTimeFormatter datetimeFormat;
+	private boolean state;
+	private DateTimeFormatter datetimeFormat;
 	
-	public Monitor() {
+	public Monitor(boolean state) {
+		this.state = state;
 		datetimeFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	}
-	public void printMessage(String className, String methodName, String text, boolean ln) {
+	public void printMessage(String className, String methodName, String text) {
 		if(state)
-			if(ln)
-				System.out.println("(" + dtNow()  + ") " + className + "." + methodName + ": " + text);
-			else
-				System.out.print("(" + dtNow()  + ") " + className + "." + methodName + ": " + text);
+			System.out.println("(" + dtNow()  + ") " + className + "." + methodName + ": " + text);
 	}
-	public String dtNow() {
+	private String dtNow() {
 		return datetimeFormat.format(LocalDateTime.now());
 	}
 }

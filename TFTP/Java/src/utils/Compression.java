@@ -12,7 +12,8 @@ import java.util.zip.*;
  */
 
 public class Compression {
-	
+	private Monitor m = new Monitor(true);
+	private final String className = "Compression";
 	/**
 	 * Compresses the given byte[]
 	 * @param input
@@ -24,17 +25,18 @@ public class Compression {
 		// Create a Deflater object to compress data  
         Deflater compressor = new Deflater(compressionLevel, GZIPFormat); 
 
-        // Set the input for the compressor  
-        compressor.setInput(input); 
+        // Set the input for the compressor
+        m.printMessage(this.className, "compress", "Setting compressor...");
+        compressor.setInput(input);
+        compressor.finish(); //Indicate that we have no more input for the compressor object
+        input = null;
 
-        // Call the finish() method to indicate that we have  
-        // no more input for the compressor object  
-        compressor.finish(); 
-
-        // Compress the data  
+        // Compress the data 
+        m.printMessage(this.className, "compress", "Preparing bao...");
         ByteArrayOutputStream bao = new ByteArrayOutputStream(); 
-        byte[] readBuffer = new byte[1024]; 
+        byte[] readBuffer = new byte[512]; 
 
+        m.printMessage(this.className, "compress", "Compressing byte[]...");
         while (!compressor.finished()) { 
             int readCount = compressor.deflate(readBuffer); 
             if (readCount > 0) { 
@@ -42,11 +44,15 @@ public class Compression {
                 bao.write(readBuffer, 0, readCount); 
             } 
         } 
-
+        readBuffer = null;
+        
         // End the compressor  
+        m.printMessage(this.className, "compress", "Ending compressor...");
         compressor.end(); 
 
+        
         // Return the written bytes from output stream  
+        m.printMessage(this.className, "compress", "Returning compressed byte[]...");
         return bao.toByteArray(); 
     }
 	
@@ -54,13 +60,17 @@ public class Compression {
 		// Create an Inflater object to compress the data  
         Inflater decompressor = new Inflater(GZIPFormat); 
 
-        // Set the input for the decompressor  
+        // Set the input for the decompressor
+        m.printMessage(this.className, "decompress", "Setting decompressor...");
         decompressor.setInput(input); 
+        input = null;
 
         // Decompress data  
+        m.printMessage(this.className, "decompress", "Preparing bao...");
         ByteArrayOutputStream bao = new ByteArrayOutputStream(); 
         byte[] readBuffer = new byte[512]; //the data at TFTP could be at most 512 bytes
 
+        m.printMessage(this.className, "decompress", "Decompressing...");
         while (!decompressor.finished()) { 
             int readCount;
 			try {
@@ -68,13 +78,17 @@ public class Compression {
 				if (readCount > 0)
 	                bao.write(readBuffer, 0, readCount); // Write the data to the output stream
 			} catch (DataFormatException e) {
-				System.out.println("Decompression Error Occured");
+				m.printMessage(this.className, "decompress", "TryCatch: Decompression Error Occured");
 			} 
-        } 
+        }
+        readBuffer = null;
 
         // End the decompressor  
+        m.printMessage(this.className, "decompress", "Ending decompressor...");
         decompressor.end(); 
+        
         // Return the written bytes from the output stream  
+        m.printMessage(this.className, "decompress", "Returning decompressed byte[]...");
         return bao.toByteArray(); 
     } 
 }

@@ -2,6 +2,7 @@ package mains;
 
 import data.*;
 import gui.GUI;
+import utils.Monitor;
 
 import java.awt.event.*;
 /**
@@ -13,6 +14,9 @@ import java.awt.event.*;
  *
  */
 public class Controller implements ActionListener {
+	private Monitor m = new Monitor(true);
+	private final String className = "Controller";
+	
 	private GUI gui;
 	
 	public Controller(GUI g) {
@@ -22,7 +26,7 @@ public class Controller implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println(e.getActionCommand());
+		m.printMessage(this.className, "actionPerformed(e)", e.getActionCommand());
 		/**
 		 * You can just check 
 		 * 	if(e.getActionCommand() == {foo.action}){
