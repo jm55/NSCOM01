@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 Sealed: true
-Main-Class: mains.Test_Driver
+Main-Class: mains.Driver
 

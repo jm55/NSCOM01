@@ -10,7 +10,7 @@ public class Test_Driver {
 		m = new Monitor();
     	m.setState(true);
 		if(args.length == 1)
-			if(args[0].equals("-a") || args[0].equals("--automatic"))
+			if(args[0].equals("-A") || args[0].equals("--automatic"))
 				Test_Driver.automated = true;
 		Test_Suite();
 		System.exit(0);
