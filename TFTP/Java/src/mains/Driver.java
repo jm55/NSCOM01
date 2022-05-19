@@ -6,10 +6,19 @@ import gui.*;
 public class Driver {
 	private static GUI g;
 	private static Controller c;
-	private static final boolean testMode = true;
+	private static final boolean testMode = false;
     public static void main(String[] args){
     	Test_Suite();
+    	Production();
     	//System.exit(0);
+    }
+    
+    public static void Production() {
+    	g = new GUI();
+		c = new Controller(g);
+		
+		g.setDefaultDisplay();
+    	g.updateConnectBtn(false);
     }
     
     public static void Test_Suite() {

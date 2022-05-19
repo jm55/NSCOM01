@@ -118,16 +118,14 @@ public class GUI extends JFrame{
 			connectBtn.setText("Connect");
 	}
 	
-	
 	/**
 	 * Shows a simple pop-up message using the given parameters.
-	 * @param c Parent Component of the pop-up
 	 * @param message Message of the pop-up
 	 * @param title Title of the pop-up
 	 * @param type Type of message, e.g. JOptionPane.PLAIN_MESSAGE, JOptionPane.ERROR_MESSAGE,etc.
 	 */
-	public void popMessage(Component c, String message, String title, int type) {
-		JOptionPane.showMessageDialog(c, message, WindowTitle, type);
+	public void popDialog(String message, String title, int type) {
+		JOptionPane.showMessageDialog(this, message, WindowTitle, type);
 	}
 	
 	/**
@@ -136,7 +134,16 @@ public class GUI extends JFrame{
 	 * @return User entry to input dialog.
 	 */
 	public String inputDialog(String message) {
-		return JOptionPane.showInputDialog(message);
+		return JOptionPane.showInputDialog(this, message);
+	}
+	
+	/**
+	 * Brings up a dialog with the options Yes, No and Cancel; with thetitle, Select an Option.
+	 * @param message
+	 * @return
+	 */
+	public int confirmDialog(String message) {
+		return JOptionPane.showConfirmDialog(this, message);
 	}
 	
 	/**
@@ -178,12 +185,6 @@ public class GUI extends JFrame{
 	 */
 	public void setOutputText(String text) {
 		outputArea.setText(text);
-	}
-	
-	public int saveAs() {
-		String[] saveOptions = {"Text File", "CSV File", "Cancel"};
-		return JOptionPane.showOptionDialog(null, "Save file as: ", "Save as", JOptionPane.DEFAULT_OPTION, 
-				JOptionPane.INFORMATION_MESSAGE, null, saveOptions, saveOptions[0]);
 	}
 	
 	/**

@@ -5,6 +5,8 @@ import gui.GUI;
 import utils.Monitor;
 
 import java.awt.event.*;
+
+import javax.swing.JOptionPane;
 /**
  * GUI Controller for the program.
  * 
@@ -26,16 +28,33 @@ public class Controller implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		m.printMessage(this.className, "actionPerformed(e)", e.getActionCommand());
-		/**
-		 * You can just check 
-		 * 	if(e.getActionCommand() == {foo.action}){
-		 *		foo();
-		 * 	}
-		 * 
-		 * 	if(e.getActionCommand() == {bar.action}){
-		 *		bar();
-		 * 	}
-		 */
+		String act = e.getActionCommand();
+		
+		m.printMessage(this.className, "actionPerformed(e)", act);
+		
+		if(act.equals("ServerConnection")) {
+			
+		}
+		
+		if(act.equals("OpenFile")) {
+			
+		}
+		
+		if(act.equals("SendFile")) {
+			
+		}
+		
+		if(act.equals("AboutProgram")) {
+			
+		}
+		
+		if(act.equals("Reset")) {
+			
+		}
+		
+		if(act.equals("EndProgram")) {
+			if(this.gui.confirmDialog("Exit Program?") == JOptionPane.YES_OPTION)
+				System.exit(0);
+		}
 	}
 }
