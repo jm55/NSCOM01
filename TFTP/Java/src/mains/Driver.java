@@ -8,12 +8,14 @@ public class Driver {
 	private static Controller c;
 	
     public static void main(String[] args){
-    	//new Test_FileByte();
-        //new Test_Hasher();
-    	
-    	new Test_GUI();
-    	
+    	Test_Suite();
     	//System.exit(0);
     }
     
+    public static void Test_Suite() {
+    	//new Test_FileByte();
+        //new Test_Hasher();
+    	//new Test_GUI();
+    	new Test_FileCompression();
+    }
 }

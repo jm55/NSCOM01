@@ -2,6 +2,9 @@ package gui;
 
 import javax.swing.*;
 import javax.swing.BorderFactory;
+
+import mains.Controller;
+
 import java.awt.*;
 import java.awt.event.*;
 

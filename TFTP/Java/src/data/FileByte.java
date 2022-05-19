@@ -21,7 +21,7 @@ public class FileByte {
 	byte[] bytes = null;
 	
 	public FileByte(){
-        System.out.println("FileByte");
+		//
     }
 	
 	public FileByte(File f) {

@@ -8,6 +8,7 @@ import utils.Monitor;
 public class Test_Hasher {
 	Hasher hs;
 	public Test_Hasher() {
+		System.out.println("===Test_Hasher===");
 		hs = new Hasher();
 		//testHash();
 		//testCompareHash();

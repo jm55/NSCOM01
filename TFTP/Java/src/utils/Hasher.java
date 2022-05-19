@@ -72,7 +72,7 @@ public class Hasher {
 	
 	/**
 	 * Delegates computation of hash given byte[] and algorithm.
-	 * Invalid algorithm results to default use of SHA-256.
+	 * Invalid or null algorithm parameter defaults to use of SHA-256.
 	 * Algorithms allowed: MD2, MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512
 	 * @param byteA byte[] of A
 	 * @param algorithm Specifies the algorithm to be used.
@@ -82,14 +82,17 @@ public class Hasher {
 		String[] allowedAlgorithms = {"MD2", "MD5","SHA-1","SHA-224","SHA-256","SHA-384","SHA-512"};
 		boolean validAlgorithm = false;
 		String out = "";
-		for(String a: allowedAlgorithms) {
-			if(algorithm.toUpperCase().equals(a)) {
-				validAlgorithm = true;
-				out = performHash(bytes, algorithm);
+		if(algorithm != null) {
+			for(String a: allowedAlgorithms) {
+				if(algorithm.toUpperCase().equals(a)) {
+					validAlgorithm = true;
+					out = performHash(bytes, algorithm);
+				}
 			}
-		}
-		if(!validAlgorithm)
-			out = performHash(bytes, "SHA-256"); //Defaults to SHA-256 if invalid algorithm was given.
+			if(!validAlgorithm)
+				out = performHash(bytes, "SHA-256"); //Defaults to SHA-256 if invalid algorithm was given.
+		}else
+			out = performHash(bytes, "SHA-256");
 		return out;
 	}
 	

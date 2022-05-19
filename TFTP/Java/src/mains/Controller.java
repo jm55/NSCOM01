@@ -1,10 +1,9 @@
-package gui;
+package mains;
 
 import data.*;
+import gui.GUI;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import javax.swing.JOptionPane;
 /**
  * GUI Controller for the program.
  * 

@@ -18,7 +18,7 @@ public class Test_FileByte {
     static Scanner scan;
     
     public Test_FileByte(){
-        System.out.println("Driver_FileByte");
+    	System.out.println("===Test_FileByte===");
         scan = new Scanner(System.in);
         
         fb = new FileByte();

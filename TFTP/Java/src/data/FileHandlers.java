@@ -17,11 +17,18 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 public class FileHandlers {
-	File f;
+	private File f;
 	
 	public FileHandlers() {
-		System.out.println("FileHandlers");
 		this.f = null;
+	}
+	
+	/**
+	 * Returns this File object.
+	 * @return File set for FileHandlers.
+	 */
+	public File getFile() {
+		return this.f;
 	}
 	
 	/**
@@ -70,7 +77,8 @@ public class FileHandlers {
     }
     
     /**
-	 * Opens and returns a File object specified by user through through JFileChooser
+	 * Opens and returns a File object specified by user through through JFileChooser.
+	 * It also sets FileHandlers File object.
 	 * @return File opened or null if it fails.
 	 */
 	public File openFile() {
