@@ -8,7 +8,7 @@ public class Test_Driver {
 	private static Monitor m;
 	public static void main(String[] args) {
 		m = new Monitor();
-    	m.setState(false);
+    	m.setState(true);
 		if(args.length == 1)
 			if(args[0].equals("-a") || args[0].equals("--automatic"))
 				Test_Driver.automated = true;

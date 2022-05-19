@@ -8,7 +8,7 @@ public class Monitor {
 	private DateTimeFormatter datetimeFormat;
 	
 	public Monitor() {
-		this.state = state;
+		this.state = false; //Defaults to false
 		datetimeFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	}
 	public void setState(boolean state) {
