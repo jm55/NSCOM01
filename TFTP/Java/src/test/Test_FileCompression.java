@@ -16,11 +16,13 @@ public class Test_FileCompression {
 		//Perform Send()
 		System.out.println("PERFORMING SEND:");
 		ArrayList<byte[]> packets = sender();
+		System.gc();
 		
 		//Perform Receive();
 		System.out.println("PERFORMING RECEIVE:");
 		receive(packets);
-		packets = null;
+		packets = new ArrayList<byte[]>(0);
+		System.gc();
 		
 		//Confirmation: Check if hashes match
 		System.out.println("CONFIRMATION:");
@@ -38,6 +40,7 @@ public class Test_FileCompression {
 		//Get FileBytes
 		System.out.println("Creating byte[]...");
 		FileByte fb = new FileByte(fh.getFile());
+		fh = null;
 		
 		//Check Hash
 		System.out.println("Computing hashA...");
@@ -65,5 +68,6 @@ public class Test_FileCompression {
 		//Save byte[] as File
 		System.out.println("Saving file...");
 		new FileHandlers().saveFile(receivedBytes);
+		receivedBytes = null;
 	}
 }

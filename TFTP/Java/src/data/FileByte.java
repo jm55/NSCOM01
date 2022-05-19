@@ -20,12 +20,12 @@ import java.util.*;
 import utils.*;
 
 public class FileByte {
-	private byte[] bytes = null;
+	private byte[] bytes;
 	private Monitor m = new Monitor(true);
 	private final String className = "FileByte";
 	
 	public FileByte(){
-		//
+		this.bytes = new byte[0];
     }
 	
 	public FileByte(File f) {
@@ -185,7 +185,7 @@ public class FileByte {
         compilation.add(scratch); //Add last scratch
         compilation.add(getTerminatingByte()); //TERMINATING BYTE (any payload of less than 512 for TFTP)
         
-        scratch = null;
+        filebytes = scratch = new byte[0];
         m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Returning split...");
         return compilation;
     }
@@ -209,6 +209,13 @@ public class FileByte {
             return false;
         }
     }
+    
+    /**
+     * Clears byte[] of object.
+     */
+    public void clearBytes() {
+    	this.bytes = new byte[0];
+    }
 
     /**
      * Reassembles collection as byte[], sets it as object's byte[], and returns it.
@@ -218,6 +225,10 @@ public class FileByte {
     public byte[] reassembleBytes(ArrayList<byte[]> collection) {
     	m.printMessage(this.className, "reassembleBytes(collection)", "Reassembling collection to this.bytes...");
     	this.bytes = directReassembleBytes(collection);
+    	
+    	System.gc();
+    	collection = null;
+    	
     	return this.bytes;
     }
     
@@ -244,7 +255,10 @@ public class FileByte {
                 }
             }
         }
+        
         collection = null;
+        System.gc();
+        
         m.printMessage(this.className, "reassembleBytes(collection)", "Returning is reassebmled bytes...");
         return receiveCompile;
     }

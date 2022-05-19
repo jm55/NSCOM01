@@ -6,23 +6,24 @@ import gui.*;
 public class Driver {
 	private static GUI g;
 	private static Controller c;
-	private static final boolean testMode = false;
+	private static final boolean testMode = true;
     public static void main(String[] args){
-    	Test_Suite();
-    	Production();
+    	if(testMode)
+    		Test_Suite();
+    	else
+    		Production();
     	//System.exit(0);
     }
     
     public static void Production() {
-    	g = new GUI();
-		c = new Controller(g);
-		
-		g.setDefaultDisplay();
-    	g.updateConnectBtn(false);
+    		g = new GUI();
+    		c = new Controller(g);
+    		
+    		g.setDefaultDisplay();
+        	g.updateConnectBtn(false);
     }
     
     public static void Test_Suite() {
-    	if(testMode) {
     		System.out.println("=================");
     		System.out.println("    TEST MODE    ");
     		System.out.println("=================");
@@ -32,6 +33,5 @@ public class Driver {
         	new Test_Hasher();
         	new Test_FileCompression();
         	new Test_GUI();
-    	}
     }
 }

@@ -53,8 +53,10 @@ public class Controller implements ActionListener {
 		}
 		
 		if(act.equals("EndProgram")) {
-			if(this.gui.confirmDialog("Exit Program?") == JOptionPane.YES_OPTION)
+			if(this.gui.confirmDialog("Exit Program?") == JOptionPane.YES_OPTION) {
+				m.printMessage(this.className, "actionPerformed(e) > EndProgram", "Exiting program...");
 				System.exit(0);
+			}
 		}
 	}
 }

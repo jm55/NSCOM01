@@ -50,6 +50,7 @@ public class Compression {
         m.printMessage(this.className, "compress", "Ending compressor...");
         compressor.end(); 
 
+        System.gc();
         
         // Return the written bytes from output stream  
         m.printMessage(this.className, "compress", "Returning compressed byte[]...");
@@ -63,7 +64,7 @@ public class Compression {
         // Set the input for the decompressor
         m.printMessage(this.className, "decompress", "Setting decompressor...");
         decompressor.setInput(input); 
-        input = null;
+        input = new byte[0];
 
         // Decompress data  
         m.printMessage(this.className, "decompress", "Preparing bao...");
@@ -81,11 +82,13 @@ public class Compression {
 				m.printMessage(this.className, "decompress", "TryCatch: Decompression Error Occured");
 			} 
         }
-        readBuffer = null;
+        readBuffer = new byte[0];
 
         // End the decompressor  
         m.printMessage(this.className, "decompress", "Ending decompressor...");
-        decompressor.end(); 
+        decompressor.end();
+        
+        System.gc();
         
         // Return the written bytes from the output stream  
         m.printMessage(this.className, "decompress", "Returning decompressed byte[]...");

@@ -182,6 +182,7 @@ public class FileHandlers {
     		file = new File(file.toString() + extension);
     	}
     	
+    	boolean state = false;
         try {
             if(!file.exists()) {
             	m.printMessage(this.className, "writeFile(filebytes,file,extension)", "file does not exist, Creating new file...");
@@ -191,11 +192,12 @@ public class FileHandlers {
             Files.write(file.toPath(), filebytes);
             filebytes = null;
             this.f = file;
-            return true;
+            state = true;
         } catch (IOException e) {
         	m.printMessage(this.className, "writeFile(filebytes,file,extension)", "TryCatch: Error occured while writing file.");
         	filebytes = null;
-            return false;
         }
+        System.gc();
+        return state;
     }
 }

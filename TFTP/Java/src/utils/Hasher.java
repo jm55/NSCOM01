@@ -109,19 +109,28 @@ public class Hasher {
 				out = performHash(bytes, "SHA-256"); //Defaults to SHA-256 if invalid algorithm was given.
 		}else
 			out = performHash(bytes, "SHA-256");
+		
+		bytes = null;
+		System.gc();
+		
 		return out;
 	}
 	
 	private String performHash(byte[] bytes, String algorithm) {
 		m.printMessage(this.className, "performHash(bytes,algorithm)", "Hashing...");
 		MessageDigest md;
+		String hash = null;
 		try {
 			md = MessageDigest.getInstance(algorithm);
-			return hashHex(md.digest(bytes));
+			hash = hashHex(md.digest(bytes));
 		} catch (NoSuchAlgorithmException e) {
 			m.printMessage(this.className, "performHash(bytes,algorithm)", "TryCatch: Specified hashing algorithm is invalid.");
-			return null;
 		}
+		
+		System.gc();
+		bytes = null;
+		
+		return hash;
 	}
 	
 	private String hashHex(byte[] hash) {
@@ -134,6 +143,10 @@ public class Hasher {
         while (hexString.length() < 64)
         	hexString.insert(0, '0');
         m.printMessage(this.className, "hashHex(hash)", "Returning hashHex...");
+        
+        hash = null;
+        System.gc();
+        
         return hexString.toString();
 	}
 	

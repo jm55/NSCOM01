@@ -8,5 +8,6 @@ public class Test_FileHandlers {
 		fh.openFile();
 		System.out.println("Checking getFileExt(): " + fh.getFileExt() + ", " + fh.getFileExt(fh.getFile()) + ", " + fh.getFileExt(fh.getFile().getAbsolutePath()));
 		fh = null;
+		System.gc();
 	}
 }
