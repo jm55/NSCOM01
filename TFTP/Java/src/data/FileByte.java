@@ -21,7 +21,7 @@ import utils.*;
 
 public class FileByte {
 	private byte[] bytes;
-	private Monitor m = new Monitor(true);
+	private Monitor m = new Monitor();
 	private final String className = "FileByte";
 	
 	public FileByte(){
@@ -96,6 +96,28 @@ public class FileByte {
     }
 
     /**
+     * Get raw contents of byte[] of this.
+     * @return Raw string of byte[] contents.
+     */
+    public String getRawContents() {
+    	if(bytes == null)
+    		return null;
+    	return getRawContents(this.bytes);
+    }
+    
+    /**
+     * Get raw contents of byte[] specified.
+     * @param bytes byte[] to retrieve raw contents from.
+     * @return Raw content of byte[] provided.
+     */
+    public String getRawContents(byte[] bytes) {
+    	String out = "";
+    	for(byte b: bytes)
+    		out += b;
+    	return out;
+    }
+    
+    /**
      * Prints the raw contents of the byte[] held by this object.
      */
     public void printRawContents(){
@@ -142,9 +164,9 @@ public class FileByte {
      * @param limit byte[] size limit of each chunk split.
      * @return ArrayList byte[] of the split byte[] of this.
      */
-    public ArrayList<byte[]> splitByBytes(int limit){
-    	m.printMessage(this.className, "splitByBytes(limit)", "Spliting this.bytes @ " + limit + "...");
-    	return splitByBytes(this.bytes, limit);
+    public ArrayList<byte[]> disassembleBytes(int limit){
+    	m.printMessage(this.className, "disassembleBytes(limit)", "Disassembling this.bytes @ " + limit + "...");
+    	return disassembleBytes(this.bytes, limit);
     }
 
     /**
@@ -153,20 +175,20 @@ public class FileByte {
      * @param limit byte[] size limit of each chunk split.
      * @return ArrayList byte[] of the split filebytes[].
      */
-    public ArrayList<byte[]> splitByBytes(byte[] filebytes, int limit){
-    	m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Spliting filebytes @ " + limit + "...");
+    public ArrayList<byte[]> disassembleBytes(byte[] filebytes, int limit){
+    	m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Disassembling filebytes @ " + limit + "...");
         ArrayList<byte[]> compilation = new ArrayList<byte[]>();
         int l = 0;
         byte[] scratch = new byte[limit]; //assumes size of each chunk will reach limit
         
-        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Checking if filebytes.length is < " + limit + "...");
+        m.printMessage(this.className, "disassembleBytes(filebytes, limit)", "Checking if filebytes.length is < " + limit + "...");
         if(filebytes.length < limit){ //check if size of filebytes < limit
-        	m.printMessage(this.className, "splitByBytes(filebytes, limit)", "filebytes.length <" + limit + "...");
+        	m.printMessage(this.className, "disassembleBytes(filebytes, limit)", "filebytes.length <" + limit + "...");
         	scratch = new byte[filebytes.length]; //set scratch to be of size filebytes[]
         }
         
         //run through every bit of filebytes and split according to chunk limit
-        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Spliting filebytes...");
+        m.printMessage(this.className, "disassembleBytes(filebytes, limit)", "Spliting filebytes...");
         for(int i = 0; i < filebytes.length; i++){
             scratch[l] = filebytes[i];
             l++;
@@ -181,12 +203,12 @@ public class FileByte {
             }
         }
 
-        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Finalizing split...");
+        m.printMessage(this.className, "disassembleBytes(filebytes, limit)", "Finalizing disassembly...");
         compilation.add(scratch); //Add last scratch
         compilation.add(getTerminatingByte()); //TERMINATING BYTE (any payload of less than 512 for TFTP)
         
         filebytes = scratch = new byte[0];
-        m.printMessage(this.className, "splitByBytes(filebytes, limit)", "Returning split...");
+        m.printMessage(this.className, "disassembleBytes(filebytes, limit)", "Returning disassembleBytes...");
         return compilation;
     }
 
@@ -196,7 +218,7 @@ public class FileByte {
      * @param sample byte[] to be sampled.
      * @return True if equal to terminating byte[], false if otherwise.
      */
-    public boolean isTerminating(byte[] sample){
+    private boolean isTerminating(byte[] sample){
         byte[] t = getTerminatingByte();
         //m.printMessage(this.className, "isTerminating(sample)", "Checking if terminating...");
         if(sample.length  == t.length){
@@ -238,9 +260,13 @@ public class FileByte {
      * @return byte[] of collection.
      */
     public byte[] directReassembleBytes(ArrayList<byte[]> collection){
-    	m.printMessage(this.className, "reassembleBytes(collection)", "Reassembling collection...");
-        if(collection.size() == 0 || collection == null) {
-        	m.printMessage(this.className, "reassembleBytes(collection)", "collection is null...");
+    	m.printMessage(this.className, "directReassembleBytes(collection)", "Reassembling collection...");
+        if(collection == null) {
+        	m.printMessage(this.className, "directReassembleBytes(collection)", "collection is null...");
+        	return null;
+        }
+        if(collection.size() == 0) {
+        	m.printMessage(this.className, "directReassembleBytes(collection)", "collection has size 0...");
         	return null;
         }
         int totalPacketSize = 0, ctr = 0;
@@ -259,7 +285,7 @@ public class FileByte {
         collection = null;
         System.gc();
         
-        m.printMessage(this.className, "reassembleBytes(collection)", "Returning is reassebmled bytes...");
+        m.printMessage(this.className, "directReassembleBytes(collection)", "Returning is reassebmled bytes...");
         return receiveCompile;
     }
 

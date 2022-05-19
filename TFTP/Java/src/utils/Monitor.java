@@ -4,12 +4,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Monitor {
-	private boolean state;
+	private static boolean state;
 	private DateTimeFormatter datetimeFormat;
 	
-	public Monitor(boolean state) {
+	public Monitor() {
 		this.state = state;
 		datetimeFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	}
+	public void setState(boolean state) {
+		Monitor.state = state;
 	}
 	public void printMessage(String className, String methodName, String text) {
 		if(state)

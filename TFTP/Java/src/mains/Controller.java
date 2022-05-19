@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  *
  */
 public class Controller implements ActionListener {
-	private Monitor m = new Monitor(true);
+	private Monitor m = new Monitor();
 	private final String className = "Controller";
 	
 	private GUI gui;

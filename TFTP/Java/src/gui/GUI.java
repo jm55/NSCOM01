@@ -18,7 +18,7 @@ import java.awt.event.*;
  *
  */
 public class GUI extends JFrame{
-	private Monitor m = new Monitor(true);
+	private Monitor m = new Monitor();
 	private final String className = "GUI";
 	
 	//PRIVATE GLOBAL VALUES

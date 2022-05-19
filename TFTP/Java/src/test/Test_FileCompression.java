@@ -52,7 +52,7 @@ public class Test_FileCompression {
 		
 		//Return Split/Disassembled 'Packets'
 		System.out.println("Disassembling byte[] to 'packets'...");
-		return fb.splitByBytes(512);
+		return fb.disassembleBytes(512);
 	}
 	
 	private void receive(ArrayList<byte[]> packets) {

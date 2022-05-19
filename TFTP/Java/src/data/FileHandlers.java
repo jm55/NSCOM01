@@ -20,11 +20,19 @@ import utils.Monitor;
 
 public class FileHandlers {
 	private File f;
-	private Monitor m = new Monitor(true);
+	private Monitor m = new Monitor();
 	private final String className = "FileHandlers";
 	
 	public FileHandlers() {
 		this.f = null;
+	}
+	
+	public FileHandlers(File f) {
+		this.f = f;
+	}
+	
+	public FileHandlers(String path) {
+		this.f = new File(path);
 	}
 	
 	/**
@@ -123,6 +131,15 @@ public class FileHandlers {
     public boolean saveFile(byte[] filebytes) {
     	m.printMessage(this.className, "saveFile(filebytes)", "Saving filebytes as file (null extension)...");
     	return saveFile(filebytes, null);
+    }
+    
+    /**
+     * Save file of this at extension.
+     * @param extension Extension of the file
+     * @return True if saving file is successful or not.
+     */
+    public boolean saveFile(String extension) {
+    	return saveFile(new FileByte().getBytesFromFile(this.f), extension);
     }
     
     public boolean saveFile(byte[] filebytes, String extension){

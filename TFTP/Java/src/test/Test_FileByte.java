@@ -78,7 +78,7 @@ public class Test_FileByte {
     	
     	
     	System.out.println("Splitting file...");
-        ArrayList<byte[]> split = fb.splitByBytes(512);
+        ArrayList<byte[]> split = fb.disassembleBytes(512);
         
         //Simulate writing collected byte[] into machine
         System.out.println("Reassembling file...");

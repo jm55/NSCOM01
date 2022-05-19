@@ -17,7 +17,7 @@ import java.io.File;
  *
  */
 public class Hasher {
-	private Monitor m = new Monitor(true);
+	private Monitor m = new Monitor();
 	private final String className = "Hasher";
 	
 	/**

@@ -12,7 +12,7 @@ import java.util.zip.*;
  */
 
 public class Compression {
-	private Monitor m = new Monitor(true);
+	private Monitor m = new Monitor();
 	private final String className = "Compression";
 	/**
 	 * Compresses the given byte[]
