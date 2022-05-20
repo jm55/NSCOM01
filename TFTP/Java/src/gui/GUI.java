@@ -25,14 +25,14 @@ public class GUI extends JFrame{
 	private boolean debug = false;
 	private final int WIDTH = 1024, HEIGHT = 620;
 	private final int BTNWIDTH = 256, BTNHEIGHT = 50;
-	private String WindowTitle = "NSCOM01 - TFTP";
-	private String typeFace = "Helvetica";
+	private final String WindowTitle = "NSCOM01 - TFTP";
+	private final String typeFace = "Arial", consoleFace = "Consolas";
 	private ActionListener listener;
-	private JLabel titleLabel, serverIPLabel, serverPortLabel, outputLabel;
-	private JTextField serverIPField, serverPortField;
+	private JLabel titleLabel, serverIPLabel, serverPortLabel, consoleLabel, selectedFileLabel;
+	private JTextField serverIPField, serverPortField, selectedFileField;
 	private JTextArea outputArea;
 	private JScrollPane outputScroll;
-	private JCheckBox csvCheckBox;
+	private JCheckBox P2PCheckBox;
 	private JButton connectBtn, openFileBtn, sendFileBtn, resetBtn, aboutBtn, exitBtn;
 	
 	/**
@@ -44,6 +44,20 @@ public class GUI extends JFrame{
 		setTitle(WindowTitle);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
+		
+		testMode();
+	}
+	
+	/**
+	 * Constructor that builds the window with setVisible parameter.
+	 * @param setVisible True if window will be set to be visible, false if otherwise.
+	 */
+	public GUI(boolean setVisible) {
+		setSize(WIDTH, HEIGHT);
+		setResizable(false);
+		setTitle(WindowTitle);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setVisible(setVisible);
 		
 		testMode();
 	}
@@ -61,53 +75,7 @@ public class GUI extends JFrame{
 	 * Builds the default JPanel build of the program.
 	 */
 	public void setDefaultDisplay() {
-		m.printMessage(this.className, "setDefaultDisplay()", "Setting DefaultDisplay...");
-		JPanel panel = new JPanel();
-		panel.setLayout(null);
-		
-		//LABELS
-		m.printMessage(this.className, "setDefaultDisplay()", "Setting Labels...");
-		titleLabel = createLabel(WindowTitle, newFont(Font.BOLD, 24), WIDTH/2-200,24,400,32, SwingConstants.CENTER, SwingConstants.TOP);
-		panel.add(titleLabel);
-		serverIPLabel = createLabel("Server IP:", newFont(Font.BOLD, 16),32,64*1,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
-		panel.add(serverIPLabel);
-		serverPortLabel = createLabel("Server Port:", newFont(Font.BOLD, 16),32,64*2,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
-		panel.add(serverPortLabel);
-		outputLabel = createLabel("Console:", newFont(Font.BOLD, 16),256+64,64,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
-		panel.add(outputLabel);
-		
-		//INPUT/OUTPUT FIELDS/AREAS
-		m.printMessage(this.className, "setDefaultDisplay()", "Setting I/O Fields...");
-		serverIPField = createTextField(newFont(Font.PLAIN, 12),32,(64*1)+32,256,32);
-		panel.add(serverIPField);
-		serverPortField = createTextField(newFont(Font.PLAIN, 12),32,(64*2)+32,256,32);
-		panel.add(serverPortField);
-		outputArea = createTextArea(newFont("Consolas",Font.PLAIN, 16),256+64,64+32,656,400,false);
-		outputScroll = createScrollPane(outputArea);
-		outputArea.setText("Console Log");
-		panel.add(outputScroll);
-		
-		//CHECKBOX
-		//csvCheckBox = createCheckBox("Comma Separated", newFont(Font.BOLD, 16),32,64*2,256,32,false);
-		//panel.add(csvCheckBox);
-		
-		//BUTTONS
-		m.printMessage(this.className, "setDefaultDisplay()", "Setting Buttons...");
-		connectBtn = createButton("", newFont(Font.BOLD,16),32,(64*4),this.BTNWIDTH,50,listener,"ServerConnection");
-		panel.add(connectBtn);
-		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"OpenFile");
-		panel.add(openFileBtn);
-		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"SendFile");
-		panel.add(sendFileBtn);
-		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(64*7),this.BTNWIDTH,50,listener,"AboutProgram");
-		panel.add(aboutBtn);
-		resetBtn = createButton("Reset",newFont(Font.BOLD,16),this.WIDTH-(this.BTNWIDTH*2)-(2*48),(64*8),this.BTNWIDTH,50,listener,"Reset");
-		panel.add(resetBtn);
-		exitBtn = createButton("Exit",newFont(Font.BOLD,16),this.WIDTH-this.BTNWIDTH-48,(64*8),this.BTNWIDTH,50,listener,"EndProgram");
-		panel.add(exitBtn);
-		
-		add(panel);
-		revalidate();
+		buildDisplayContents();
 	}
 	
 	public void updateConnectBtn(boolean connected) {
@@ -172,11 +140,35 @@ public class GUI extends JFrame{
 	}
 	
 	/**
+	 * Set text from selectedFileField
+	 * @param text Text to set for selectedFileField
+	 */
+	public void setSelectedFileText(String text) {
+		selectedFileField.setText(text);
+	}
+	
+	/**
+	 * Get text from selectedFileField
+	 * @return Text from selectedFileField
+	 */
+	public String getSelectedFileText() {
+		return selectedFileField.getText();
+	}
+	
+	/**
 	 * Returns if input is comma separated
 	 * @return True if input is comma separated, false otherwise.
 	 */
-	public boolean isCSV() {
-		return csvCheckBox.isSelected();
+	public boolean isP2P() {
+		return P2PCheckBox.isSelected();
+	}
+	
+	/**
+	 * Appends the contents of GUI console with contents of text in newline.
+	 * @param text Text to be appended in new line.
+	 */
+	public void appendOutputText(String text) {
+		outputArea.setText(getOutputText() + "\n" + text);
 	}
 	
 	/**
@@ -192,6 +184,7 @@ public class GUI extends JFrame{
 	 */
 	public void clearIO() {
 		setOutputText("");
+		selectedFileField.setText("");
 		serverIPField.setText("");
 		serverPortField.setText("");
 	}
@@ -204,7 +197,80 @@ public class GUI extends JFrame{
 		return outputArea.getText();
 	}
 	
+	/**
+	 * Hide GUI
+	 * @return Returns hidden state of GUI, false if not hidden.
+	 */
+	public boolean hideGUI() {
+		setVisible(false);
+		return !isVisible();
+	}
+	
+	/**
+	 * Show GUI
+	 * @return Returns visible state of GUI, false if not visible.
+	 */
+	public boolean showGUI() {
+		setVisible(true);
+		return isVisible();
+	}
+	
 	//PRIVATE METHODS
+	
+	private void buildDisplayContents(){
+		m.printMessage(this.className, "buildDisplayContents()", "Setting DefaultDisplay...");
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		
+		//LABELS
+		m.printMessage(this.className, "buildDisplayContents()", "Setting Labels...");
+		titleLabel = createLabel(WindowTitle, newFont(Font.BOLD, 24), WIDTH/2-200,24,400,32, SwingConstants.CENTER, SwingConstants.TOP);
+		panel.add(titleLabel);
+		serverIPLabel = createLabel("Server IP:", newFont(Font.BOLD, 16),32,64*1,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(serverIPLabel);
+		serverPortLabel = createLabel("Server Port:", newFont(Font.BOLD, 16),32,64*2,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(serverPortLabel);
+		consoleLabel = createLabel("Console:", newFont(Font.BOLD, 16),256+64,64*4,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(consoleLabel);
+		selectedFileLabel = createLabel("Selected File:", newFont(Font.BOLD, 16),256+64,64*1,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(selectedFileLabel);
+		
+		//INPUT/OUTPUT FIELDS/AREAS
+		m.printMessage(this.className, "buildDisplayContents()", "Setting I/O Fields...");
+		serverIPField = createTextField(newFont(Font.PLAIN, 12),32,(64*1)+32,256,32);
+		panel.add(serverIPField);
+		serverPortField = createTextField(newFont(Font.PLAIN, 12),32,(64*2)+32,256,32);
+		panel.add(serverPortField);
+		selectedFileField = createTextField(newFont(Font.PLAIN, 12),256+64,(64*1)+32,656,32);
+		selectedFileField.setEditable(false);
+		panel.add(selectedFileField);
+		outputArea = createTextArea(newFont(consoleFace,Font.PLAIN, 12),256+64,(64*4)+32,656,210,false);
+		outputScroll = createScrollPane(outputArea);
+		outputArea.setText("Console Log");
+		panel.add(outputScroll);
+		
+		//CHECKBOX
+		P2PCheckBox = createCheckBox("P2P Mode", newFont(Font.BOLD, 16),32,(64*3)+16,256,32,false);
+		panel.add(P2PCheckBox);
+		
+		//BUTTONS
+		m.printMessage(this.className, "buildDisplayContents()", "Setting Buttons...");
+		connectBtn = createButton("", newFont(Font.BOLD,16),32,(64*4),this.BTNWIDTH,50,listener,"ServerConnection");
+		panel.add(connectBtn);
+		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"OpenFile");
+		panel.add(openFileBtn);
+		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"SendFile");
+		panel.add(sendFileBtn);
+		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(64*7),this.BTNWIDTH,50,listener,"AboutProgram");
+		panel.add(aboutBtn);
+		resetBtn = createButton("Reset",newFont(Font.BOLD,16),this.WIDTH-(this.BTNWIDTH*2)-(2*48),(64*8),this.BTNWIDTH,50,listener,"Reset");
+		panel.add(resetBtn);
+		exitBtn = createButton("Exit",newFont(Font.BOLD,16),this.WIDTH-this.BTNWIDTH-48,(64*8),this.BTNWIDTH,50,listener,"EndProgram");
+		panel.add(exitBtn);
+		
+		add(panel);
+		revalidate();
+	}
 	
 	/**
 	 * Builds a Font object with the default typeFace.

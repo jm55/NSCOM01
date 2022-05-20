@@ -59,4 +59,8 @@ public class Controller implements ActionListener {
 			}
 		}
 	}
+	
+	private void printConsole(String message) {
+		this.gui.appendOutputText(m.getGUIConsoleMessage(message));
+	}
 }

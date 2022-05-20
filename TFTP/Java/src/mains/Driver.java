@@ -10,7 +10,10 @@ public class Driver {
 	private static Controller c;
     public static void main(String[] args){
     	m = new Monitor();
-    	m.setState(false);
+    	
+    	if(args.length == 1)
+			if(args[0].equals("-V") || args[0].equals("--verbose"))
+				m.setState(true);
     	
     	Production();
     	//System.exit(0);

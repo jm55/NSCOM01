@@ -17,7 +17,10 @@ public class Monitor {
 		if(state)
 			System.out.println("(" + dtNow()  + ") " + className + "." + methodName + ": " + text);
 	}
-	private String dtNow() {
+	public String getGUIConsoleMessage(String message){
+		return dtNow() + ": " + message;
+	}
+	public String dtNow() {
 		return datetimeFormat.format(LocalDateTime.now());
 	}
 }

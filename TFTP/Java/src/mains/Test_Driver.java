@@ -20,7 +20,6 @@ public class Test_Driver {
     	System.out.println("=================");
 		System.out.println("    TEST MODE    ");
 		System.out.println("=================");
-		System.out.println("Test Functions Last Updated: May 19, 2022");	
     	if(automated) {
     		new Automated_Test();	
     	}else{

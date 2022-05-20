@@ -4,52 +4,156 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Map;
 
 import data.*;
+import gui.GUI;
+import mains.Controller;
+import network.Client;
 import utils.*;
 
 public class Automated_Test {
 	private final String INPUT_DIR = ".\\resources\\files\\inputs\\", OUTPUT_DIR = ".\\resources\\files\\outputs\\"; 
-	private int score = 0, total = 0;
+	private double score = 0, total = 0;
 	private FileByte fb;
 	private FileHandlers fh;
 	private Compression c;
 	private Hasher h;
 	private Monitor m;
+	private Client client;
+	private GUI g;
+	private Controller ctrl;
 	private final String className = "Automated_Test";
+	
+	/**
+	 * Delegates automatic testing and scoring of results.
+	 */
 	public Automated_Test() {
 		m = new Monitor();
 		System.out.println("=============================");
 		System.out.println("      AUTOMATED TESTING");
+		System.out.println("     "+m.dtNow());
 		System.out.println("=============================");
 		ArrayList<TestResult> fb_result = TestFileByte();
 		ArrayList<TestResult> fh_result = TestFileHandlers();
 		ArrayList<TestResult> h_result = TestHasher();
 		ArrayList<TestResult> c_result = TestCompression();
-		
+		ArrayList<TestResult> client_result = TestClientNetwork();
+		ArrayList<TestResult> gui_result = TestGUI();
 		
 		System.out.println("=============================");
 		System.out.println("        TESTING RESULTS");
+		System.out.println("     "+m.dtNow());
 		System.out.println("=============================");
 		printTestResult(fb_result);
 		printTestResult(fh_result);
 		printTestResult(h_result);
 		printTestResult(c_result);
+		printTestResult(client_result);
+		printTestResult(gui_result);
+		
 		System.out.println("=============================");
 		System.out.println("        TESTING SCORE");
 		System.out.println("=============================");
-		System.out.println("Test Score: " + getScore() + "%");
+		System.out.println("Test Score: " + ((int)this.score + "/" + (int)this.total) + " = " + getScore() + "%");
 	}
 	
-	private ArrayList<TestResult> TestCompression(){
+	/**
+	 * Tests user-critical functionalities of GUI class.
+	 * @return TestResuts of tests done to GUI.
+	 */
+	private ArrayList<TestResult> TestGUI(){
 		ArrayList<TestResult> results = new ArrayList<TestResult>();
+		g = new GUI(false);
+		ctrl = new Controller(g);
+		g.setDefaultDisplay();
+		
+		//Show GUI
+		results.add(new TestResult("GUI[]: Show GUI",g.showGUI()));
+		
+		//Hide GUI
+		results.add(new TestResult("GUI[]: Hide GUI",g.hideGUI()));
+		
+		//Modify and Check Console Output
+		g.setOutputText(loremIpsum());
+		results.add(new TestResult("GUI[]: Modify and Check Console Output", g.getOutputText().equals(loremIpsum())));
+		
+		//Append Console Output
+		g.appendOutputText("THISISTEST");
+		results.add(new TestResult("GUI[]: Append Console Output", g.getOutputText().equals(loremIpsum()+"\nTHISISTEST")));
+		
+		//Clear IO of GUI
+		g.clearIO();
+		boolean ip = g.getServerConfigInput()[0].equals(""), port = g.getServerConfigInput()[1].equals(""),
+				fileselected = g.getSelectedFileText().equals(""), output = g.getOutputText().equals("");
+		boolean total = ip && port && fileselected && output;
+		results.add(new TestResult("GUI[]: Clear IO of GUI", total));
+		
+		g = null;
+		ctrl = null;
+		System.gc();
 		
 		return results;
 	}
 	
+	/**
+	 * Tests user-critical functionalities of Client (Network) class.
+	 * @return TestResuts of tests done to Client (Network).
+	 */
+	private ArrayList<TestResult> TestClientNetwork(){
+		String methodName = "TestClientNetwork()";
+		ArrayList<TestResult> results = new ArrayList<TestResult>();
+		
+		//Opening connection to localhost:655535
+		String address = "localhost";
+		int port = 65535;
+		client = new Client(address,port);
+		results.add(new TestResult("Client[]: Opening connection to localhost:655535", client.openConnection()));
+		
+		//Closing connection to localhost:655535
+		results.add(new TestResult("Client[]: Closing connection to localhost:655535", client.closeConnection()));
+		
+		return results;
+	}
+	
+	/**
+	 * Tests user-critical functionalities of Compression class.
+	 * @return TestResuts of tests done to Compression.
+	 */
+	private ArrayList<TestResult> TestCompression(){
+		String methodName = "TestCompression()";
+		ArrayList<TestResult> results = new ArrayList<TestResult>();
+		
+		System.gc();
+		
+		return results;
+	}
+	
+	/**
+	 * Tests user-critical functionalities of FileHandlers class.
+	 * @return TestResuts of tests done to FileHandlers.
+	 */
+	private ArrayList<TestResult> TestFileHandlers() {
+		String methodName = "TestFileHandlers()";
+		ArrayList<TestResult> results = new ArrayList<TestResult>();
+
+		fh = new FileHandlers();
+		
+		//Set file to fh and Write file (small file)
+		
+		//Set file to fh and Write file (large file)
+		
+		//Write file (largest file)
+		
+		System.gc();
+		
+		return results;
+	}
+	
+	/**
+	 * Tests user-critical functionalities of Hasher class.
+	 * @return TestResuts of tests done to Hasher.
+	 */
 	private ArrayList<TestResult> TestHasher(){
 		ArrayList<TestResult> results = new ArrayList<TestResult>();
 		
@@ -83,7 +187,7 @@ public class Automated_Test {
 			for(int i = 0; i < f.length; i++) {
 				if(f[i].exists()) {
 					byte[] bytes = new FileByte().getBytesFromFile(f[i]);
-					results.add(new TestResult<>("Hasher[]: Compute and checking hash of " + f[i].getName() + " (" + h.computeHash(bytes, null).substring(0,10) + "==" + hashes[i].substring(0,10) + ")",  h.compareHash(bytes, hashes[i])));
+					results.add(new TestResult("Hasher[]: Compute and checking hash of " + f[i].getName() + " (" + h.computeHash(bytes, null).substring(0,10) + "==" + hashes[i].substring(0,10) + ")",  h.compareHash(bytes, hashes[i])));
 				}
 			}
 		}
@@ -92,10 +196,10 @@ public class Automated_Test {
 		//Check if invalid hash algorithm was given
 		if(f[f.length-1].exists()) {
 			byte[] bytes = new FileByte().getBytesFromFile(f[f.length-1]);
-			results.add(new TestResult<>("Hasher[]: Check if invalid hash algorithm was given (result PASS since it reverts to SHA-256) " + f[f.length-1].getName() + " (" + h.computeHash(bytes, "HASH").substring(0,10) + "==" + hashes[hashes.length-1].substring(0,10) + ")",  h.compareHash(bytes, hashes[hashes.length-1])));
+			results.add(new TestResult("Hasher[]: Check if invalid hash algorithm was given (result PASS since it reverts to SHA-256) " + f[f.length-1].getName() + " (" + h.computeHash(bytes, "HASH").substring(0,10) + "==" + hashes[hashes.length-1].substring(0,10) + ")",  h.compareHash(bytes, hashes[hashes.length-1])));
 		}else {
 			byte[] bytes = new FileByte().getBytesFromFile(f[0]);
-			results.add(new TestResult<>("Hasher[]: Check if invalid hash algorithm was given (result PASS since it reverts to SHA-256) " + f[0].getName() + " (" + h.computeHash(bytes, "HASH").substring(0,10) + "==" + hashes[0].substring(0,10) + ")",  h.compareHash(bytes, hashes[0])));
+			results.add(new TestResult("Hasher[]: Check if invalid hash algorithm was given (result PASS since it reverts to SHA-256) " + f[0].getName() + " (" + h.computeHash(bytes, "HASH").substring(0,10) + "==" + hashes[0].substring(0,10) + ")",  h.compareHash(bytes, hashes[0])));
 		}
 		System.gc();
 		
@@ -103,25 +207,13 @@ public class Automated_Test {
 		//Check if intentional false mismatch
 		if(f[2].exists() && f[1].exists()) {
 			byte[] bytes = new FileByte().getBytesFromFile(f[2]);
-			results.add(new TestResult<>("Hasher[]: Check if intentional false mismatch " + f[2].getName() + " == " + f[1].getName(),  !h.compareHash(bytes, hashes[1])));
+			results.add(new TestResult("Hasher[]: Check if intentional false mismatch " + f[2].getName() + " == " + f[1].getName(),  !h.compareHash(bytes, hashes[1])));
 		}
+		
+		h = null;
 		System.gc();
 		
-		//results.add(new TestResult<>("FileByte[]: Check byte[] length and validate", fb.getBytes().length == loremIpsum().length()));
-		return results;
-	}
-	
-	private ArrayList<TestResult> TestFileHandlers() {
-		ArrayList<TestResult> results = new ArrayList<TestResult>();
-
-		fh = new FileHandlers();
-		
-		//Set file to fh and Write file (small file)
-		
-		//Set file to fh and Write file (large file)
-		
-		//Write file (largest file)
-		
+		//results.add(new TestResult("FileByte[]: Check byte[] length and validate", fb.getBytes().length == loremIpsum().length()));
 		return results;
 	}
 	
@@ -137,76 +229,76 @@ public class Automated_Test {
 		//Check byte[] length and validate
 		if(new File(getInputPath("LoremIpsum.txt")).exists()) {
 			fb = new FileByte(new File(getInputPath("LoremIpsum.txt")));
-			results.add(new TestResult<>("FileByte[]: Check byte[] length and validate", fb.getBytes().length == loremIpsum().length()));
+			results.add(new TestResult("FileByte[]: Check byte[] length and validate", fb.getBytes().length == loremIpsum().length()));
 		}
 			
 		//Check byte[] contents and validate
 		if(new File(getInputPath("LoremIpsum.txt")).exists()) {
 			fb = new FileByte(new File(getInputPath("LoremIpsum.txt")));
-			results.add(new TestResult<>("FileByte[]: Check byte[] contents and validate", compareBytes(fb.getBytes(), loremIpsum().getBytes())));
+			results.add(new TestResult("FileByte[]: Check byte[] contents and validate", compareBytes(fb.getBytes(), loremIpsum().getBytes())));
 		}
 		
 		//Check byte[] contents and validate via charset(UTF-8)
 		if(new File(getInputPath("LoremIpsum.txt")).exists()) {
 			fb = new FileByte(new File(getInputPath("LoremIpsum.txt")));
-			results.add(new TestResult<>("FileByte[]: Check byte[] contents and validate via charset(UTF-8)", fb.getCharsetContents(StandardCharsets.UTF_8).equals(loremIpsum())));
+			results.add(new TestResult("FileByte[]: Check byte[] contents and validate via charset(UTF-8)", fb.getCharsetContents(StandardCharsets.UTF_8).equals(loremIpsum())));
 		}
 		
 		//Check byte[] length on large PDF file
 		if(new File(getInputPath("LargePDF.pdf")).exists()) {
 			fb = new FileByte(new File(getInputPath("LargePDF.pdf")));
-			results.add(new TestResult<>("FileByte[]: Check byte[] length on large PDF file", fb.getBytes().length == 5456281));
+			results.add(new TestResult("FileByte[]: Check byte[] length on large PDF file", fb.getBytes().length == 5456281));
 		}
 		
 		//Check byte[] length on large MKV file
 		if(new File(getInputPath("LargeMKV.mkv")).exists()) {
 			fb = new FileByte(new File(getInputPath("LargeMKV.mkv")));
-			results.add(new TestResult<>("FileByte[]: Check byte[] length on large MKV file", fb.getBytes().length == 305828999));
+			results.add(new TestResult("FileByte[]: Check byte[] length on large MKV file", fb.getBytes().length == 305828999));
 		}
 		
 		//Check disassembleBytes and directReassembleBytes
 		if(new File(getInputPath("LARGEJPEG.jpg")).exists()) {
 			fb = new FileByte(new File(getInputPath("LARGEJPEG.jpg")));
-			results.add(new TestResult<>("FileByte[]: Check disassembleBytes and directReassembleBytes", compareBytes(fb.getBytes(), fb.directReassembleBytes(fb.disassembleBytes(512)))));
+			results.add(new TestResult("FileByte[]: Check disassembleBytes and directReassembleBytes", compareBytes(fb.getBytes(), fb.directReassembleBytes(fb.disassembleBytes(512)))));
 		}
 		
 		//Check disassembleBytes and directReassembleBytes as null
-		results.add(new TestResult<>("FileByte[]: Check disassembleBytes and directReassembleBytes as null", new FileByte().directReassembleBytes(null) == null));
+		results.add(new TestResult("FileByte[]: Check disassembleBytes and directReassembleBytes as null", new FileByte().directReassembleBytes(null) == null));
 		
 		//Check disassembleBytes and reassembleBytes
 		if(new File(getInputPath("LARGEJPEG.jpg")).exists()) {
 			fb = new FileByte(new File(getInputPath("LARGEJPEG.jpg")));
 			byte[] original =  fb.getBytes();
 			fb.reassembleBytes(fb.disassembleBytes(512));
-			results.add(new TestResult<>("FileByte[]: Check disassembleBytes and reassembleBytes", compareBytes(fb.getBytes(), original)));
+			results.add(new TestResult("FileByte[]: Check disassembleBytes and reassembleBytes", compareBytes(fb.getBytes(), original)));
 		}
 		
 		//Check disassembleBytes and reassembleBytes as null
-		results.add(new TestResult<>("FileByte[]: Check disassembleBytes and reassembleBytes as null", new FileByte().reassembleBytes(null) == null));
+		results.add(new TestResult("FileByte[]: Check disassembleBytes and reassembleBytes as null", new FileByte().reassembleBytes(null) == null));
 		
 		//Check disassembly and reassembly on large files
 		if(new File(getInputPath("LargeMKV.mkv")).exists()) {
 			fb = new FileByte(new File(getInputPath("LargeMKV.mkv")));
-			results.add(new TestResult<>("FileByte[]: Check disassembly and reassembly on large files", compareBytes(fb.getBytes(), fb.directReassembleBytes(fb.disassembleBytes(512)))));
+			results.add(new TestResult("FileByte[]: Check disassembly and reassembly on large files", compareBytes(fb.getBytes(), fb.directReassembleBytes(fb.disassembleBytes(512)))));
 		}
 		
 		//Clear FileByte's byte[]
 		fb.clearBytes();
-		results.add(new TestResult<>("FileByte[]: Clear FileByte's byte[]", fb.getBytes().length == 0));
+		results.add(new TestResult("FileByte[]: Clear FileByte's byte[]", fb.getBytes().length == 0));
 		
 		//Set FileByte by File
 		if(new File(getInputPath("LoremIpsum.txt")).exists()) {
-			results.add(new TestResult<>("FileByte[]: Set FileByte by File", compareBytes(new FileByte(new File(getInputPath("LoremIpsum.txt"))).getBytes(),loremIpsum().getBytes())));
+			results.add(new TestResult("FileByte[]: Set FileByte by File", compareBytes(new FileByte(new File(getInputPath("LoremIpsum.txt"))).getBytes(),loremIpsum().getBytes())));
 		}
 		
 		//Set FileByte by Path
 		if(new File(getInputPath("LoremIpsum.txt")).exists()) {
-			results.add(new TestResult<>("FileByte[]: Set FileByte by Path", compareBytes(new FileByte(new File(getInputPath("LoremIpsum.txt")).getAbsolutePath()).getBytes(),loremIpsum().getBytes())));
+			results.add(new TestResult("FileByte[]: Set FileByte by Path", compareBytes(new FileByte(new File(getInputPath("LoremIpsum.txt")).getAbsolutePath()).getBytes(),loremIpsum().getBytes())));
 		}
 		
 		//Set FileByte by byte[]
 		if(new File(getInputPath("ABC.txt")).exists()) {
-			results.add(new TestResult<>("FileByte[]: Set FileByte by byte[]", compareBytes(new FileByte("abc".getBytes()).getBytes(),new FileByte(new File(getInputPath("ABC.txt"))).getBytes())));
+			results.add(new TestResult("FileByte[]: Set FileByte by byte[]", compareBytes(new FileByte("abc".getBytes()).getBytes(),new FileByte(new File(getInputPath("ABC.txt"))).getBytes())));
 		}
 		
 		m.printMessage(this.className, "TestFileByte()", "Testing FileByte Finished...");
@@ -266,30 +358,4 @@ public class Automated_Test {
  	private final String loremIpsum() {
 		return "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 	}
-}
-
-/**
- * Reference: https://www.delftstack.com/howto/java/java-key-value-pair/
- */
-class TestResult<K, V> implements Map.Entry<K, V> {
-    private final K key;
-    private V value;
-    public TestResult(K key, V value) {
-        this.key = key;
-        this.value = value;
-    }
-    @Override
-    public K getKey() {
-        return key;
-    }
-    @Override
-    public V getValue() {
-        return value;
-    }
-    @Override
-    public V setValue(V value) {
-        V old = this.value;
-        this.value = value;
-        return old;
-    }
 }
