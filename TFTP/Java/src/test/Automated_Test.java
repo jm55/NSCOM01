@@ -13,7 +13,7 @@ import network.Client;
 import utils.*;
 
 public class Automated_Test {
-	private final String INPUT_DIR = ".\\resources\\files\\inputs\\", OUTPUT_DIR = ".\\resources\\files\\outputs\\"; 
+	private final String INPUT_DIR = ".\\test_resources\\files\\inputs\\", OUTPUT_DIR = ".\\test_resources\\files\\outputs\\"; 
 	private double score = 0, total = 0;
 	private FileByte fb;
 	private FileHandlers fh;
@@ -56,6 +56,8 @@ public class Automated_Test {
 		System.out.println("        TESTING SCORE");
 		System.out.println("=============================");
 		System.out.println("Test Score: " + ((int)this.score + "/" + (int)this.total) + " = " + getScore() + "%");
+		
+		System.gc();
 	}
 	
 	/**
@@ -101,8 +103,11 @@ public class Automated_Test {
 	 * @return TestResuts of tests done to Client (Network).
 	 */
 	private ArrayList<TestResult> TestClientNetwork(){
-		String methodName = "TestClientNetwork()";
 		ArrayList<TestResult> results = new ArrayList<TestResult>();
+		
+		//Null socket check for isConnection result as false
+		client = new Client();
+		results.add(new TestResult("Client[]: Null socket check for isConnection result as false", !client.isConnected()));
 		
 		//Opening connection to localhost:655535
 		String address = "localhost";
@@ -113,6 +118,21 @@ public class Automated_Test {
 		//Closing connection to localhost:655535
 		results.add(new TestResult("Client[]: Closing connection to localhost:655535", client.closeConnection()));
 		
+		//Opening connection to remote/external host (via host:69)
+		String[] gateways = {"192.168.1.1", "192.168.1.100", "192.168.24.1"};
+		port = 69;
+		for(int i = 0; i < gateways.length; i++) {
+			client = new Client(gateways[i], port);
+			if(client.openConnection() && client.targetIsOnline()) {
+				String connection = client.getConnectionDetails();
+				if(connection != null) 
+					results.add(new TestResult("Client[]: Opening connection to remote/external host (via host:69) " + connection, client.isConnected() && client.targetIsOnline()));
+			}	
+			client.closeConnection();
+		}
+		
+		client = null;
+		System.gc();
 		return results;
 	}
 	
@@ -121,7 +141,6 @@ public class Automated_Test {
 	 * @return TestResuts of tests done to Compression.
 	 */
 	private ArrayList<TestResult> TestCompression(){
-		String methodName = "TestCompression()";
 		ArrayList<TestResult> results = new ArrayList<TestResult>();
 		
 		System.gc();
@@ -134,7 +153,6 @@ public class Automated_Test {
 	 * @return TestResuts of tests done to FileHandlers.
 	 */
 	private ArrayList<TestResult> TestFileHandlers() {
-		String methodName = "TestFileHandlers()";
 		ArrayList<TestResult> results = new ArrayList<TestResult>();
 
 		fh = new FileHandlers();
@@ -358,4 +376,23 @@ public class Automated_Test {
  	private final String loremIpsum() {
 		return "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 	}
+ 	
+ 	/**
+ 	 * Create Addresses of size /16
+ 	 * @param octet1
+ 	 * @param octet2
+ 	 * @return List of addresses specified by network segment octets.
+ 	 */
+ 	private String[] createAddresses(String network) {
+ 		if(network.charAt(network.length()-1) == '.')
+ 			network = network.substring(0, network.length()-1);
+ 		ArrayList<String> hosts = new ArrayList<String>();
+ 		
+ 		for(int a = 1; a <= 254; a++) {
+ 			for(int b = 1; b <= 254; b++)
+ 				hosts.add(network + "." + a + "." + b);
+ 		}
+ 		
+ 		return hosts.toArray(new String[hosts.size()]);
+ 	}
 }

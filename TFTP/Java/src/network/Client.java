@@ -16,6 +16,37 @@ public class Client {
 	private final int CheckTimeout = 5000;
 	
 	public Client() {
+		
+	}
+	
+	public Client(String host, int port) {
+		m.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + "...");
+		try {
+			this.target = InetAddress.getByName(host);
+			this.PORT = port;
+		} catch (UnknownHostException e) {
+			target = null;
+			this.PORT = -1;
+			m.printMessage(this.className, "Client(host,port)", "TryCatch: " + e.getLocalizedMessage());
+		}
+		if(this.target == null)
+			m.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " failed.");
+		else 
+			m.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " successful.");
+		m.printMessage(this.className, "Client(host,port)", "Connection to " + host + ":" + port + "=" + isConnected());
+	}
+	
+	public Client(InetAddress target, int port) {
+		this.target = target;
+		this.PORT = port;
+		m.printMessage(this.className, "Client(host,port)", "Connection to " + this.target.getHostAddress() + ":" + port + "=" + isConnected());
+	}
+	
+	/**
+	 * Sets this object's target and PORT to localhost:69.
+	 * Port specified for TFTP default port.
+	 */
+	public void setDefaults() {
 		try {
 			target = InetAddress.getByName("localhost"); //Default target as localhost
 			PORT = 69; //Default TFTP port
@@ -26,58 +57,82 @@ public class Client {
 		}
 	}
 	
-	public Client(String host, int port) {
-		try {
-			target = InetAddress.getByName(host);
-			this.PORT = port;
-		} catch (UnknownHostException e) {
-			target = null;
-			this.PORT = -1;
-			m.printMessage(this.className, "Client(host)", "TryCatch: " + e.getLocalizedMessage());
-		}
+	/**
+	 * Conducts transmits/sends the specified packet to the connected host.
+	 * @param packet
+	 */
+	public boolean transmit(byte[] packet) {
+		if(isConnected())
+			this.buffer = packet;
+		
+		return true;
 	}
 	
-	public Client(InetAddress target, int port) {
-		this.target = target;
-		this.PORT = port;
-	}
-	
-	private String getConnectionDetails(DatagramSocket socket) {
-		if(socket != null)
-			return socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + "<==>" + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
-		return null;
-	}
-	
+	/**
+	 * Opens a connection specified by its target and port.
+	 * @return Socket connection status if connected or false if error occured on connection creation.
+	 */
 	public boolean openConnection() {
 		if(target != null && PORT != -1) {
 			try {
 				//Attempt connection
-				m.printMessage(this.className,"createConnection()", "Creating DatagramSocket()...");
+				m.printMessage(this.className,"openConnection()", "Creating DatagramSocket()...");
 				this.socket = new DatagramSocket();
 				socket.connect(this.target, this.PORT);
-				m.printMessage(this.className,"createConnection()", "Socket connected!");
-				m.printMessage(this.className,"createConnection()", "Socket: " + getConnectionDetails(this.socket));
+				m.printMessage(this.className,"openConnection()", "Socket connected!");
+				m.printMessage(this.className,"openConnection()", "Socket: " + getConnectionDetails(this.socket));
 				
 				//Check if reachable;
-				m.printMessage(this.className,"createConnection()", "Checking if target is online: " + targetIsOnline());
+				m.printMessage(this.className,"openConnection()", "Checking if target is online: " + targetIsOnline());
 			} catch (SocketException e) {
-				m.printMessage(this.className,"createConnection()", "TryCatch: Creating connection failed.");
-				m.printMessage(this.className, "createConnection()", "TryCatch: " + e.getLocalizedMessage());
+				m.printMessage(this.className,"openConnection()", "TryCatch: Creating connection failed.");
+				m.printMessage(this.className, "openConnection()", "TryCatch: " + e.getLocalizedMessage());
 				return false;
 			}
 		}
-		return socket.isConnected();
+		return this.socket.isConnected();
 	}
 	
+	/**
+	 * Closes the connection this Client object.
+	 * @return True if socket is closed, false if otherwise.
+	 */
 	public boolean closeConnection() {
+		m.printMessage(this.className, "closeConnection()", "Closing connection...");
 		this.socket.close();
+		m.printMessage(this.className, "closeConnection()", "" + socket.isClosed());
 		return socket.isClosed();
 	}
 	
-	public boolean targetIsOnline() {
-		return targetIsOnline(this.target);
+	/**
+	 * Returns connected status.
+	 * @return True if connected, false if otherwise.
+	 */
+	public boolean isConnected() {
+		if(this.socket == null) {
+			m.printMessage(this.className, "isConnected()", "this.socket is null");
+			return false;
+		}
+		m.printMessage(this.className, "isConnected()", ""+this.socket.isConnected());
+		return this.socket.isConnected();
 	}
 	
+	/**
+	 * Checks if Client's host is online.
+	 * @return True if online, false if object's target is null or offline.
+	 */
+	public boolean targetIsOnline() {
+		if(this.target != null)
+			return targetIsOnline(this.target);
+		else
+			return false;
+	}
+	
+	/**
+	 * Checks if the specified target is online or not
+	 * @param target Target host to be checked.
+	 * @return True if online, false if target is offline.
+	 */
 	public boolean targetIsOnline(InetAddress target) {
 		if(target != null) {
 			try {
@@ -90,5 +145,19 @@ public class Client {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Get the connection details of the client connection.
+	 * @return String[] containing (local:port, remote:port), null if socket is not connected.
+	 */
+	public String getConnectionDetails() {
+		return getConnectionDetails(this.socket);
+	}
+	
+	private String getConnectionDetails(DatagramSocket socket) {
+		if(socket != null)
+			return socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " <==> " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+		return null;
 	}
 }
