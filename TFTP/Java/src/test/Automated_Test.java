@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import data.*;
 import gui.GUI;
@@ -24,21 +25,27 @@ public class Automated_Test {
 	private GUI g;
 	private Controller ctrl;
 	private final String className = "Automated_Test";
-	
+	private final Scanner scan = new Scanner(System.in);
 	/**
 	 * Delegates automatic testing and scoring of results.
 	 */
-	public Automated_Test() {
+	public Automated_Test() {		
 		m = new Monitor();
 		System.out.println("=============================");
 		System.out.println("      AUTOMATED TESTING");
 		System.out.println("     "+m.dtNow());
 		System.out.println("=============================");
+		System.out.println("====FILEBYTE====");
 		ArrayList<TestResult> fb_result = TestFileByte();
+		System.out.println("====FILEHANDLERS====");
 		ArrayList<TestResult> fh_result = TestFileHandlers();
+		System.out.println("====HASHER====");
 		ArrayList<TestResult> h_result = TestHasher();
+		System.out.println("====COMPRESSION====");
 		ArrayList<TestResult> c_result = TestCompression();
+		System.out.println("====CLIENT(NETWORK)====");
 		ArrayList<TestResult> client_result = TestClientNetwork();
+		System.out.println("====GUI====");
 		ArrayList<TestResult> gui_result = TestGUI();
 		
 		System.out.println("=============================");
@@ -57,6 +64,7 @@ public class Automated_Test {
 		System.out.println("=============================");
 		System.out.println("Test Score: " + ((int)this.score + "/" + (int)this.total) + " = " + getScore() + "%");
 		
+		scan.close();
 		System.gc();
 	}
 	
@@ -156,13 +164,53 @@ public class Automated_Test {
 		ArrayList<TestResult> results = new ArrayList<TestResult>();
 
 		fh = new FileHandlers();
+		h = new Hasher();
+		String originalHash;
+		File in, out;
 		
-		//Set file to fh and Write file (small file)
+		//Get file extensions through different methods
+		String extSrc = "LargeMKV.mkv";
+		fh = new FileHandlers(getInputPath(extSrc));
+		if(fh.getFile().exists()) {
+			String a = fh.getFileExt(), b = fh.getFileExt(new File(getInputPath(extSrc))), c = fh.getFileExt(getInputPath(extSrc));
+			results.add(new TestResult("FileHandlers[]: Get file extensions through different methods",a.equals(b) && b.equals(c)));
+		}
+		fh = null;
+		System.gc();
+		
+		//Set small (LoremIpsum.txt) file to fh and write file (via fb) with file extension without '.'
+		in = new File(getInputPath("LoremIpsum.txt"));
+		fh = new FileHandlers(in);
+		originalHash = h.computeHash(fh.getFileAsBytes(),null);
+		out =  new File(getOutputPath("LoremIpsum")); //filename w/o ext.
+		fh.saveFile("",out.getAbsolutePath(), "txt"); //should append '.' lacking extension to filename
+		fh = new FileHandlers(getOutputPath("LoremIpsum.txt")); //should exist
+		results.add(new TestResult("FileHandlers[]: Set small (LoremIpsum.txt) file to fh and write file (via fb) with file extension without '.'", h.compareHash(new FileByte().getBytesFromFile(fh.getFile()), originalHash)));
 		
 		//Set file to fh and Write file (large file)
+		in = new File(getInputPath("LargePDF.pdf"));
+		fh = new FileHandlers(in);
+		originalHash = h.computeHash(fh.getFileAsBytes(),null);
+		out =  new File(getOutputPath("Output_PDF.pdf"));
+		fh.saveFile("",out.getAbsolutePath(), null); //should append retain filename from path
+		fh = new FileHandlers(getOutputPath("Output_PDF.pdf")); //should exist
+		results.add(new TestResult("FileHandlers[]: Set file to fh and Write file (large file)", h.compareHash(new FileByte().getBytesFromFile(fh.getFile()), originalHash)));
 		
-		//Write file (largest file)
+		//Write file (largest file via MKV)
+		if(new File(getInputPath(extSrc)).exists()) {
+			byte[] bytes = new FileByte().getBytesFromFilePath(getInputPath(extSrc));
+			fh = new FileHandlers();
+			if(fh.saveFile(bytes, getOutputPath(extSrc), null)) {
+				m.printMessage(this.className, "TestFileHandlers()", "File saving successful!");
+				results.add(new TestResult("FileHandlers[]: Write file (largest file via MKV)", bytes.length == new FileByte(new FileHandlers(getOutputPath(extSrc)).getFile()).getBytes().length));
+			}				
+		}
+		System.gc();
 		
+		//Attempt write file with filebytes as null or len=0
+		byte[] nullbyte = null, emptybyte = new byte[0];
+		boolean result = !(fh.saveFile(nullbyte, getOutputPath("null.file"), "") && fh.saveFile(emptybyte, getOutputPath("empty.file"), ""));
+		results.add(new TestResult("FileHandlers[]: Attempt write file with filebytes as null or len=0", result));
 		System.gc();
 		
 		return results;
@@ -362,11 +410,13 @@ public class Automated_Test {
 	}
 	
 	private String getOutputPath(String filename) {
-		return OUTPUT_DIR + filename;
+		m.printMessage(this.className, "getOutputPath(filename)", this.OUTPUT_DIR+filename);
+		return this.OUTPUT_DIR + filename;
 	}
 	
 	private String getInputPath(String filename) {
-		return INPUT_DIR + filename;
+		m.printMessage(this.className, "getInputPath(filename)", this.INPUT_DIR+filename);
+		return this.INPUT_DIR + filename;
 	}
 	
 	/**
@@ -394,5 +444,10 @@ public class Automated_Test {
  		}
  		
  		return hosts.toArray(new String[hosts.size()]);
+ 	}
+ 	
+ 	private void getch() {
+ 		System.out.print("Press any key to continue");
+ 		scan.nextLine();
  	}
 }

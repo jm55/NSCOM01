@@ -32,7 +32,11 @@ public class FileHandlers {
 	}
 	
 	public FileHandlers(String path) {
-		this.f = new File(path);
+		if(new File(path).exists()) {
+			m.printMessage(this.className, "FileHandlers(path)", "File pointed by path exists...");
+			this.f = new File(path);
+		}else
+			m.printMessage(this.className, "FileHandlers(path)", "File pointed by path does not exist...");
 	}
 	
 	/**
@@ -42,6 +46,10 @@ public class FileHandlers {
 	public File getFile() {
 		m.printMessage(this.className, "getFile", "Returning this.f ...");
 		return this.f;
+	}
+	
+	public byte[] getFileAsBytes() {
+		return new FileByte().getBytesFromFile(this.f);
 	}
 	
 	/**
@@ -121,9 +129,9 @@ public class FileHandlers {
         }	
         return this.f;
 	}
-    
+	
     /**
-     * Saves filebytes[] as a File.
+     * Saves filebytes[] as a File through JFileChooser.
      * Assumes that the user will enter the file extension as part of the filename at the save dialog.
      * @param filebytes byte[] of file to be saved as File.
      * @return True if saving file successful or not.
@@ -131,6 +139,27 @@ public class FileHandlers {
     public boolean saveFile(byte[] filebytes) {
     	m.printMessage(this.className, "saveFile(filebytes)", "Saving filebytes as file (null extension)...");
     	return saveFile(filebytes, null);
+    }
+    
+    /**
+     * Saves file directly without JFileChooser 
+     * File specified through intended file path and extension
+     * @param path File path to save
+     * @param extension Extension of file
+     * @return TRue if saving file is successful or not.
+     */
+    public boolean saveFile(String inputPath, String outputPath, String extension) {
+    	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)", "'" + inputPath + "', '" + outputPath + "', '" + extension + "'");
+    	if(outputPath == null || outputPath == "") {
+    		m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)", "outputPath missing, ending saveFile attempt");
+    		return false;
+    	}	
+    	if(inputPath == null || inputPath == "") {
+    		m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)", "inputPath missing");
+    		return writeFile(new FileByte().getBytesFromFile(this.f), new File(outputPath), extension);
+    	}    		
+    	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)", "Complete parameters");
+    	return writeFile(new FileByte().getBytesFromFilePath(inputPath), new File(outputPath), extension);
     }
     
     /**
@@ -142,6 +171,23 @@ public class FileHandlers {
     	return saveFile(new FileByte().getBytesFromFile(this.f), extension);
     }
     
+    /**
+     * Save filebytes as file specified by outputPath and extension
+     * @param filebytes byte[] of file to be saved.
+     * @param outputPath 
+     * @param extension Default file extension of file. Optional, assumes outputPath has extension
+     * @return
+     */
+    public boolean saveFile(byte[] filebytes, String outputPath, String extension) {
+    	return writeFile(filebytes, new File(outputPath), extension);	
+    }
+    
+    /**
+     * Save filebytes to file specified by JFileChooser
+     * @param filebytes bytes[] to turn into File
+     * @param extension Intended file extension
+     * @return True if saving file is successful or not
+     */
     public boolean saveFile(byte[] filebytes, String extension){
     	m.printMessage(this.className, "saveFile(filebytes, extension)", "Saving filebytes as file (with extension)...");
         JFileChooser fChooser = new JFileChooser();
@@ -172,18 +218,35 @@ public class FileHandlers {
     	return getFileExt(this.f);
     }
     
+    /**
+     * Get file extension from File.
+     * Does not affect object's File.
+     * @param file File object
+     * @return Extension of file, returns null if File does not exist
+     */
     public String getFileExt(File file){
     	m.printMessage(this.className, "getFileExt(file)", "Getting file extension of file...");
-        return getFileExt(file.getAbsolutePath());
+        if(file.exists())
+        	return getFileExt(file.getAbsolutePath());
+        return null;
     }
 
+    /**
+     * Get file extension from path of File.
+     * Does not affect object's File.
+     * @param path Path of File object
+     * @return Extension of File, returns null if File pointed by path does not exist.
+     */
     public String getFileExt(String path){
     	m.printMessage(this.className, "getFileExt(path)", "Getting file extension of File pointed by path...");
-        int index = path.lastIndexOf('.');
-        String extension = "";
-        if(index > 0)
-            extension = path.substring(index + 1);
-        return "."+extension;
+    	if(new File(path).exists()) {
+    		int index = path.lastIndexOf('.');
+            String extension = "";
+            if(index > 0)
+                extension = path.substring(index + 1);
+            return "."+extension;
+    	}
+    	return null;
     }
     
     /**
@@ -195,10 +258,19 @@ public class FileHandlers {
      */
     private boolean writeFile(byte[] filebytes, File file, String extension){
     	m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing file...");
+    	if(filebytes == null) {
+    		m.printMessage(this.className, "writeFile(filebytes,file,extension)", "filebytes is null");
+    		return false;
+    	}
+    	if(filebytes.length == 0) {
+    		m.printMessage(this.className, "writeFile(filebytes,file,extension)", "filebytes has length 0");
+    		return false;
+    	}
     	if(!file.getName().contains(".")) {
+    		if(!extension.contains("."))
+    			extension = "." + extension;
     		file = new File(file.toString() + extension);
     	}
-    	
     	boolean state = false;
         try {
             if(!file.exists()) {
@@ -206,6 +278,7 @@ public class FileHandlers {
             	file.createNewFile();
             }
             m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing filebytes to file...");
+            m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing " + filebytes.length + " bytes to: " + file.getCanonicalPath());
             Files.write(file.toPath(), filebytes);
             filebytes = null;
             this.f = file;
