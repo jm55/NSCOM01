@@ -204,10 +204,10 @@ public class Automated_Test {
 		System.gc();
 		
 		
-		//Check if intentional false mismatch
+		//Check if intentional files mismatch
 		if(f[2].exists() && f[1].exists()) {
 			byte[] bytes = new FileByte().getBytesFromFile(f[2]);
-			results.add(new TestResult("Hasher[]: Check if intentional false mismatch " + f[2].getName() + " == " + f[1].getName(),  !h.compareHash(bytes, hashes[1])));
+			results.add(new TestResult("Hasher[]: Check if intentional file mismatch " + f[2].getName() + " == " + f[1].getName(),  !h.compareHash(bytes, hashes[1])));
 		}
 		
 		h = null;
