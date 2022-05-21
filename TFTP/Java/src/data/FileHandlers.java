@@ -130,6 +130,21 @@ public class FileHandlers {
         return this.f;
 	}
 	
+	/**
+	 * Saves the file of this object.
+	 * Checks if this file is not null and exists before saving. 
+	 * Returns false if not met.
+	 * @return True if file is saved, false if otherwise.
+	 */
+	public boolean saveFile() {
+		m.printMessage(this.className, "saveFile()", "saving this.f as new file");
+		if(this.f != null) {
+			if(this.f.exists())
+				return saveFile(new FileByte().getBytesFromFile(this.f), null);
+		}
+		return false;
+	}
+	
     /**
      * Saves filebytes[] as a File through JFileChooser.
      * Assumes that the user will enter the file extension as part of the filename at the save dialog.
@@ -149,7 +164,7 @@ public class FileHandlers {
      * @return TRue if saving file is successful or not.
      */
     public boolean saveFile(String inputPath, String outputPath, String extension) {
-    	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)", "'" + inputPath + "', '" + outputPath + "', '" + extension + "'");
+    	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)","Saving file...");
     	if(outputPath == null || outputPath == "") {
     		m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)", "outputPath missing, ending saveFile attempt");
     		return false;
@@ -168,6 +183,7 @@ public class FileHandlers {
      * @return True if saving file is successful or not.
      */
     public boolean saveFile(String extension) {
+    	m.printMessage(this.className, "saveFile(extension)","Saving file...");
     	return saveFile(new FileByte().getBytesFromFile(this.f), extension);
     }
     
@@ -179,6 +195,7 @@ public class FileHandlers {
      * @return
      */
     public boolean saveFile(byte[] filebytes, String outputPath, String extension) {
+    	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)","Quietly saving file...");
     	return writeFile(filebytes, new File(outputPath), extension);	
     }
     
@@ -251,10 +268,10 @@ public class FileHandlers {
     
     /**
      * Writes the actual File to the system.
-     * @param filebytes
-     * @param file
-     * @param extension
-     * @return
+     * @param filebytes byte[] to turn into a File.
+     * @param file File object where filebytes will be written.
+     * @param extension Extension of file (Optional)
+     * @return True if file writing was success, false if otherwise.
      */
     private boolean writeFile(byte[] filebytes, File file, String extension){
     	m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing file...");
@@ -273,12 +290,16 @@ public class FileHandlers {
     	}
     	boolean state = false;
         try {
+
+        	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)","filebytes length = " + filebytes.length);
+        	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)","filename = " + file.getName());
+        	m.printMessage(this.className, "saveFile(inputPath,outputPath,extension)","extension = " + extension);
             if(!file.exists()) {
             	m.printMessage(this.className, "writeFile(filebytes,file,extension)", "file does not exist, Creating new file...");
             	file.createNewFile();
             }
             m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing filebytes to file...");
-            m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing " + filebytes.length + " bytes to: " + file.getCanonicalPath());
+            m.printMessage(this.className, "writeFile(filebytes,file,extension)", "Writing " + filebytes.length + " bytes to: " + file.getName());
             Files.write(file.toPath(), filebytes);
             filebytes = null;
             this.f = file;

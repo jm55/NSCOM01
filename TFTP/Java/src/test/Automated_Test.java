@@ -95,8 +95,8 @@ public class Automated_Test {
 		//Clear IO of GUI
 		g.clearIO();
 		boolean ip = g.getServerConfigInput()[0].equals(""), port = g.getServerConfigInput()[1].equals(""),
-				fileselected = g.getSelectedFileText().equals(""), output = g.getOutputText().equals("");
-		boolean total = ip && port && fileselected && output;
+				localFileSelected = g.getLocalSelectedFileText().equals("No File Selected"), remoteFileSelected = g.getRemoteSelectedFileText().equals(""), output = g.getOutputText().equals("");
+		boolean total = ip && port && localFileSelected && remoteFileSelected && output;
 		results.add(new TestResult("GUI[]: Clear IO of GUI", total));
 		
 		g = null;

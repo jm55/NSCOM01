@@ -1,6 +1,8 @@
 @echo off
 echo Deleting test output files...
-cd D:\Users\Miguel Escalona\Github\NSCOM01\TFTP\Java\.executables\test_resources\files\outputs
+cd test_resources\files\outputs
 del /Q *
 echo Test output files deleted.
-cd D:\Users\Miguel Escalona\Github\NSCOM01\TFTP\Java\.executables
+cd ..
+cd ..
+cd ..

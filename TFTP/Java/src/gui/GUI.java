@@ -28,12 +28,12 @@ public class GUI extends JFrame{
 	private final String WindowTitle = "NSCOM01 - TFTP";
 	private final String typeFace = "Arial", consoleFace = "Consolas";
 	private ActionListener listener;
-	private JLabel titleLabel, serverIPLabel, serverPortLabel, consoleLabel, selectedFileLabel;
-	private JTextField serverIPField, serverPortField, selectedFileField;
+	private JLabel titleLabel, serverIPLabel, serverPortLabel, consoleLabel, localSelectedFileLabel, remoteSelectedFileLabel;
+	private JTextField serverIPField, serverPortField, localSelectedFileField, remoteSelectedFileField;
 	private JTextArea outputArea;
 	private JScrollPane outputScroll;
 	private JCheckBox P2PCheckBox;
-	private JButton connectBtn, openFileBtn, sendFileBtn, resetBtn, aboutBtn, exitBtn;
+	private JButton connectBtn, openFileBtn, sendFileBtn, recvFileBtn, resetBtn, aboutBtn, exitBtn;
 	
 	/**
 	 * Default constructor that builds the window.
@@ -140,19 +140,35 @@ public class GUI extends JFrame{
 	}
 	
 	/**
-	 * Set text from selectedFileField
-	 * @param text Text to set for selectedFileField
+	 * Set text from remoteSelectedFileField
+	 * @param text Text to set for remoteSelectedFileField
 	 */
-	public void setSelectedFileText(String text) {
-		selectedFileField.setText(text);
+	public void setRemoteSelectedFileText(String text) {
+		remoteSelectedFileField.setText(text);
 	}
 	
 	/**
-	 * Get text from selectedFileField
-	 * @return Text from selectedFileField
+	 * Get text from remoteSelectedFileField
+	 * @return Text from remoteSelectedFileField
 	 */
-	public String getSelectedFileText() {
-		return selectedFileField.getText();
+	public String getRemoteSelectedFileText() {
+		return remoteSelectedFileField.getText();
+	}
+	
+	/**
+	 * Set text from localSelectedFileField
+	 * @param text Text to set for localSelectedFileField
+	 */
+	public void setLocalSelectedFileText(String text) {
+		localSelectedFileField.setText(text);
+	}
+	
+	/**
+	 * Get text from localSelectedFileField
+	 * @return Text from localSelectedFileField
+	 */
+	public String getLocalSelectedFileText() {
+		return localSelectedFileField.getText();
 	}
 	
 	/**
@@ -184,7 +200,8 @@ public class GUI extends JFrame{
 	 */
 	public void clearIO() {
 		setOutputText("");
-		selectedFileField.setText("");
+		localSelectedFileField.setText("No File Selected");
+		remoteSelectedFileField.setText("");
 		serverIPField.setText("");
 		serverPortField.setText("");
 	}
@@ -232,18 +249,23 @@ public class GUI extends JFrame{
 		panel.add(serverPortLabel);
 		consoleLabel = createLabel("Console:", newFont(Font.BOLD, 16),256+64,64*4,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
 		panel.add(consoleLabel);
-		selectedFileLabel = createLabel("Selected File:", newFont(Font.BOLD, 16),256+64,64*1,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
-		panel.add(selectedFileLabel);
+		localSelectedFileLabel = createLabel("Locally Selected File:", newFont(Font.BOLD, 16),256+64,64*1,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(localSelectedFileLabel);
+		remoteSelectedFileLabel = createLabel("Remote Selected File:", newFont(Font.BOLD, 16),256+64,64*2,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(remoteSelectedFileLabel);
 		
 		//INPUT/OUTPUT FIELDS/AREAS
 		m.printMessage(this.className, "buildDisplayContents()", "Setting I/O Fields...");
-		serverIPField = createTextField(newFont(Font.PLAIN, 12),32,(64*1)+32,256,32);
+		serverIPField = createTextField(newFont(Font.PLAIN, 16),32,(64*1)+32,256,32);
 		panel.add(serverIPField);
-		serverPortField = createTextField(newFont(Font.PLAIN, 12),32,(64*2)+32,256,32);
+		serverPortField = createTextField(newFont(Font.PLAIN, 16),32,(64*2)+32,256,32);
 		panel.add(serverPortField);
-		selectedFileField = createTextField(newFont(Font.PLAIN, 12),256+64,(64*1)+32,656,32);
-		selectedFileField.setEditable(false);
-		panel.add(selectedFileField);
+		localSelectedFileField = createTextField(newFont(Font.PLAIN, 16),256+64,(64*1)+32,656,32);
+		localSelectedFileField.setEditable(false);
+		localSelectedFileField.setText("No File Selected");
+		panel.add(localSelectedFileField);
+		remoteSelectedFileField = createTextField(newFont(Font.PLAIN, 16),256+64,(64*2)+32,656,32);
+		panel.add(remoteSelectedFileField);
 		outputArea = createTextArea(newFont(consoleFace,Font.PLAIN, 12),256+64,(64*4)+32,656,210,false);
 		outputScroll = createScrollPane(outputArea);
 		outputArea.setText("Console Log");
@@ -261,6 +283,8 @@ public class GUI extends JFrame{
 		panel.add(openFileBtn);
 		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"SendFile");
 		panel.add(sendFileBtn);
+		recvFileBtn = createButton("Receive File", newFont(Font.BOLD,16),656+this.BTNWIDTH/2-this.BTNWIDTH/4,(64*3)+16,this.BTNWIDTH,50,listener,"RecvFile");
+		panel.add(recvFileBtn);
 		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(64*7),this.BTNWIDTH,50,listener,"AboutProgram");
 		panel.add(aboutBtn);
 		resetBtn = createButton("Reset",newFont(Font.BOLD,16),this.WIDTH-(this.BTNWIDTH*2)-(2*48),(64*8),this.BTNWIDTH,50,listener,"Reset");

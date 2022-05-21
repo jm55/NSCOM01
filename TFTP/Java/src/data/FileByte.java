@@ -85,7 +85,8 @@ public class FileByte {
 	 * @return Extracted byte[] from File pointed by path.
 	 */
     public byte[] getBytesFromFilePath(String path){
-    	m.printMessage(this.className, "getBytesFromFilePath(path)", "Getting bytes from path '" + path + "' ...");
+    	m.printMessage(this.className, "getBytesFromFilePath(path)", "Getting bytes from path...");
+    	m.printMessage(this.className, "getBytesFromFilePath(path)", "Path: " + path);
         Path filePath = Paths.get(path);
         try {
 			return Files.readAllBytes(filePath);

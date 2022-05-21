@@ -2,6 +2,9 @@ package network;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
+
+import data.TFTP;
 import utils.*;
 
 public class Client {
@@ -57,15 +60,29 @@ public class Client {
 		}
 	}
 	
+	public boolean transmit(ArrayList<TFTP> packets) {
+		//Disassemble packets and iterate piece by piece.
+		for(TFTP p: packets) {
+			
+		}
+		return false;
+	}
+	
+	public boolean transmit(TFTP packet) {
+		return false;
+	}
+	
 	/**
 	 * Conducts transmits/sends the specified packet to the connected host.
-	 * @param packet
+	 * @param packet TFTP packet that is fit for sending as part of a TFTP transmission
 	 */
 	public boolean transmit(byte[] packet) {
-		if(isConnected())
+		if(isConnected()) {
 			this.buffer = packet;
-		
-		return true;
+			//Create packet here
+		}
+		m.printMessage(this.className, "transmit(packet)", "Transmission failed, socket not connected");
+		return false;
 	}
 	
 	/**
@@ -81,7 +98,6 @@ public class Client {
 				socket.connect(this.target, this.PORT);
 				m.printMessage(this.className,"openConnection()", "Socket connected!");
 				m.printMessage(this.className,"openConnection()", "Socket: " + getConnectionDetails(this.socket));
-				
 				//Check if reachable;
 				m.printMessage(this.className,"openConnection()", "Checking if target is online: " + targetIsOnline());
 			} catch (SocketException e) {
@@ -109,12 +125,16 @@ public class Client {
 	 * @return True if connected, false if otherwise.
 	 */
 	public boolean isConnected() {
-		if(this.socket == null) {
+		if(this.socket == null) { //this.socket is null
 			m.printMessage(this.className, "isConnected()", "this.socket is null");
 			return false;
+		}else if(!this.socket.isBound()) { //this.socket is !bound/binded
+			m.printMessage(this.className, "isConnected()", "this.socket is not bound");
+			return false;
+		}else { //check if this.socket is connected
+			m.printMessage(this.className, "isConnected()", ""+this.socket.isConnected());
+			return this.socket.isConnected();
 		}
-		m.printMessage(this.className, "isConnected()", ""+this.socket.isConnected());
-		return this.socket.isConnected();
 	}
 	
 	/**
@@ -129,13 +149,14 @@ public class Client {
 	}
 	
 	/**
-	 * Checks if the specified target is online or not
+	 * Checks if the specified target is online or not.
 	 * @param target Target host to be checked.
 	 * @return True if online, false if target is offline.
 	 */
 	public boolean targetIsOnline(InetAddress target) {
 		if(target != null) {
 			try {
+				m.printMessage(this.className, "targetIsOnline(target)", "Pinging " + target.getHostAddress());
 				if(target.isReachable(this.CheckTimeout)) {
 					m.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is reachable.");
 					return true;
@@ -144,6 +165,7 @@ public class Client {
 				m.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is unreachable.");
 			}
 		}
+		m.printMessage(this.className, "targetIsOnline(target)", "Specified target is cannot be reached");
 		return false;
 	}
 	
