@@ -1,5 +1,6 @@
 package utils;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -27,5 +28,8 @@ public class Monitor {
 		for(byte b: bytes)
 			System.out.print(b);
 		System.out.println("");
+	}
+	public void printByteAsString(byte[] bytes) {
+		System.out.println(new String(bytes, StandardCharsets.UTF_8)); 
 	}
 }

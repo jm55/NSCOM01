@@ -1,9 +1,9 @@
 package network;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 
+import data.FileHandlers;
 import data.TFTP;
 import utils.*;
 
@@ -13,7 +13,7 @@ public class Client {
 	
 	private DatagramSocket socket = null;
 	private DatagramPacket packet = null;
-	private int PORT = -1;
+	private int PORT = -1, BUFFER_SIZE = 512;
 	private byte[] buffer = null;
 	private InetAddress target = null;
 	private final int CheckTimeout = 5000;
@@ -51,8 +51,8 @@ public class Client {
 	 */
 	public void setDefaults() {
 		try {
-			target = InetAddress.getByName("localhost"); //Default target as localhost
-			PORT = 69; //Default TFTP port
+			this.target = InetAddress.getByName("localhost"); //Default target as localhost
+			this.PORT = 69; //Default TFTP port
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
@@ -60,29 +60,44 @@ public class Client {
 		}
 	}
 	
-	public boolean transmit(ArrayList<TFTP> packets) {
-		//Disassemble packets and iterate piece by piece.
-		for(TFTP p: packets) {
-			
+	public boolean send(File f) {
+		if(f.exists() && socket.isConnected()) {
+			m.printMessage(this.className, "send(File)", "f.exists()...");
+			try {
+				m.printMessage(this.className, "send(File)", "Streaming f...");
+				InputStream inputStream = new FileInputStream(f.getAbsolutePath());
+				Integer BUFFER_SIZE = 512, SIZE = inputStream.available(), bytesRead = -1;
+				byte[] buffer = new byte[BUFFER_SIZE];
+	            if(SIZE < BUFFER_SIZE)
+	            	buffer = new byte[SIZE];
+	            m.printMessage(this.className, "send(File)", "Reading through f and transmitting to target...");
+				while((bytesRead = inputStream.read(buffer)) != -1) {
+					do{
+						if(bytesRead == 512) {
+							/**
+							 * Send Normal Data
+							 */
+						}else{
+							/**
+							 * Send Last Data
+							 */
+						}
+					}while(true); //Check for ACKs here
+				}
+				m.printMessage(this.className, "send(File)", "Closing stream...");
+				inputStream.close();
+				return true;
+			} catch (IOException e) {
+				m.printMessage(this.className, "send(File)", "IOException: " + e.getLocalizedMessage());
+			} catch (NullPointerException e) {
+				m.printMessage(this.className, "send(File)", "NullPointerException: " + e.getLocalizedMessage());
+			}
 		}
 		return false;
 	}
 	
-	public boolean transmit(TFTP packet) {
-		return false;
-	}
-	
-	/**
-	 * Conducts transmits/sends the specified packet to the connected host.
-	 * @param packet TFTP packet that is fit for sending as part of a TFTP transmission
-	 */
-	public boolean transmit(byte[] packet) {
-		if(isConnected()) {
-			this.buffer = packet;
-			//Create packet here
-		}
-		m.printMessage(this.className, "transmit(packet)", "Transmission failed, socket not connected");
-		return false;
+	public byte[] receive() {
+		return null;
 	}
 	
 	/**

@@ -19,7 +19,7 @@ public class UDP_Server_Simple {
         // 1.1 DISPLAYING SOCKET INFORMATION (SHOULD BE THE SAME AS VALUE OF PORT)
         System.out.println("Socket is binded to: " + socket.getLocalPort());
 
-        receive = new byte[65535]; //SET BUFFER SIZE FOR RECEIVING DATA
+        receive = new byte[1]; //SET BUFFER SIZE FOR RECEIVING DATA
         /** WHY 65535 BYTES?
          * UDP Max Payload Size: 65507 bytes (IPv4) & 65527 bytes (IPv6)
          * UDP Header Size: 8 bytes
@@ -35,6 +35,8 @@ public class UDP_Server_Simple {
 
             // 3 RECEIVE THE DATA IN BYTE BUFFER
             socket.receive(packet);
+
+            System.out.println("Packet length: " + packet.getData().length);
 
             // 3.1 PRINT MESSAGE FOR USER
             String rec_ip = packet.getAddress().getHostAddress();

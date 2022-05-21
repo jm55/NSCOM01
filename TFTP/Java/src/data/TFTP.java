@@ -1,5 +1,8 @@
 package data;
 
+import java.io.File;
+import java.net.DatagramPacket;
+
 /**
  * Builds the TFTP packet that the Client will submit or receive, and process accordingly.
  * 
@@ -65,25 +68,98 @@ public class TFTP {
 		
 	}
 	
-	
-	private void setData(byte[] data, int block) {
-		this.data = data;
+	public byte[] extractData(DatagramPacket packet) {
+		return extractData(packet.getData());
 	}
 	
+	public byte[] extractData(byte[] packetBytes) {
+		if(packetBytes == null)
+			return null;
+		if(packetBytes.length == 0) {
+			return null;
+		}
+		int opcode = getOpCode(packetBytes);
+		
+		//Check if opcode is extractable with data, extract data accordingly if so.
+		
+		return null;
+	}
 	
-	private byte[] buildReadRequest(String filename) {
+	public int getOpCode(DatagramPacket packet) {
+		return getOpCode(packet.getData());
+	}
+	
+	public int getOpCode(byte[] packetBytes) {
+		return packetBytes[0];
+	}
+	
+	public boolean isError(DatagramPacket packet) {
+		if(getOpCode(packet) == 5)
+			return true;
+		return false;
+	}
+	
+	public boolean isError(byte[] packetBytes) {
+		if(getOpCode(packetBytes)==5)
+			return true;
+		return false;
+	}
+	
+	public byte[] getWRQ(File f) {
+		if(f != null)
+			if(f.exists())
+				return buildReadRequest(f);
+		return null;
+	}
+	
+	public byte[] getRRQ(String filename) {
+		if(filename != null)
+			return buildWriteRequest(filename);
+		return null;
+	}
+	
+	private byte[] buildDataPacket(byte[] data, int block) {
+		byte[] dataPacket = null;
+		/**
+		 * BUILD DATA PACKET HERE
+		 * 
+		 * DATA PACKET STRUCTURE
+		 * ==========================================
+		 * 2bytes    ||    2bytes    ||    nbytes    
+		 * ==========================================
+		 * Opcode    ||    Block#    ||    1byte    
+		 * ==========================================
+		 */
+		return dataPacket;
+	}
+	
+	private byte[] buildReadRequest(File f) {
 		byte[] RRQ = null;
 		/**
 		 * BUILD REQUEST PACKET HERE
 		 * 
-		 * 
+		 * READ/WRITE REQUEST (RRQ/WRQ) PACKET STRUCTURE
+		 * ========================================================
+		 * 2bytes    ||    String    ||    1byte    ||    1byte
+		 * ========================================================
+		 * Opcode    ||   Filename   ||     Mode    ||      0
+		 * ========================================================
 		 */
 		return RRQ;
 	}
 	
-	private byte[] buildWriteRequest() {
+	private byte[] buildWriteRequest(String filename) {
 		byte[] WRQ = null;
-		
+		/**
+		 * BUILD REQUEST PACKET HERE
+		 * 
+		 * READ/WRITE REQUEST (RRQ/WRQ) PACKET STRUCTURE
+		 * ========================================================
+		 * 2bytes    ||    String    ||    1byte    ||    1byte
+		 * ========================================================
+		 * Opcode    ||   Filename   ||     Mode    ||      0
+		 * ========================================================
+		 */
 		return WRQ;
 	}
 }

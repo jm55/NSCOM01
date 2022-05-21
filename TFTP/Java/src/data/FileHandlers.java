@@ -60,8 +60,12 @@ public class FileHandlers {
 	}
 	
 	public String getFileExtension() {
+		return getFileExtension(this.f);
+	}
+	
+	public String getFileExtension(File f) {
 		if(this.f != null) {
-			if(this.f.exists()) {
+			if(f.exists()) {
 				if(this.f.getName().contains("."))
 					return this.f.getName().substring(this.f.getName().indexOf('.'));
 			}
@@ -70,6 +74,10 @@ public class FileHandlers {
 	}
 	
 	public String getFileName() {
+		return getFileName(this.f);
+	}
+	
+	public String getFileName(File f) {
 		if(this.f != null) {
 			if(this.f.exists()) {
 				m.printMessage(className, "getFileName(boolean)", "Get Filename...");
@@ -80,8 +88,12 @@ public class FileHandlers {
 	}
 	
 	public int getChunks(int chunkSize) {
+		return getChunks(this.f, chunkSize);
+	}
+	
+	public int getChunks(File f, int chunkSize) {
 		try {
-			InputStream inputStream = new FileInputStream(this.f.getAbsolutePath());
+			InputStream inputStream = new FileInputStream(f.getAbsolutePath());
 			Integer BUFFER_SIZE = chunkSize, SIZE = inputStream.available();
 			return new BigDecimal((float)SIZE/(float)BUFFER_SIZE).setScale(2, RoundingMode.UP).intValue();
 		} catch (IOException e) {
@@ -91,6 +103,10 @@ public class FileHandlers {
 	}
 	
 	public int getFileSize() {
+		return getFileSize(this.f);
+	}
+
+	public int getFileSize(File f) {
 		try {
 			InputStream inputStream = new FileInputStream(this.f.getAbsolutePath());
 			return inputStream.available();
