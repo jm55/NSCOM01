@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import data.*;
+import utils.Hasher;
 import utils.Monitor;
 
 public class Scratch {
@@ -55,8 +56,9 @@ public class Scratch {
             inputStream.close();
             outputStream.close();
         } catch (Exception ex) {
-            ex.getLocalizedMessage();
+            //ex.getLocalizedMessage();
         }
+        System.out.println("Hasher: " + new Hasher().quickCompare(in, out));
 	}
 	
 	private static void printBytes(byte[] bytes) {
