@@ -23,4 +23,9 @@ public class Monitor {
 	public String dtNow() {
 		return datetimeFormat.format(LocalDateTime.now());
 	}
+	public void printBytes(byte[] bytes) {
+		for(byte b: bytes)
+			System.out.print(b);
+		System.out.println("");
+	}
 }

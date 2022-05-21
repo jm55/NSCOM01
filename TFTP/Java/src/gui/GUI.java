@@ -90,10 +90,10 @@ public class GUI extends JFrame{
 	 * Shows a simple pop-up message using the given parameters.
 	 * @param message Message of the pop-up
 	 * @param title Title of the pop-up
-	 * @param type Type of message, e.g. JOptionPane.PLAIN_MESSAGE, JOptionPane.ERROR_MESSAGE,etc.
+	 * @param messageType Recommended: JOptionPane.INFORMATION_MESSAGE, JOptionPane.WARNING_MESSAGE, JOptionPane.ERROR_MESSAGE, etc.;
 	 */
-	public void popDialog(String message, String title, int type) {
-		JOptionPane.showMessageDialog(this, message, WindowTitle, type);
+	public void popDialog(String message, String title, int messageType) {
+		JOptionPane.showMessageDialog(this, message, title, messageType);
 	}
 	
 	/**
@@ -106,12 +106,15 @@ public class GUI extends JFrame{
 	}
 	
 	/**
-	 * Brings up a dialog with the options Yes, No and Cancel; with thetitle, Select an Option.
-	 * @param message
+	 * Displays pop-up message using the following parameters.
+	 * @param message Message of the pop-up
+	 * @param title Title of the pop-up
+	 * @param optionType Recommended: JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.YES_NO_OPTION, JOptionPane.OK_CANCEL_OPTION
+	 * @param messageType Recommended: JOptionPane.INFORMATION_MESSAGE, JOptionPane.WARNING_MESSAGE, JOptionPane.ERROR_MESSAGE, etc.;
 	 * @return
 	 */
-	public int confirmDialog(String message) {
-		return JOptionPane.showConfirmDialog(this, message);
+	public int confirmDialog(String message, String title, int optionType, int messageType) {
+		return JOptionPane.showConfirmDialog(null, message, title, optionType, messageType);
 	}
 	
 	/**
