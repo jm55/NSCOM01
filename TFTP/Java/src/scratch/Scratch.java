@@ -30,20 +30,28 @@ public class Scratch {
 		}
 	}
 	
-	private static void buildErrPacket(Integer err, String emsg) {
-		byte[] opcode = {5,0}, errcode = {err.byteValue(),0}, errMsg = emsg.getBytes(), padding = new byte[0];
-		byte[][] combined = {opcode, errcode, errMsg, padding};
-		byte[] errPacket = new byte[opcode.length + errcode.length + errMsg.length + 1];
-		int ctr = 0;
-		for(byte[] c: combined) {
-			for(byte b: c) {
-				errPacket[ctr] = b;
+	private static byte[] combineBytes(byte[][] bytes){
+		int size = 0, ctr = 0;
+		for(int i = 0; i < bytes.length; i++)
+			size += bytes[i].length;
+		byte[] combinedBytes = new byte[size];
+		for(byte[] byteArr: bytes) {
+			for(byte b: byteArr) {
+				combinedBytes[ctr] = b;
 				ctr++;
 			}
 		}
-		System.out.print(errPacket[0] + " => ");
-		m.printBytes(errPacket);
-		//m.printByteAsString(errPacket);
+		return combinedBytes;
+	}
+	
+	private static byte[] buildDataPacket(Integer block, byte[] data) {
+		//byte[] dataPacket = {3,0,block,0
+		return null;
+	}
+	
+	private static byte[] buildAckPacket(Integer block) {
+		byte[] ack = {4,0,block.byteValue(),0};
+		return ack;
 	}
 	
 	private static void FileHandlersTest() {
