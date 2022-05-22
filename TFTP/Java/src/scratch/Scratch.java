@@ -3,6 +3,7 @@ package scratch;
 import java.io.*;
 import java.nio.*;
 import java.security.*;
+import java.util.ArrayList;
 
 import data.*;
 import network.Client;
@@ -19,11 +20,17 @@ public class Scratch {
 	}
 	
 	public static void RunScratch(String[] args) {
-		testErrPacket1350();
-		testDataPacket1350();
+		System.out.println("Error Packets");
+		testErrPacket();
+		System.out.println("Data Packets");
+		testDataPacket();
+		System.out.println("ACK Packets");
+		testAckPacket();
+		System.out.println("RRQ (RFC2347) Packets");
+		testRQPacket();
 	}
 	
-	private static void testErrPacket1350() {
+	private static void testErrPacket() {
 		Integer[] errCode = {0,1,2,3,4,5,6,7};
 		String[] errMsg = {	"Not defined", "Access violation",
 							"File not found", "Disk full or Quota exceeded",
@@ -31,35 +38,114 @@ public class Scratch {
 							"File exists", "No such user"
 						  };
 		for(int i = 0; i < errCode.length; i++) {
-			m.printBytes(buildErrPacket1350(errCode[i], errMsg[i]));
-			//m.printByteAsString(buildErrPacket1350(errCode[i], errMsg[i]));
+			m.printBytes(buildErrPacket(errCode[i], errMsg[i]));
 		}
 	}
-	//Follows RFC 1350
-	private static byte[] buildErrPacket1350(Integer err, String emsg) {
-		//Error Packet 
-		byte[] opcode = {0,5}, errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
-		byte[][] combined = {opcode, errcode, errMsg, padding};
-		return combineBytes(combined);
+	private static void testAckPacket(){
+		for(int i = 0; i <= 10; i++)
+			m.printBytes(buildAckPacket(i));
+	}
+	private static void testDataPacket() {
+		for(int i = 1; i <= 10; i++) {
+			//m.printByteAsString(buildDataPacket(i, ("This is test " + i).getBytes()));
+			m.printBytes(buildDataPacket(i, ("This is test " + i).getBytes()));
+		}
+	}
+	private static void testRQPacket() {
+		//Read
+		System.out.println("Read");
+		byte[] woOptVals = buildRQ(1, "This is filename", "This is mode", null, null), wOptVals = buildRQ(1,"This is filename", "This is mode", "1234".getBytes(), "1234".getBytes());
+		m.printByteAsString(woOptVals); //Without OptVals
+		m.printByteAsString(wOptVals); //With OptVals
+		
+		//Write
+		System.out.println("Write");
+		woOptVals = buildRQ(2, "This is filename", "This is mode", null, null);
+		wOptVals = buildRQ(2,"This is filename", "This is mode", "1234".getBytes(), "1234".getBytes());
+		m.printByteAsString(woOptVals); //Without OptVals
+		m.printByteAsString(wOptVals); //With OptVals
 	}
 	
-	public static void testDataPacket1350() {
-		for(int i = 1; i <= 10; i++) {
-			//m.printByteAsString(buildDataPacket1350(i, ("This is test " + i).getBytes()));
-			m.printBytes(buildDataPacket1350(i, ("This is test " + i).getBytes()));
+	//Follows RFC 2347
+	private static byte[] buildRQ(Integer type, String filename, String mode, byte[] opts, byte[] vals) {
+		if(type > 2 || type < 1)
+			return null;
+		//Check if given file or mode is null, return null if so.
+		if(filename == null || mode == null) {
+			return null;
+		}
+		//Prepare opcode for Read Request.
+		byte[] opcode = {0,type.byteValue()};
+		
+		if(opts != null && vals != null) { //Check if opts and vals are not null.
+			if(opts.length != vals.length) { //Check if lengths of opts and vals are not equal.
+				return null;
+			}else { //Lengths of opts and vals are equal.
+				byte[] optsVals = buildOptsVals(opts, vals); //Combines opts & vals into one byte[]; Includes the last padding for valsN
+				byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), optsVals};
+				return combineBytes(combined);
+			}
+		}else {
+			//Follows bytes: {0,1,filename.bytes,0,mode.bytes,0};
+			byte[][] combined = {opcode,filename.getBytes(),getPaddingByteArr(), mode.getBytes(), getPaddingByteArr()};
+			return combineBytes(combined);
 		}
 	}
+	
 	//Follows RFC 1350
-	private static byte[] buildDataPacket1350(Integer block, byte[] data) {
+	private static byte[] buildAckPacket(Integer block) {
+		byte[] ack = {0,4,block.byteValue(),0};
+		return ack;
+	}
+	
+	//Follows RFC 1350
+	private static byte[] buildDataPacket(Integer block, byte[] data) {
 		byte[] opcode = {0,3}, blockNum = {block.byteValue(),0};
 		byte[][] preDataPacket = {opcode,blockNum,data};
 		return combineBytes(preDataPacket);
 	}
 	
 	//Follows RFC 1350
-	private static byte[] buildAckPacket(Integer block) {
-		byte[] ack = {0,4,0,block.byteValue()};
-		return ack;
+	private static byte[] buildErrPacket(Integer err, String emsg) {
+		//Error Packet 
+		byte[] opcode = {0,5}, errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = getPaddingByteArr();
+		byte[][] combined = {opcode, errcode, errMsg, padding};
+		return combineBytes(combined);
+	}
+	
+	//==========================================================================================================
+	
+	private static byte[] getPaddingByteArr() {
+		byte[] arr = {new Integer(0).byteValue()};
+		return arr;
+	}
+	
+	private static byte getPaddingByte() {
+		return new Integer(0).byteValue();
+	}
+	
+	private static byte[] buildOptsVals(byte[] opts, byte[] vals) {
+		if(opts == null || vals == null) {
+			return null;
+		}else {
+			if(opts.length != vals.length) {
+				return null;
+			}else {
+				ArrayList<Byte> optsvals = new ArrayList<Byte>();
+				for(int i = 0; i < opts.length; i++) {
+					optsvals.add(opts[i]);
+					optsvals.add(getPaddingByte());
+					optsvals.add(vals[i]);
+					optsvals.add(getPaddingByte());
+				}
+				byte[] rawoptsvals = new byte[optsvals.size()];
+				Byte[] optsvalsArr = new Byte[optsvals.size()];
+				optsvals.toArray(optsvalsArr);
+				for(int i = 0; i < optsvals.size(); i++)
+					rawoptsvals[i] = optsvalsArr[i].byteValue();
+				return rawoptsvals;
+			}
+		}
 	}
 	
 	private static byte[] combineBytes(byte[][] bytes){

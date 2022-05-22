@@ -42,12 +42,12 @@ import utils.Monitor;
  * 
  * OACK PACKET STRUCTURE (RFC 2347)
  * Note that opt and val are combined with the terminating 0 byte.
- * ================================= ==============================
- * 2bytes  ||  2bytes  ||  2bytes  || ...  ||  2bytes  ||  2bytes  
- * ================================================================
- * Opcode  ||   opt1   ||   val1   || ...  ||   optn   ||   valn
- * ================================================================
- * 
+ * ================================= ============================
+ * 2bytes  ||  2bytes  ||  2bytes  || ... ||  2bytes  ||  2bytes  
+ * ==============================================================
+ * Opcode  ||   opt1   ||   val1   || ... ||   optn   ||   valn
+ * ==============================================================
+ *
  * ACK PACKET STRUCTURE (RFC 1350)
  * ====================
  * 2bytes  ||  2bytes    
@@ -157,7 +157,7 @@ public class TFTP {
 	
 	private byte[] buildErrPacket(Integer err, String emsg) {
 		//Error Packet 
-		byte[] opcode = {0,5}, errcode = {0,err.byteValue()}, errMsg = emsg.getBytes(), padding = new byte[0];
+		byte[] opcode = {0,5}, errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
 		byte[][] combined = {opcode, errcode, errMsg, padding};
 		return combineBytes(combined);
 	}
