@@ -2,6 +2,7 @@ package data;
 
 import java.io.File;
 import java.net.DatagramPacket;
+import java.util.ArrayList;
 
 import utils.Monitor;
 
@@ -39,6 +40,13 @@ import utils.Monitor;
  * ================================
  * Opcode  ||  Block#  ||  1byte    
  * ================================
+ *
+ * ACK PACKET STRUCTURE (RFC 1350)
+ * ====================
+ * 2bytes  ||  2bytes    
+ * ====================
+ * Opcode  ||  Block#  
+ * ====================
  * 
  * OACK PACKET STRUCTURE (RFC 2347)
  * Note that opt and val are combined with the terminating 0 byte.
@@ -47,13 +55,6 @@ import utils.Monitor;
  * ==============================================================
  * Opcode  ||   opt1   ||   val1   || ... ||   optn   ||   valn
  * ==============================================================
- *
- * ACK PACKET STRUCTURE (RFC 1350)
- * ====================
- * 2bytes  ||  2bytes    
- * ====================
- * Opcode  ||  Block#  
- * ====================
  * 
  * ERROR PACKET STRUCTURE (RFC 1350)
  * ========================================================
@@ -100,6 +101,9 @@ public class TFTP {
 		}
 		int opcode = getOpCode(packetBytes);
 		
+		if(!validOpCode(opcode))
+			return null;
+		
 		//Check if opcode is extractable with data, extract data accordingly if so.
 		
 		return null;
@@ -110,7 +114,7 @@ public class TFTP {
 	}
 	
 	public int getOpCode(byte[] packetBytes) {
-		return packetBytes[0];
+		return (int)packetBytes[1];
 	}
 	
 	public boolean isError(DatagramPacket packet) {
@@ -125,29 +129,16 @@ public class TFTP {
 		return false;
 	}
 	
-	public byte[] getWRQ(File f) {
+	public byte[] getWRQ(File f, String mode, byte[] opt, byte[] vals) {
 		if(f != null)
-			if(f.exists())
-				return buildReadRequest(f);
+			if(f.exists() && validOptVal(opt,vals))
+				return buildRQPacket(2,f.getName(), mode, opt, vals);
 		return null;
 	}
 	
-	public byte[] getOWRQ(File f, byte[] opt, byte[] vals) {
-		if(f != null)
-			if(f.exists())
-				return buildReadRequest(f,opt,vals);
-		return null;
-	}
-	
-	public byte[] getWWRQ(String filename, byte[] opt, byte[] vals) {
-		if(filename != null)
-			return buildWriteRequest(filename,opt,vals);
-		return null;
-	}
-	
-	public byte[] getRRQ(String filename) {
-		if(filename != null)
-			return buildWriteRequest(filename);
+	public byte[] getRRQ(String filename, String mode, byte[] opt, byte[] vals) {
+		if(filename != null && validOptVal(opt, vals))
+			return buildRQPacket(1,filename, mode, opt, vals);
 		return null;
 	}
 	
@@ -155,63 +146,53 @@ public class TFTP {
 		return buildErrPacket(err, errmsg);
 	}
 	
+	private boolean validOptVal(byte[] opt, byte[] vals) {
+		if(opt != null && vals != null)
+			if(opt.length == vals.length)
+				return true;
+		return false;
+	}
+	
+	//Follows RFC 1350 and RFC 2347
+	private boolean validErrCode(Integer err) {
+		if(err < 0 || err > 8)
+			return false;
+		return true;
+	}
+	
+	//Follows RFC 1350 and RFC 2347
+	private boolean validOpCode(Integer opcode) {
+		if(opcode < 1 || opcode > 6)
+			return false;
+		return true;
+	}
+	
 	private byte[] buildErrPacket(Integer err, String emsg) {
 		//Error Packet 
+		if(!validErrCode(err))
+			return null;
 		byte[] opcode = {0,5}, errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
 		byte[][] combined = {opcode, errcode, errMsg, padding};
 		return combineBytes(combined);
 	}
 	
+	/**
+	 * Builds the byte[] of TFTP data packet.
+	 * Follows RFC 1350
+	 * @param data Data of the packet
+	 * @param block block of the 
+	 * @return
+	 */
 	private byte[] buildDataPacket(byte[] data, int block) {
 		byte[] dataPacket = null;
-		/**
-		 * BUILD DATA PACKET HERE
-		 */
 		return dataPacket;
 	}
 	
-	private byte[] buildReadRequest(File f) {
-		byte[] RRQ = null;
-		/**
-		 * BUILD REQUEST PACKET HERE
-		 */
-		if(!f.exists()) {
-			
-		}
-		return RRQ;
-	}
-	
-	private byte[] buildReadRequest(File f, byte[] opt, byte[] vals) {
-		byte[] ORRQ = null;
-		/**
-		 * BUILD REQUEST PACKET HERE
-		 */
-		if(!f.exists()) {
-			
-		}
-		if(ORRQ.length > 512)
-			return null;
-		return ORRQ;
-	}
-	
-	private byte[] buildWriteRequest(String filename) {
-		byte[] WRQ = null;
-		/**
-		 * BUILD REQUEST PACKET HERE
-		 */
-		return WRQ;
-	}
-	
-	private byte[] buildWriteRequest(String filename, byte[] opt, byte[] vals) {
-		byte[] OWRQ = null;
-		/**
-		 * BUILD OPTIONAL REQUEST PACKET HERE
-		 */
-		if(OWRQ.length > 512)
-			return null;
-		return OWRQ;
-	}
-	
+	/**
+	 * Combines byte[][] into byte[] linearly.
+	 * @param bytes byte[][] to turn into byte[]
+	 * @return byte[] equivalent of byte[][]
+	 */
 	private byte[] combineBytes(byte[][] bytes){
 		int size = 0, ctr = 0;
 		for(int i = 0; i < bytes.length; i++)
@@ -224,5 +205,77 @@ public class TFTP {
 			}
 		}
 		return combinedBytes;
+	}
+	
+	//Follows RFC 2347
+	private byte[] buildRQPacket(Integer type, String filename, String mode, byte[] opts, byte[] vals) {
+		if(type > 2 || type < 1)
+			return null;
+		//Check if given file or mode is null, return null if so.
+		if(filename == null || mode == null) {
+			return null;
+		}
+		//Prepare opcode for Read Request.
+		byte[] opcode = {0,type.byteValue()};
+		
+		if(opts != null && vals != null) { //Check if opts and vals are not null.
+			if(opts.length != vals.length) { //Check if lengths of opts and vals are not equal.
+				return null;
+			}else { //Lengths of opts and vals are equal.
+				byte[] optsVals = buildOptsVals(opts, vals); //Combines opts & vals into one byte[]; Includes the last padding for valsN
+				byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), optsVals};
+				return combineBytes(combined);
+			}
+		}else {
+			//Follows bytes: {0,1,filename.bytes,0,mode.bytes,0};
+			byte[][] combined = {opcode,filename.getBytes(),getPaddingByteArr(), mode.getBytes(), getPaddingByteArr()};
+			return combineBytes(combined);
+		}
+	}
+	
+	//Follows RFC 1350
+	private byte[] buildAckPacket(Integer block) {
+		byte[] ack = {0,4,block.byteValue(),0};
+		return ack;
+	}
+	
+	//Follows RFC 1350
+	private byte[] buildDataPacket(Integer block, byte[] data) {
+		byte[] opcode = {0,3}, blockNum = {block.byteValue(),0};
+		byte[][] preDataPacket = {opcode,blockNum,data};
+		return combineBytes(preDataPacket);
+	}
+	
+	private byte[] getPaddingByteArr() {
+		byte[] arr = {new Integer(0).byteValue()};
+		return arr;
+	}
+	
+	private byte getPaddingByte() {
+		return new Integer(0).byteValue();
+	}
+	
+	private byte[] buildOptsVals(byte[] opts, byte[] vals) {
+		if(opts == null || vals == null) {
+			return null;
+		}else {
+			if(opts.length != vals.length) {
+				return null;
+			}else {
+				ArrayList<Byte> optsvals = new ArrayList<Byte>();
+				for(int i = 0; i < opts.length; i++) {
+					optsvals.add(opts[i]);
+					optsvals.add(getPaddingByte());
+					optsvals.add(vals[i]);
+					optsvals.add(getPaddingByte());
+				}
+				byte[] rawoptsvals = new byte[optsvals.size()];
+				Byte[] optsvalsArr = new Byte[optsvals.size()];
+				optsvals.toArray(optsvalsArr);
+				for(int i = 0; i < optsvals.size(); i++)
+					rawoptsvals[i] = optsvalsArr[i].byteValue();
+				return rawoptsvals;
+			}
+		}
 	}
 }
