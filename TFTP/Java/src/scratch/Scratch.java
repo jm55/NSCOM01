@@ -26,8 +26,28 @@ public class Scratch {
 							"File exists", "No such user"
 						  };
 		for(int i = 0; i < errCode.length; i++) {
-			buildErrPacket(errCode[i], errMsg[i]);
+			//m.printBytes(buildErrPacket(errCode[i], errMsg[i]));
+			m.printByteAsString(buildErrPacket(errCode[i], errMsg[i]));
 		}
+	}
+	
+	//Follows RFC 1350
+	private static byte[] buildErrPacket(Integer err, String emsg) {
+		//Error Packet 
+		byte[] opcode = {0,5}, errcode = {0,err.byteValue()}, errMsg = emsg.getBytes(), padding = new byte[0];
+		byte[][] combined = {opcode, errcode, errMsg, padding};
+		return combineBytes(combined);
+	}
+	
+	private static byte[] buildDataPacket(Integer block, byte[] data) {
+		//byte[] dataPacket = {3,0,block,0
+		return null;
+	}
+	
+	//Follows RFC 1350
+	private static byte[] buildAckPacket(Integer block) {
+		byte[] ack = {0,4,0,block.byteValue()};
+		return ack;
 	}
 	
 	private static byte[] combineBytes(byte[][] bytes){
@@ -42,16 +62,6 @@ public class Scratch {
 			}
 		}
 		return combinedBytes;
-	}
-	
-	private static byte[] buildDataPacket(Integer block, byte[] data) {
-		//byte[] dataPacket = {3,0,block,0
-		return null;
-	}
-	
-	private static byte[] buildAckPacket(Integer block) {
-		byte[] ack = {4,0,block.byteValue(),0};
-		return ack;
 	}
 	
 	private static void FileHandlersTest() {
