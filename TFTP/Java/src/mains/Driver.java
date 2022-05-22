@@ -1,29 +1,51 @@
 package mains;
 
-import utils.Monitor;
-
 import java.io.IOException;
 import java.util.Scanner;
 
+import utils.*;
 import gui.*;
+import testing.*;
 
 public class Driver {
-	private static Monitor m;
+	private static Utility m;
 	private static GUI g;
 	private static Controller c;
     public static void main(String[] args){
-    	m = new Monitor();
+    	m = new Utility();
     	if(args.length > 0) {
     		for(String a: args) {
     			if(a.equals("-V") || a.equals("--verbose")) {
     				m.setState(true);
+    				Production();
     			}
-    			if(a.equals("-C") || a.equals("--console")) {
+    			if(a.equals("-C") || a.equals("--console"))
     				Console();
-    			}
+    			if(a.equals("-T") || a.equals("--testing"))
+    				Testing();
+    			if(a.equals("-P") || a.equals("--production"))
+    				Production();
+    			if(a.equals("-H") || a.equals("--help"))
+    				Help();
     		}
-    	}
-    	Production();
+    	}else
+    		Production();
+    }
+    
+    private static void Help() {
+    	System.out.println("TFTP Client");
+    	System.out.println("NSCOM01 - S12 (Term 2, 2022)");
+    	System.out.println("Escalona & Fadrigo");
+    	System.out.println("=========================================");
+    	System.out.println("-V or --verbose: " + "Verbose mode.");
+    	System.out.println("-T or --testing: " + "Testing mode.");
+    	System.out.println("-P or --production: " + "Production mode.");
+    	System.out.println("-H or --help: " + "Help (you're looking at this).");
+    	System.out.println("=========================================");
+    }
+    
+    private static void Testing() {
+    	new Testing();
     }
     
     private static void Production() {

@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.BorderFactory;
 
 import mains.Controller;
-import utils.Monitor;
+import utils.Utility;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -18,7 +18,7 @@ import java.awt.event.*;
  *
  */
 public class GUI extends JFrame{
-	private Monitor m = new Monitor();
+	private Utility m = new Utility();
 	private final String className = "GUI";
 	
 	//PRIVATE GLOBAL VALUES

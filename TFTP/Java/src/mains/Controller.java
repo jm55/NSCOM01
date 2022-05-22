@@ -2,7 +2,7 @@ package mains;
 
 import data.*;
 import gui.GUI;
-import utils.Monitor;
+import utils.Utility;
 
 import java.awt.event.*;
 
@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  *
  */
 public class Controller implements ActionListener {
-	private Monitor m = new Monitor();
+	private Utility m = new Utility();
 	private final String className = "Controller";
 	
 	private GUI gui;

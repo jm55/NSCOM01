@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Escalona, Jose Miguel
  */
 public class Hasher {
-	Monitor m = new Monitor();
+	Utility m = new Utility();
 	private final String className = "Hasher";
 	
 	public String getMD5(File f) {
