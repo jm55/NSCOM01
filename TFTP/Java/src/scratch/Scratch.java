@@ -19,6 +19,11 @@ public class Scratch {
 	}
 	
 	public static void RunScratch(String[] args) {
+		testErrPacket1350();
+		testDataPacket1350();
+	}
+	
+	private static void testErrPacket1350() {
 		Integer[] errCode = {0,1,2,3,4,5,6,7};
 		String[] errMsg = {	"Not defined", "Access violation",
 							"File not found", "Disk full or Quota exceeded",
@@ -26,22 +31,29 @@ public class Scratch {
 							"File exists", "No such user"
 						  };
 		for(int i = 0; i < errCode.length; i++) {
-			//m.printBytes(buildErrPacket(errCode[i], errMsg[i]));
-			m.printByteAsString(buildErrPacket(errCode[i], errMsg[i]));
+			m.printBytes(buildErrPacket1350(errCode[i], errMsg[i]));
+			//m.printByteAsString(buildErrPacket1350(errCode[i], errMsg[i]));
 		}
 	}
-	
 	//Follows RFC 1350
-	private static byte[] buildErrPacket(Integer err, String emsg) {
+	private static byte[] buildErrPacket1350(Integer err, String emsg) {
 		//Error Packet 
-		byte[] opcode = {0,5}, errcode = {0,err.byteValue()}, errMsg = emsg.getBytes(), padding = new byte[0];
+		byte[] opcode = {0,5}, errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
 		byte[][] combined = {opcode, errcode, errMsg, padding};
 		return combineBytes(combined);
 	}
 	
-	private static byte[] buildDataPacket(Integer block, byte[] data) {
-		//byte[] dataPacket = {3,0,block,0
-		return null;
+	public static void testDataPacket1350() {
+		for(int i = 1; i <= 10; i++) {
+			//m.printByteAsString(buildDataPacket1350(i, ("This is test " + i).getBytes()));
+			m.printBytes(buildDataPacket1350(i, ("This is test " + i).getBytes()));
+		}
+	}
+	//Follows RFC 1350
+	private static byte[] buildDataPacket1350(Integer block, byte[] data) {
+		byte[] opcode = {0,3}, blockNum = {block.byteValue(),0};
+		byte[][] preDataPacket = {opcode,blockNum,data};
+		return combineBytes(preDataPacket);
 	}
 	
 	//Follows RFC 1350
