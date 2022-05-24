@@ -374,7 +374,7 @@ public class TFTP {
 		//Error Packet 
 		if(!validErrCode(err))
 			return null;
-		byte[] opcode = {0,5}, errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
+		byte[] opcode = buildOpcode(5), errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
 		byte[][] combined = {opcode, errcode, errMsg, padding};
 		return combineBytes(combined);
 	}
@@ -433,7 +433,7 @@ public class TFTP {
 			return null;
 		}
 		//Prepare opcode for Read Request.
-		byte[] opcode = {0,type.byteValue()};
+		byte[] opcode = buildOpcode(type);
 		
 		if(opts != null && vals != null) { //Check if opts and vals are not null.
 			if(opts.length != vals.length) { //Check if lengths of opts and vals are not equal.
@@ -494,7 +494,7 @@ public class TFTP {
 			return null;
 		if(data.length > PACKETSIZE_LIMIT)
 			return null;
-		byte[] opcode = {0,3}, blockNum = {block.byteValue(),0};
+		byte[] opcode = buildOpcode(3), blockNum = {block.byteValue(),0};
 		byte[][] preDataPacket = {opcode,blockNum,data};
 		return combineBytes(preDataPacket);
 	}
@@ -546,5 +546,15 @@ public class TFTP {
 				return rawoptsvals;
 			}
 		}
+	}
+	
+	/**
+	 * Builds an opcode byte[]
+	 * @param opcode Specified Opcode
+	 * @return opcode in byte[]
+	 */
+	private byte[] buildOpcode(Integer opcode) {
+		byte[] opcodeByte = {0, opcode.byteValue()};
+		return opcodeByte;
 	}
 }
