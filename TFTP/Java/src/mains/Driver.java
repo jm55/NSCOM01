@@ -8,15 +8,15 @@ import gui.*;
 import testing.*;
 
 public class Driver {
-	private static Utility m;
+	private static Utility u;
 	private static GUI g;
 	private static Controller c;
     public static void main(String[] args){
-    	m = new Utility();
+    	u = new Utility();
     	if(args.length > 0) {
     		for(String a: args) {
     			if(a.equals("-V") || a.equals("--verbose")) {
-    				m.setState(true);
+    				u.setState(true);
     				Production();
     			}
     			if(a.equals("-C") || a.equals("--console"))

@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +26,12 @@ public class Utility {
 	public String dtNow() {
 		return datetimeFormat.format(LocalDateTime.now());
 	}
+	public String getBytesString(byte[] bytes) {
+		String out = "";
+		for(byte b: bytes)
+			out += b;
+		return out;
+	}
 	public void printBytes(byte[] bytes) {
 		for(byte b: bytes)
 			System.out.print(b);
@@ -44,6 +51,21 @@ public class Utility {
     public String getTempOutPath(String filename) {
 		return this.TEMP_OUTPUT_DIR + filename;
 	}
+    public byte[] shortToByteArr(Short val) {
+    	ByteBuffer buffer = ByteBuffer.allocate(2);
+    	buffer.putShort(val);
+    	return buffer.array();
+    }
+    public byte[] integerToByteArr(Integer val) {
+    	ByteBuffer buffer = ByteBuffer.allocate(4);
+    	buffer.putInt(val);
+    	return buffer.array();
+    }
+    public byte[] byteToByteArr(byte val) {
+    	ByteBuffer buffer = ByteBuffer.allocate(1);
+    	buffer.put(val);
+    	return buffer.array();
+    }
     public void writeMonitor(String className, String method, int bytesRead, int remainingBytes, int threshold) {
 		//Confirmatory for 
 		if(bytesRead == 512 && remainingBytes <= threshold)

@@ -17,16 +17,16 @@ import utils.Utility;
 
 public class FileHandlers {
 	private File f;
-	private Utility m = new Utility();
+	private Utility u = new Utility();
 	private final String className = "FileHandlers";
 	
 	public FileHandlers() {
-		m.printMessage(className, "FileHandlers()", "Default constructor");
+		u.printMessage(className, "FileHandlers()", "Default constructor");
 		this.f = null;
 	}
 	
 	public FileHandlers(File f) {
-		m.printMessage(className, "FileHandlers(File)", "Constructor with (File)");
+		u.printMessage(className, "FileHandlers(File)", "Constructor with (File)");
 		this.f = f;
 	}
 	
@@ -35,17 +35,17 @@ public class FileHandlers {
 	 * @return True if successful or file does exist, false if otherwise.
 	 */
 	public boolean openFile() {
-		m.printMessage(className, "openFile()", "Opening File...");
+		u.printMessage(className, "openFile()", "Opening File...");
 		this.f = openJFC();
 		try {
 			if(this.f.exists()) {
-				m.printMessage(className, "openFile()", "Chosen file exists...");
+				u.printMessage(className, "openFile()", "Chosen file exists...");
 				return true;
 			}
 		}catch(NullPointerException e) {
-			m.printMessage(className, "openFile()", "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(className, "openFile()", "NullPointerException: " + e.getLocalizedMessage());
 		}
-		m.printMessage(className, "openFile()", "Chosen file !exists...");
+		u.printMessage(className, "openFile()", "Chosen file !exists...");
 		return false;
 	}
 	
@@ -75,15 +75,15 @@ public class FileHandlers {
             	buffer = new byte[SIZE];
             Integer bytesRead = -1;
             
-            m.printMessage(className, "saveFileToFile(File, File)", "Streaming and Writing to file...");
-            m.printMessage(className, "saveFileToFile(File, File)", "File total size: " + SIZE);
+            u.printMessage(className, "saveFileToFile(File, File)", "Streaming and Writing to file...");
+            u.printMessage(className, "saveFileToFile(File, File)", "File total size: " + SIZE);
             while ((bytesRead = inputStream.read(buffer)) != -1) { //File Streaming
-                m.writeMonitor(this.className, "saveFileToFile(File, File)", bytesRead, inputStream.available(), 2500);
+                u.writeMonitor(this.className, "saveFileToFile(File, File)", bytesRead, inputStream.available(), 2500);
             	outputStream.write(buffer, 0, bytesRead);
             } 
             
 		} catch (IOException e) {
-			m.printMessage(this.className, "saveFileToFile(File, File)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "saveFileToFile(File, File)", "IOException: " + e.getLocalizedMessage());
 		}
 		
 		return true;
@@ -94,7 +94,7 @@ public class FileHandlers {
 	 * @return File object if successful, null if otherwise.
 	 */
 	public File openAsFile() {
-		m.printMessage(className, "openAsFile()", "Opening File...");
+		u.printMessage(className, "openAsFile()", "Opening File...");
 		return openJFC();
 	}
 	
@@ -111,7 +111,7 @@ public class FileHandlers {
 	 * @return File object, returns null if no File was assigned.
 	 */
 	public File getFile() {
-		m.printMessage(className, "getFile()", "Returning File...");
+		u.printMessage(className, "getFile()", "Returning File...");
 		return this.f;
 	}
 	
@@ -156,7 +156,7 @@ public class FileHandlers {
 	public String getFileName(File f) {
 		if(this.f != null) {
 			if(this.f.exists()) {
-				m.printMessage(className, "getFileName(boolean)", "Get Filename...");
+				u.printMessage(className, "getFileName(boolean)", "Get Filename...");
 				return this.f.getName();
 			}
 		}
@@ -194,7 +194,7 @@ public class FileHandlers {
 			Integer BUFFER_SIZE = chunkSize, SIZE = inputStream.available();
 			return new BigDecimal((float)SIZE/(float)BUFFER_SIZE).setScale(2, RoundingMode.UP).intValue();
 		} catch (IOException e) {
-			m.printMessage(className, "getChunks(int)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(className, "getChunks(int)", "IOException: " + e.getLocalizedMessage());
 			return -1;
 		}
 	}
@@ -217,7 +217,7 @@ public class FileHandlers {
 			InputStream inputStream = new FileInputStream(this.f.getAbsolutePath());
 			return inputStream.available();
 		} catch (IOException e) {
-			m.printMessage(className, "getChunks(int)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(className, "getChunks(int)", "IOException: " + e.getLocalizedMessage());
 			return -1;
 		}
 	}
@@ -227,27 +227,27 @@ public class FileHandlers {
 	 * @return File object selected by user to save data to, or null if otherwise.
 	 */
 	private File saveJFC() {
-		m.printMessage(className, "openJFC()", "Opening File...");
+		u.printMessage(className, "openJFC()", "Opening File...");
 		try {
 			JFileChooser jfc = new JFileChooser();
 			if(jfc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-				m.printMessage(className, "openJFC()", "Save file approved!");
+				u.printMessage(className, "openJFC()", "Save file approved!");
 				if(jfc.getSelectedFile().exists()) {
 					if(new GUI(false).confirmDialog("Overwrite existing file?", "File exists", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
 						return jfc.getSelectedFile();
 					}
 				}else {
-					m.printMessage(className, "openJFC()", "Selected file does not exist, creating file...");
+					u.printMessage(className, "openJFC()", "Selected file does not exist, creating file...");
 					jfc.getSelectedFile().createNewFile();
 					return jfc.getSelectedFile();
 				}
 			}else {
-				m.printMessage(className, "saveJFC()", "Open file cancelled!");
+				u.printMessage(className, "saveJFC()", "Open file cancelled!");
 			}
 		}catch(NullPointerException e) {
-			m.printMessage(className, "saveJFC()", "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(className, "saveJFC()", "NullPointerException: " + e.getLocalizedMessage());
 		} catch (IOException e) {
-			m.printMessage(className, "saveJFC()", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(className, "saveJFC()", "IOException: " + e.getLocalizedMessage());
 		}
 		return null;
 	}
@@ -257,18 +257,18 @@ public class FileHandlers {
 	 * @return File object selected by user to open, or null if otherwise.
 	 */
 	private File openJFC() {
-		m.printMessage(className, "openJFC()", "Opening File...");
+		u.printMessage(className, "openJFC()", "Opening File...");
 		try {
 			JFileChooser jfc = new JFileChooser();
 			if(jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				m.printMessage(className, "openJFC()", "Open file approved!");
+				u.printMessage(className, "openJFC()", "Open file approved!");
 				return jfc.getSelectedFile();
 			}else {
-				m.printMessage(className, "openJFC()", "Open file cancelled!");
+				u.printMessage(className, "openJFC()", "Open file cancelled!");
 				return null;
 			}
 		}catch(NullPointerException e) {
-			m.printMessage(className, "openJFC()", "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(className, "openJFC()", "NullPointerException: " + e.getLocalizedMessage());
 			return null;
 		}
 	}

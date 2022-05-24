@@ -7,7 +7,7 @@ import data.*;
 import utils.*;
 
 public class Client {
-	private Utility m = new Utility();
+	private Utility u = new Utility();
 	private final String className = "Client";
 	
 	private DatagramSocket socket = null;
@@ -23,26 +23,26 @@ public class Client {
 	}
 	
 	public Client(String host, int port) {
-		m.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + "...");
+		u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + "...");
 		try {
 			this.target = InetAddress.getByName(host);
 			this.PORT = port;
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
-			m.printMessage(this.className, "Client(host,port)", "TryCatch: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "Client(host,port)", "TryCatch: " + e.getLocalizedMessage());
 		}
 		if(this.target == null)
-			m.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " failed.");
+			u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " failed.");
 		else 
-			m.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " successful.");
-		m.printMessage(this.className, "Client(host,port)", "Connection to " + host + ":" + port + "=" + isConnected());
+			u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " successful.");
+		u.printMessage(this.className, "Client(host,port)", "Connection to " + host + ":" + port + "=" + isConnected());
 	}
 	
 	public Client(InetAddress target, int port) {
 		this.target = target;
 		this.PORT = port;
-		m.printMessage(this.className, "Client(host,port)", "Connection to " + this.target.getHostAddress() + ":" + port + "=" + isConnected());
+		u.printMessage(this.className, "Client(host,port)", "Connection to " + this.target.getHostAddress() + ":" + port + "=" + isConnected());
 	}
 	
 	/**
@@ -55,7 +55,7 @@ public class Client {
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
-			m.printMessage(this.className, "Client()", "TryCatch: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "Client()", "TryCatch: " + e.getLocalizedMessage());
 		}
 	}
 	
@@ -80,7 +80,7 @@ public class Client {
 	 * @return True if transfer completed, false if otherwise or fatal error/exception occured.
 	 */
 	private boolean writeToServer(File f) {
-		m.printMessage(this.className, "writeToServer(File)", "f.exists()...");
+		u.printMessage(this.className, "writeToServer(File)", "f.exists()...");
 		try {
 			InputStream inputStream = new FileInputStream(f.getAbsolutePath());
 			Integer BUFFER_SIZE = 512, SIZE = inputStream.available(), bytesRead = -1;
@@ -90,10 +90,10 @@ public class Client {
             int ctr = 0;
             boolean isTerminating = false;
             DatagramPacket serverReplyPacket = null;
-            m.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");
+            u.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");
 			while((bytesRead = inputStream.read(buffer)) != -1) { //While file not done streaming.
 				do{
-					m.writeMonitor(this.className,"writeToServer(File)", bytesRead, inputStream.available(), 2500); //DO NOT DELETE, FOR MONITORING PURPOSES.
+					u.writeMonitor(this.className,"writeToServer(File)", bytesRead, inputStream.available(), 2500); //DO NOT DELETE, FOR MONITORING PURPOSES.
 					/**
 					 * PROCESS PSEUDOCODE:
 					 * 1. BUILD A PACKET FROM TFTP().getDataPacket(ctr,buffer) (THOUGH CONVERT BYTE[] => DATAGRAMPACKET).
@@ -113,13 +113,13 @@ public class Client {
 					buffer = new byte[BUFFER_SIZE];
 				}
 			}
-			m.printMessage(this.className, "writeToServer(File)", "Closing stream...");
+			u.printMessage(this.className, "writeToServer(File)", "Closing stream...");
 			inputStream.close();
 			return true;
 		} catch (IOException e) {
-			m.printMessage(this.className, "writeToServer(File)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "writeToServer(File)", "IOException: " + e.getLocalizedMessage());
 		} catch (NullPointerException e) {
-			m.printMessage(this.className, "writeToServer(File)", "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "writeToServer(File)", "NullPointerException: " + e.getLocalizedMessage());
 		}
 		return false; //A fatal error (non-TFTP) occurs.
 	}
@@ -173,7 +173,7 @@ public class Client {
 	public File receive(String filename) {
 		if(filename == null)
 			return null;
-		File tempFile = new File(m.getTempOutPath(filename)); //To save on a temp folder of the program.
+		File tempFile = new File(u.getTempOutPath(filename)); //To save on a temp folder of the program.
 		if(askReadPermission(filename)) {
 			return readFromServer(filename, tempFile);
 		}else
@@ -207,16 +207,16 @@ public class Client {
 		if(target != null && PORT != -1) {
 			try {
 				//Attempt connection
-				m.printMessage(this.className,"openConnection()", "Creating DatagramSocket()...");
+				u.printMessage(this.className,"openConnection()", "Creating DatagramSocket()...");
 				this.socket = new DatagramSocket();
 				socket.connect(this.target, this.PORT);
-				m.printMessage(this.className,"openConnection()", "Socket connected!");
-				m.printMessage(this.className,"openConnection()", "Socket: " + getConnectionDetails(this.socket));
+				u.printMessage(this.className,"openConnection()", "Socket connected!");
+				u.printMessage(this.className,"openConnection()", "Socket: " + getConnectionDetails(this.socket));
 				//Check if reachable;
-				m.printMessage(this.className,"openConnection()", "Checking if target is online: " + targetIsOnline());
+				u.printMessage(this.className,"openConnection()", "Checking if target is online: " + targetIsOnline());
 			} catch (SocketException e) {
-				m.printMessage(this.className,"openConnection()", "TryCatch: Creating connection failed.");
-				m.printMessage(this.className, "openConnection()", "TryCatch: " + e.getLocalizedMessage());
+				u.printMessage(this.className,"openConnection()", "TryCatch: Creating connection failed.");
+				u.printMessage(this.className, "openConnection()", "TryCatch: " + e.getLocalizedMessage());
 				return false;
 			}
 		}
@@ -228,9 +228,9 @@ public class Client {
 	 * @return True if closed, false if otherwise.
 	 */
 	public boolean closeConnection() {
-		m.printMessage(this.className, "closeConnection()", "Closing connection...");
+		u.printMessage(this.className, "closeConnection()", "Closing connection...");
 		this.socket.close();
-		m.printMessage(this.className, "closeConnection()", "" + socket.isClosed());
+		u.printMessage(this.className, "closeConnection()", "" + socket.isClosed());
 		return socket.isClosed();
 	}
 	
@@ -240,13 +240,13 @@ public class Client {
 	 */
 	public boolean isConnected() {
 		if(this.socket == null) { //this.socket is null
-			m.printMessage(this.className, "isConnected()", "this.socket is null");
+			u.printMessage(this.className, "isConnected()", "this.socket is null");
 			return false;
 		}else if(!this.socket.isBound()) { //this.socket is !bound/binded
-			m.printMessage(this.className, "isConnected()", "this.socket is not bound");
+			u.printMessage(this.className, "isConnected()", "this.socket is not bound");
 			return false;
 		}else { //check if this.socket is connected
-			m.printMessage(this.className, "isConnected()", ""+this.socket.isConnected());
+			u.printMessage(this.className, "isConnected()", ""+this.socket.isConnected());
 			return this.socket.isConnected();
 		}
 	}
@@ -270,16 +270,16 @@ public class Client {
 	public boolean targetIsOnline(InetAddress target) {
 		if(target != null) {
 			try {
-				m.printMessage(this.className, "targetIsOnline(target)", "Pinging " + target.getHostAddress() + "...");
+				u.printMessage(this.className, "targetIsOnline(target)", "Pinging " + target.getHostAddress() + "...");
 				if(target.isReachable(this.CheckTimeout)) {
-					m.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is reachable.");
+					u.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is reachable.");
 					return true;
 				}
 			} catch (IOException e) {
-				m.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is unreachable.");
+				u.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is unreachable.");
 			}
 		}
-		m.printMessage(this.className, "targetIsOnline(target)", "Specified target is cannot be reached");
+		u.printMessage(this.className, "targetIsOnline(target)", "Specified target is cannot be reached");
 		return false;
 	}
 	
@@ -297,10 +297,10 @@ public class Client {
 	 * @return Connection details of this Client.
 	 */
 	private String getConnectionDetails(DatagramSocket socket) {
-		m.printMessage(this.className, "getConnectionDetails(DatagramSocket)", "Getting socket connection details...");
+		u.printMessage(this.className, "getConnectionDetails(DatagramSocket)", "Getting socket connection details...");
 		if(socket != null)
 			return socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " <==> " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
-		m.printMessage(this.className, "getConnectionDetails(DatagramSocket)", "Socket is null.");
+		u.printMessage(this.className, "getConnectionDetails(DatagramSocket)", "Socket is null.");
 		return null;
 	}
 }

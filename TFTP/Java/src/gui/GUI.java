@@ -18,7 +18,7 @@ import java.awt.event.*;
  *
  */
 public class GUI extends JFrame{
-	private Utility m = new Utility();
+	private Utility u = new Utility();
 	private final String className = "GUI";
 	
 	//PRIVATE GLOBAL VALUES
@@ -67,7 +67,7 @@ public class GUI extends JFrame{
 	 * @param c Controller object managing components the window.
 	 */
 	public void setListener(Controller c) {
-		m.printMessage(this.className, "setListener()", "Setting listener...");
+		u.printMessage(this.className, "setListener()", "Setting listener...");
 		listener = c;
 	}
 	
@@ -79,7 +79,7 @@ public class GUI extends JFrame{
 	}
 	
 	public void updateConnectBtn(boolean connected) {
-		m.printMessage(this.className, "updateConnectBtn(Connected)", "Updating connect status (" + connected + ")...");
+		u.printMessage(this.className, "updateConnectBtn(Connected)", "Updating connect status (" + connected + ")...");
 		if(connected)
 			connectBtn.setText("Disconnect");
 		else
@@ -238,12 +238,12 @@ public class GUI extends JFrame{
 	//PRIVATE METHODS
 	
 	private void buildDisplayContents(){
-		m.printMessage(this.className, "buildDisplayContents()", "Setting DefaultDisplay...");
+		u.printMessage(this.className, "buildDisplayContents()", "Setting DefaultDisplay...");
 		JPanel panel = new JPanel();
 		panel.setLayout(null);
 		
 		//LABELS
-		m.printMessage(this.className, "buildDisplayContents()", "Setting Labels...");
+		u.printMessage(this.className, "buildDisplayContents()", "Setting Labels...");
 		titleLabel = createLabel(WindowTitle, newFont(Font.BOLD, 24), WIDTH/2-200,24,400,32, SwingConstants.CENTER, SwingConstants.TOP);
 		panel.add(titleLabel);
 		serverIPLabel = createLabel("Server IP:", newFont(Font.BOLD, 16),32,64*1,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
@@ -258,7 +258,7 @@ public class GUI extends JFrame{
 		panel.add(remoteSelectedFileLabel);
 		
 		//INPUT/OUTPUT FIELDS/AREAS
-		m.printMessage(this.className, "buildDisplayContents()", "Setting I/O Fields...");
+		u.printMessage(this.className, "buildDisplayContents()", "Setting I/O Fields...");
 		serverIPField = createTextField(newFont(Font.PLAIN, 16),32,(64*1)+32,256,32);
 		panel.add(serverIPField);
 		serverPortField = createTextField(newFont(Font.PLAIN, 16),32,(64*2)+32,256,32);
@@ -279,7 +279,7 @@ public class GUI extends JFrame{
 		panel.add(P2PCheckBox);
 		
 		//BUTTONS
-		m.printMessage(this.className, "buildDisplayContents()", "Setting Buttons...");
+		u.printMessage(this.className, "buildDisplayContents()", "Setting Buttons...");
 		connectBtn = createButton("", newFont(Font.BOLD,16),32,(64*4),this.BTNWIDTH,50,listener,"ServerConnection");
 		panel.add(connectBtn);
 		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"OpenFile");

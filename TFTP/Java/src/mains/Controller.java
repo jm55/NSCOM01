@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  *
  */
 public class Controller implements ActionListener {
-	private Utility m = new Utility();
+	private Utility u = new Utility();
 	private final String className = "Controller";
 	
 	private GUI gui;
@@ -30,7 +30,7 @@ public class Controller implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String act = e.getActionCommand();
 		
-		m.printMessage(this.className, "actionPerformed(e)", act);
+		u.printMessage(this.className, "actionPerformed(e)", act);
 		
 		if(act.equals("ServerConnection")) {
 			
@@ -54,13 +54,13 @@ public class Controller implements ActionListener {
 		
 		if(act.equals("EndProgram")) {
 			if(this.gui.confirmDialog("Exit Program?","Exit Program",JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-				m.printMessage(this.className, "actionPerformed(e) > EndProgram", "Exiting program...");
+				u.printMessage(this.className, "actionPerformed(e) > EndProgram", "Exiting program...");
 				System.exit(0);
 			}
 		}
 	}
 	
 	private void printConsole(String message) {
-		this.gui.appendOutputText(m.getGUIConsoleMessage(message));
+		this.gui.appendOutputText(u.getGUIConsoleMessage(message));
 	}
 }

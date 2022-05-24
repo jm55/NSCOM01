@@ -92,7 +92,7 @@ import utils.Utility;
  *			it allows the option of mail forwarding by a relay computer.
  */
 public class TFTP {
-	private Utility m = new Utility();
+	private Utility u = new Utility();
 	private final String className = "TFTP";
 	private final String[] MODES = {"netascii", "octet", "mail"};
 	private final int PACKETSIZE_LIMIT = 512;
@@ -168,6 +168,42 @@ public class TFTP {
 		 */
 		return errMessage;
 	}
+	
+	/**
+	 * DIAGNOSTIC
+	 * Check resulting OpCode byte[] given its value.
+	 * @param opcode Opcode value
+	 * @return byte[] OpCode.
+	 */
+	public byte[] checkOpCode(byte opcode) {
+		return buildOpcode(opcode);
+	}
+	
+	/**
+	 * DIAGNOSTIC
+	 * Check resulting optvals given opts and vals
+	 * @param opts opts
+	 * @param vals vals
+	 * @return byte[] OptVals
+	 */
+	public byte[] checkOptVals(byte[] opts, byte[] vals) {
+		return this.buildOptsVals(opts, vals);
+	}
+	
+	/**
+	 * DIAGNOSTIC
+	 * Check resulting optvals given opts and vals
+	 * @param block Block# in 2bytes (Short)
+	 * @return byte[] OptVals
+	 */
+	public byte[] checkACK(Short block) {
+		return this.buildACKPacket(block);
+	}
+	
+	public byte[] checkOACK(byte[] opts, byte[] vals) {
+		return this.buildOACKPacket(opts, vals);
+	}
+	
 	
 	/**
 	 * Extract OpCode of a packet.
@@ -264,8 +300,11 @@ public class TFTP {
 	 */
 	public byte[] getWRQPacket(File f, String mode, byte[] opt, byte[] vals) {
 		if(f != null)
-			if(f.exists() && validOptVal(opt,vals))
-				return buildRQPacket(2,f.getName(), mode, opt, vals);
+			if(f.exists() && validOptVal(opt,vals)) {
+				byte opcode = 2;
+				return buildRQPacket(opcode,f.getName(), mode, opt, vals);
+			}
+				
 		return null;
 	}
 	
@@ -279,8 +318,11 @@ public class TFTP {
 	 * @return byte[] if valid parameters, false if otherwise.
 	 */
 	public byte[] getRRQPacket(String filename, String mode, byte[] opt, byte[] vals) {
-		if(filename != null && validOptVal(opt, vals))
-			return buildRQPacket(1,filename, mode, opt, vals);
+		if(filename != null && validOptVal(opt, vals)) {
+			byte opcode = 1;
+			return buildRQPacket(opcode,filename, mode, opt, vals);
+		}
+			
 		return null;
 	}
 	
@@ -374,8 +416,9 @@ public class TFTP {
 		//Error Packet 
 		if(!validErrCode(err))
 			return null;
-		byte[] opcode = buildOpcode(5), errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
-		byte[][] combined = {opcode, errcode, errMsg, padding};
+		byte opcodeVal = 5;
+		byte[] opcode = buildOpcode(opcodeVal), errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
+		byte[][] combined = {opcode, errcode, padding, errMsg};
 		return combineBytes(combined);
 	}
 	
@@ -425,7 +468,7 @@ public class TFTP {
 	 * @param vals Vals
 	 * @return Packet in byte[] form. Returns null if type is invalid, filename or transfer mode is null, or if opts and vals are not equal in length.
 	 */
-	private byte[] buildRQPacket(Integer type, String filename, String mode, byte[] opts, byte[] vals) {
+	private byte[] buildRQPacket(byte type, String filename, String mode, byte[] opts, byte[] vals) {
 		if(type > 2 || type < 1)
 			return null;
 		//Check if given file or mode is null, return null if so.
@@ -440,12 +483,12 @@ public class TFTP {
 				return null;
 			}else { //Lengths of opts and vals are equal.
 				byte[] optsVals = buildOptsVals(opts, vals); //Combines opts & vals into one byte[]; Includes the last padding for valsN
-				byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), optsVals};
+				byte[][] combined = {opcode, getPaddingByteArr(), filename.getBytes(), getPaddingByteArr(), mode.getBytes(), optsVals};
 				return combineBytes(combined);
 			}
 		}else {
 			//Follows bytes: {0,1,filename.bytes,0,mode.bytes,0};
-			byte[][] combined = {opcode,filename.getBytes(),getPaddingByteArr(), mode.getBytes(), getPaddingByteArr()};
+			byte[][] combined = {opcode, getPaddingByteArr(), filename.getBytes(), getPaddingByteArr(), mode.getBytes()};
 			return combineBytes(combined);
 		}
 	}
@@ -455,10 +498,12 @@ public class TFTP {
 	 * @param block Block# to be acknowledged.
 	 * @return Packet in byte[] form, null if block is invalid (such that it is < 0).
 	 */
-	private byte[] buildACKPacket(Integer block) {
+	private byte[] buildACKPacket(Short block) {
 		if(block < 0)
 			return null;
-		byte[] ack = {0,4,block.byteValue(),0};
+		byte opcode = 4;
+		byte[][] combined = {buildOpcode(opcode),u.shortToByteArr(block)};
+		byte[] ack = combineBytes(combined);
 		return ack;
 	}
 	
@@ -474,7 +519,8 @@ public class TFTP {
 			return null;
 		if(opts.length != vals.length)
 			return null;
-		byte[] optCode = {0,4};
+		byte opcodeVal = 6;
+		byte[] optCode = buildOpcode(opcodeVal);
 		byte[] combinedOptsVals = buildOptsVals(opts, vals);
 		byte[][] combined = {optCode, combinedOptsVals};
 		return combineBytes(combined);
@@ -494,7 +540,8 @@ public class TFTP {
 			return null;
 		if(data.length > PACKETSIZE_LIMIT)
 			return null;
-		byte[] opcode = buildOpcode(3), blockNum = {block.byteValue(),0};
+		byte opcodeVal = 3;
+		byte[] opcode = buildOpcode(opcodeVal), blockNum = {block.byteValue(),0};
 		byte[][] preDataPacket = {opcode,blockNum,data};
 		return combineBytes(preDataPacket);
 	}
@@ -553,8 +600,8 @@ public class TFTP {
 	 * @param opcode Specified Opcode
 	 * @return opcode in byte[]
 	 */
-	private byte[] buildOpcode(Integer opcode) {
-		byte[] opcodeByte = {0, opcode.byteValue()};
+	private byte[] buildOpcode(byte opcode) {
+		byte[] opcodeByte = {0, opcode};
 		return opcodeByte;
 	}
 }
