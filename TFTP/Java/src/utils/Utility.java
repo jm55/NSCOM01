@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.BitSet;
 
 public class Utility {
 	private static boolean state = false;
@@ -25,6 +26,21 @@ public class Utility {
 	}
 	public String dtNow() {
 		return datetimeFormat.format(LocalDateTime.now());
+	}
+	public String getBytesAsBits(byte[] bytes) { //https://stackoverflow.com/a/62318518
+		StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append(String.format("%8s", Integer.toBinaryString(bytes[i] & 0xFF)).replace(' ', '0'));
+            if(i%8 == 0)
+            	sb.append(' ');
+        }
+        return sb.toString();
+	}
+	public String getBytesHex(byte[] bytes) {
+		String out = "";
+		for(byte b: bytes)
+			out += Integer.toHexString(b);
+		return out;
 	}
 	public String getBytesString(byte[] bytes) {
 		String out = "";

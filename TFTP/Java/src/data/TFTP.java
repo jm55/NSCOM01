@@ -353,6 +353,12 @@ public class TFTP {
 	}
 	
 	/**
+	 * ================================================
+	 * PRIVATES
+	 * ================================================
+	 */
+	
+	/**
 	 * Checks if an opt and val byte[] are equal in length.
 	 * Follows RFC 2347
 	 * @param opt Opt byte[]
