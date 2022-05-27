@@ -24,9 +24,12 @@ public class Scratch {
 	public static void RunScratch() {
 		TFTP t = new TFTP();
 		System.out.println("Running scratch...");
-		String optionName = "tsize";
-		String optionVal = "81967";
 		
+		String hex = "68656c6c6f20776f726c64";
+		byte[] data = u.hexStringToByteArray(hex);
+		Integer block = 1;
+		byte[] result = buildDataPacket(block, data);
+		System.out.println(u.getBytesAsBits(result));
 	}
 	
 	/**
@@ -36,13 +39,41 @@ public class Scratch {
 	private static final String[] MODES = {"netascii", "octet", "mail"};
 	
 	/**
+	 * Converts a String[] into a 2D byte arr. For use in making opts and vals byte array.
+	 * @param text
+	 * @return
+	 */
+	private static byte[][] stringArrToByteArr(String[] text){
+		byte[][] byteArr = new byte[text.length][];
+		
+		for(int i = 0; i < text.length; i++)
+			byteArr[i] = text[i].getBytes();
+		
+		return byteArr;
+	}
+	
+	/**
 	 * Checks if an opt and val byte[] are equal in length.
 	 * Follows RFC 2347
-	 * @param opt Opt byte[]
-	 * @param vals Vals byte[]
+	 * @param opt Opt String[]
+	 * @param vals Vals String[]
 	 * @return True if equal in length, false if otherwise.
 	 */
-	private static boolean validOptVal(byte[] opt, byte[] vals) {
+	private static boolean validOptVal(String[] opt, String[] vals) {
+		if(opt != null && vals != null)
+			if(opt.length == vals.length)
+				return true;
+		return false;
+	}
+	
+	/**
+	 * Checks if an opt and val byte[] are equal in length.
+	 * Follows RFC 2347
+	 * @param opt Opt byte[][]
+	 * @param vals Vals byte[][]
+	 * @return True if equal in length, false if otherwise.
+	 */
+	private static boolean validOptVal(byte[][] opt, byte[][] vals) {
 		if(opt != null && vals != null)
 			if(opt.length == vals.length)
 				return true;
@@ -92,33 +123,19 @@ public class Scratch {
 	 * Builds an Error Packet for use in TFTP transmission.
 	 * Follows RFC1350 and the subsequent valid error codes of RFC 2347.
 	 * @param err Error code (Check valid values from RFC 1350 & 2347)
-	 * @param emsg Error message.
+	 * @param emsg Error message. Adds \0 if it does not exist as a terminating character.
 	 * @return Returns a packet in its byte[] form. Returns null if error code is invalid.
 	 */
 	private static byte[] buildErrPacket(Integer err, String emsg) {
+		if(emsg.charAt(emsg.length()-1) != '\0')
+			emsg += '\0';
 		//Error Packet 
 		if(!validErrCode(err))
 			return null;
 		byte opcodeVal = 5;
-		byte[] opcode = buildOpcode(opcodeVal), errcode = {err.byteValue(), 0}, errMsg = emsg.getBytes(), padding = new byte[0];
-		byte[][] combined = {opcode, errcode, padding, errMsg};
+		byte[] opcode = buildOpcode(opcodeVal), errcode = {0, err.byteValue()}, errMsg = emsg.getBytes();
+		byte[][] combined = {opcode, errcode, errMsg, getPaddingByteArr()}; //the 2nd and last paddings are for errMsg termination and err packet padding respectively
 		return combineBytes(combined);
-	}
-	
-	/**
-	 * TODO
-	 * Builds the byte[] of TFTP data packet.
-	 * Follows RFC 1350
-	 * @param data Data of the packet
-	 * @param block block of the 
-	 * @return
-	 */
-	private static byte[] buildDataPacket(byte[] data, int block) {
-		byte[] dataPacket = null;
-		/**
-		 * BUILD PACKET ACCORDING TO RFC 1350
-		 */
-		return dataPacket;
 	}
 	
 	/**
@@ -151,13 +168,21 @@ public class Scratch {
 	 * @param vals Vals
 	 * @return Packet in byte[] form. Returns null if type is invalid, filename or transfer mode is null, or if opts and vals are not equal in length.
 	 */
-	private static byte[] buildRQPacket(byte type, String filename, String mode, byte[] opts, byte[] vals) {
+	private static byte[] buildRQPacket(byte type, String filename, String mode, String[] opts, String[] vals) {
 		if(type > 2 || type < 1)
 			return null;
 		//Check if given file or mode is null, return null if so.
 		if(filename == null || mode == null) {
 			return null;
 		}
+		//Check if mode is valid or not
+		boolean match = false;
+		for(String m: Scratch.MODES)
+			if(m.equals(mode))
+				match = true;
+		if(!match)
+			return null;
+		
 		//Prepare opcode for Read Request.
 		byte[] opcode = buildOpcode(type);
 		
@@ -166,7 +191,7 @@ public class Scratch {
 				return null;
 			}else { //Lengths of opts and vals are equal.
 				byte[] optsVals = buildOptsVals(opts, vals); //Combines opts & vals into one byte[]; Includes the last padding for valsN
-				byte[][] combined = {opcode, getPaddingByteArr(), filename.getBytes(), getPaddingByteArr(), mode.getBytes(), optsVals};
+				byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), optsVals};
 				return combineBytes(combined);
 			}
 		}else {
@@ -197,7 +222,7 @@ public class Scratch {
 	 * @param vals Option values
 	 * @return Packet in byte[] form, null if opts and/or vals are not valid.
 	 */
-	private static byte[] buildOACKPacket(byte[] opts, byte[] vals) {
+	private static byte[] buildOACKPacket(String[] opts, String[] vals) {
 		if(opts == null || vals == null)
 			return null;
 		if(opts.length != vals.length)
@@ -221,10 +246,10 @@ public class Scratch {
 			return null;
 		if(data == null)
 			return null;
-		if(data.length > PACKETSIZE_LIMIT)
+		if(data.length-1 > PACKETSIZE_LIMIT)
 			return null;
 		byte opcodeVal = 3;
-		byte[] opcode = buildOpcode(opcodeVal), blockNum = {block.byteValue(),0};
+		byte[] opcode = buildOpcode(opcodeVal), blockNum = {0, block.byteValue()};
 		byte[][] preDataPacket = {opcode,blockNum,data};
 		return combineBytes(preDataPacket);
 	}
@@ -250,11 +275,32 @@ public class Scratch {
 	/**
 	 * Combines opts and vals into one byte[] that follows RFC 2347.
 	 * The byte[] ends with a null terminating of byte 0.
-	 * @param opts List of opts. (String)
-	 * @param vals List of vals. (String)
+	 * @param opts List of opts. (String to byte[][])
+	 * @param vals List of vals. (String to byte[][])
 	 * @return byte[] if opts and vals are valid, null if opts and vals are either null or not equal in length.
 	 */
-	private static byte[] buildOptsVals(byte[] opts, byte[] vals) {
+	private static byte[] buildOptsVals(String[] opts, String[] vals) {
+		if(opts == null || vals == null) {
+			return null;
+		}else {
+			if(opts.length != vals.length) {
+				return null;
+			}else {
+				byte[][] optsBytes = stringArrToByteArr(opts);
+				byte[][] valsBytes = stringArrToByteArr(vals);
+				return buildOptsVals(optsBytes, valsBytes);
+			}
+		}
+	}
+	
+	/**
+	 * Combines opts and vals into one byte[] that follows RFC 2347.
+	 * The byte[] ends with a null terminating of byte 0.
+	 * @param opts List of opts. (String[] to byte[][])
+	 * @param vals List of vals. (String[] to byte[][])
+	 * @return byte[] if opts and vals are valid, null if opts and vals are either null or not equal in length.
+	 */
+	private static byte[] buildOptsVals(byte[][] opts, byte[][] vals) {
 		if(opts == null || vals == null) {
 			return null;
 		}else {
@@ -263,11 +309,16 @@ public class Scratch {
 			}else {
 				ArrayList<Byte> optsvals = new ArrayList<Byte>();
 				for(int i = 0; i < opts.length; i++) {
-					optsvals.add(opts[i]);
+					//append opts[i] then add padding
+					for(int j = 0;  j < opts[i].length; j++)
+						optsvals.add(opts[i][j]);
 					optsvals.add(getPaddingByte());
-					optsvals.add(vals[i]);
+					//append vals[i] then add padding
+					for(int j = 0;  j < vals[i].length; j++)
+						optsvals.add(vals[i][j]);
 					optsvals.add(getPaddingByte());
 				}
+				//convert ArrayList<Byte> to byte[]
 				byte[] rawoptsvals = new byte[optsvals.size()];
 				Byte[] optsvalsArr = new Byte[optsvals.size()];
 				optsvals.toArray(optsvalsArr);

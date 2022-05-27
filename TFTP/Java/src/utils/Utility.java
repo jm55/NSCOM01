@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -27,12 +28,15 @@ public class Utility {
 	public String dtNow() {
 		return datetimeFormat.format(LocalDateTime.now());
 	}
+	public static byte[] hexStringToByteArray(String s) { //https://stackoverflow.com/a/8890335
+		byte[] b = new BigInteger(s,16).toByteArray();
+		return b;
+	}
 	public String getBytesAsBits(byte[] bytes) { //https://stackoverflow.com/a/62318518
 		StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
             sb.append(String.format("%8s", Integer.toBinaryString(bytes[i] & 0xFF)).replace(' ', '0'));
-            if(i%8 == 0)
-            	sb.append(' ');
+        	sb.append(' ');
         }
         return sb.toString();
 	}
