@@ -52,7 +52,6 @@ public class Driver {
     		g = new GUI();
     		c = new Controller(g);
     		g.setDefaultDisplay();
-        	g.updateConnectBtn(false);
     }
     
     private static void Console() {

@@ -19,6 +19,7 @@ public class FileHandlers {
 	private File f;
 	private Utility u = new Utility();
 	private final String className = "FileHandlers";
+	private final int BUFFER_SIZE = 512;
 	
 	public FileHandlers() {
 		u.printMessage(className, "FileHandlers()", "Default constructor");
@@ -78,7 +79,7 @@ public class FileHandlers {
             u.printMessage(className, "saveFileToFile(File, File)", "Streaming and Writing to file...");
             u.printMessage(className, "saveFileToFile(File, File)", "File total size: " + SIZE);
             while ((bytesRead = inputStream.read(buffer)) != -1) { //File Streaming
-                u.writeMonitor(this.className, "saveFileToFile(File, File)", bytesRead, inputStream.available(), 2500);
+                u.writeMonitor(this.className, "saveFileToFile(File, File)", bytesRead, inputStream.available(), 2500, this.BUFFER_SIZE);
             	outputStream.write(buffer, 0, bytesRead);
             } 
             

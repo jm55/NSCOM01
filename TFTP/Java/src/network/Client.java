@@ -93,7 +93,7 @@ public class Client {
             u.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");
 			while((bytesRead = inputStream.read(buffer)) != -1) { //While file not done streaming.
 				do{
-					u.writeMonitor(this.className,"writeToServer(File)", bytesRead, inputStream.available(), 2500); //DO NOT DELETE, FOR MONITORING PURPOSES.
+					u.writeMonitor(this.className,"writeToServer(File)", bytesRead, inputStream.available(), 2500, this.BUFFER_SIZE); //DO NOT DELETE, FOR MONITORING PURPOSES.
 					/**
 					 * PROCESS PSEUDOCODE:
 					 * 1. BUILD A PACKET FROM TFTP().getDataPacket(ctr,buffer) (THOUGH CONVERT BYTE[] => DATAGRAMPACKET).

@@ -21,6 +21,8 @@ public class GUI extends JFrame{
 	private Utility u = new Utility();
 	private final String className = "GUI";
 	
+	private final String[] blockSizeValues = {"Default","128","512","1024","1428","2048","4096","8192","16384","32768"};
+	
 	//PRIVATE GLOBAL VALUES
 	private boolean debug = false;
 	private final int WIDTH = 1024, HEIGHT = 620;
@@ -28,12 +30,13 @@ public class GUI extends JFrame{
 	private final String WindowTitle = "NSCOM01 - TFTP";
 	private final String typeFace = "Arial", consoleFace = "Consolas";
 	private ActionListener listener;
-	private JLabel titleLabel, serverIPLabel, serverPortLabel, consoleLabel, localSelectedFileLabel, remoteSelectedFileLabel;
-	private JTextField serverIPField, serverPortField, localSelectedFileField, remoteSelectedFileField;
+	private JLabel titleLabel, serverIPLabel, serverPortLabel, consoleLabel, localSelectedFileLabel, remoteSelectedFileLabel, blockSizeLabel;
+	private JTextField serverIPField, serverPortField, localSelectedFileField, remoteSelectedFileField ;
 	private JTextArea outputArea;
 	private JScrollPane outputScroll;
-	private JCheckBox P2PCheckBox;
-	private JButton connectBtn, openFileBtn, sendFileBtn, recvFileBtn, resetBtn, aboutBtn, exitBtn;
+	//private JCheckBox P2PCheckBox;
+	private JButton pingBtn, openFileBtn, sendFileBtn, recvFileBtn, resetBtn, aboutBtn, exitBtn;
+	private JComboBox blockSizes;
 	
 	/**
 	 * Default constructor that builds the window.
@@ -76,14 +79,6 @@ public class GUI extends JFrame{
 	 */
 	public void setDefaultDisplay() {
 		buildDisplayContents();
-	}
-	
-	public void updateConnectBtn(boolean connected) {
-		u.printMessage(this.className, "updateConnectBtn(Connected)", "Updating connect status (" + connected + ")...");
-		if(connected)
-			connectBtn.setText("Disconnect");
-		else
-			connectBtn.setText("Connect");
 	}
 	
 	/**
@@ -175,11 +170,20 @@ public class GUI extends JFrame{
 	}
 	
 	/**
+	 * Gets the value from blockSizes selector
+	 * @return String value of the selected value.
+	 */
+	public String getBlockSize() {
+		return (String)blockSizes.getSelectedItem();
+	}
+	
+	/**
 	 * Returns if input is comma separated
 	 * @return True if input is comma separated, false otherwise.
 	 */
-	public boolean isP2P() {
-		return P2PCheckBox.isSelected();
+	private boolean isP2P() {
+		return true;
+		//return P2PCheckBox.isSelected();
 	}
 	
 	/**
@@ -207,6 +211,7 @@ public class GUI extends JFrame{
 		remoteSelectedFileField.setText("");
 		serverIPField.setText("");
 		serverPortField.setText("");
+		blockSizes.setSelectedIndex(0);
 	}
 	
 	/**
@@ -256,6 +261,8 @@ public class GUI extends JFrame{
 		panel.add(localSelectedFileLabel);
 		remoteSelectedFileLabel = createLabel("Remote Selected File:", newFont(Font.BOLD, 16),256+64,64*2,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
 		panel.add(remoteSelectedFileLabel);
+		blockSizeLabel = createLabel("Block Size:", newFont(Font.BOLD, 16),32,64*3,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		panel.add(blockSizeLabel);
 		
 		//INPUT/OUTPUT FIELDS/AREAS
 		u.printMessage(this.className, "buildDisplayContents()", "Setting I/O Fields...");
@@ -275,16 +282,21 @@ public class GUI extends JFrame{
 		panel.add(outputScroll);
 		
 		//CHECKBOX
-		P2PCheckBox = createCheckBox("P2P Mode", newFont(Font.BOLD, 16),32,(64*3)+16,256,32,false);
-		panel.add(P2PCheckBox);
+		//P2PCheckBox = createCheckBox("P2P Mode", newFont(Font.BOLD, 16),32,(64*3)+16,256,32,false);
+		//panel.add(P2PCheckBox);
+		
+		//DROP DOWN BOX
+		blockSizes = createComboBox(blockSizeValues,newFont(Font.BOLD, 16),32,(64*3)+32,256,32,listener,"BlockSelector");
+		panel.add(blockSizes);
+		
 		
 		//BUTTONS
 		u.printMessage(this.className, "buildDisplayContents()", "Setting Buttons...");
-		connectBtn = createButton("", newFont(Font.BOLD,16),32,(64*4),this.BTNWIDTH,50,listener,"ServerConnection");
-		panel.add(connectBtn);
-		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"OpenFile");
+		pingBtn = createButton("Ping Server", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"ServerConnection");
+		panel.add(pingBtn);
+		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"OpenFile");
 		panel.add(openFileBtn);
-		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"SendFile");
+		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),656-this.BTNWIDTH,(64*3)+16,this.BTNWIDTH,50,listener,"SendFile");
 		panel.add(sendFileBtn);
 		recvFileBtn = createButton("Receive File", newFont(Font.BOLD,16),656+this.BTNWIDTH/2-this.BTNWIDTH/4,(64*3)+16,this.BTNWIDTH,50,listener,"RecvFile");
 		panel.add(recvFileBtn);
@@ -438,6 +450,28 @@ public class GUI extends JFrame{
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scroll.setBounds(ta.getX(), ta.getY(), ta.getWidth(), ta.getHeight());
 		return scroll;
+	}
+	
+	/**
+	 * Builds a JComboBox object given the specifications.
+	 * @param selection List of items for selection
+	 * @param f Font
+	 * @param x X position
+	 * @param y Y positon
+	 * @param width Width of object
+	 * @param height Height of object
+	 * @param listener ActionListener for object.
+	 * @return JComboxBox object
+	 */
+	private JComboBox createComboBox(String[] selection, Font f, int x, int y, int width, int height, ActionListener listener, String actionCommand) {
+		JComboBox combo = new JComboBox(selection);
+		combo.setFont(f);
+		combo.setBounds(x, y, width, height);
+		combo.setSelectedItem(0);
+		combo.setEditable(false);
+		combo.addActionListener(listener);
+		combo.setActionCommand(actionCommand);
+		return combo;
 	}
 	
 	

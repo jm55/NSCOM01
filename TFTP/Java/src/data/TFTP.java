@@ -162,11 +162,10 @@ public class TFTP {
 		if(!isError(packetBytes)) //If not an error
 			return null;
 		String[] errMessage = new String[2];
-		/**
-		 * Extract errCode and errMsg from packet.
-		 * Refer to RFC 1350
-		 * Place extracted values accordingly to errMessage = {errCode, errMsg}
-		 */
+		
+		String bits = u.getBytesAsBits(packetBytes);
+		System.out.println("extractError(byte[]): " + bits);
+		
 		return errMessage;
 	}
 	
@@ -305,7 +304,6 @@ public class TFTP {
 				byte opcode = 2;
 				return buildRQPacket(opcode,f.getName(), mode, opt, vals);
 			}
-				
 		return null;
 	}
 	
@@ -325,6 +323,15 @@ public class TFTP {
 		}
 			
 		return null;
+	}
+	
+	/**
+	 * Get an error packet. Error message will be pre-made by getErrMsg();
+	 * @param err Error code
+	 * @return byte[] if valid err parameter, false if otherwise.
+	 */
+	public byte[] getErrPacket(Integer err) {
+		return buildErrPacket(err, getErrMsg(err));
 	}
 	
 	/**
@@ -354,6 +361,28 @@ public class TFTP {
 	}
 	
 	/**
+	 * Gets a pre-made error message given an error code
+	 * @param err Error code
+	 * @return Error message if err is valid, null if otherwise.
+	 */
+	public String getErrMsg(Integer err) {
+		String[] msg = {
+				"File not found",
+				"Access violation",
+				"Disk full",
+				"Illegal TFTP operation",
+				"Unknown port",
+				"File already exists",
+				"No such user",
+				"Invalid option"
+		};
+		err--;
+		if(err > 7 || !validErrCode(err))
+			return null;		
+		return msg[err];
+	}
+	
+	/**
 	 * ================================================
 	 * PRIVATES
 	 * ================================================
@@ -364,7 +393,7 @@ public class TFTP {
 	 * @param text
 	 * @return
 	 */
-	private  byte[][] stringArrToByteArr(String[] text){
+	private byte[][] stringArrToByteArr(String[] text){
 		byte[][] byteArr = new byte[text.length][];
 		
 		for(int i = 0; i < text.length; i++)
@@ -380,7 +409,7 @@ public class TFTP {
 	 * @param vals Vals String[]
 	 * @return True if equal in length, false if otherwise.
 	 */
-	private  boolean validOptVal(String[] opt, String[] vals) {
+	private boolean validOptVal(String[] opt, String[] vals) {
 		if(opt != null && vals != null)
 			if(opt.length == vals.length)
 				return true;
@@ -394,7 +423,7 @@ public class TFTP {
 	 * @param vals Vals byte[][]
 	 * @return True if equal in length, false if otherwise.
 	 */
-	private  boolean validOptVal(byte[][] opt, byte[][] vals) {
+	private boolean validOptVal(byte[][] opt, byte[][] vals) {
 		if(opt != null && vals != null)
 			if(opt.length == vals.length)
 				return true;
@@ -407,7 +436,7 @@ public class TFTP {
 	 * @param err Error code to be checked.
 	 * @return True if valid, false if otherwise.
 	 */
-	private  boolean validErrCode(Integer err) {
+	private boolean validErrCode(Integer err) {
 		if(err < 0 || err > 8)
 			return false;
 		return true;
@@ -419,7 +448,7 @@ public class TFTP {
 	 * @param mode Mode to be checked.
 	 * @return True if valid, false if otherwise.
 	 */
-	private  boolean validMode(String mode) {
+	private boolean validMode(String mode) {
 		if(mode == null)
 			return false;
 		for(String m: this.MODES)
@@ -434,7 +463,7 @@ public class TFTP {
 	 * @param opcode OpCode to be checked.
 	 * @return True if valid, false if otherwise.
 	 */
-	private  boolean validOpCode(Integer opcode) {
+	private boolean validOpCode(Integer opcode) {
 		if(opcode < 1 || opcode > 6)
 			return false;
 		return true;
@@ -447,7 +476,7 @@ public class TFTP {
 	 * @param emsg Error message. Adds \0 if it does not exist as a terminating character.
 	 * @return Returns a packet in its byte[] form. Returns null if error code is invalid.
 	 */
-	private  byte[] buildErrPacket(Integer err, String emsg) {
+	private byte[] buildErrPacket(Integer err, String emsg) {
 		if(emsg.charAt(emsg.length()-1) != '\0')
 			emsg += '\0';
 		//Error Packet 
@@ -464,7 +493,7 @@ public class TFTP {
 	 * @param bytes byte[][] to turn into byte[]
 	 * @return Combined byte[] equivalent of byte[][]
 	 */
-	private  byte[] combineBytes(byte[][] bytes){
+	private byte[] combineBytes(byte[][] bytes){
 		int size = 0, ctr = 0;
 		for(int i = 0; i < bytes.length; i++)
 			size += bytes[i].length;
@@ -489,7 +518,7 @@ public class TFTP {
 	 * @param vals Vals
 	 * @return Packet in byte[] form. Returns null if type is invalid, filename or transfer mode is null, or if opts and vals are not equal in length.
 	 */
-	private  byte[] buildRQPacket(byte type, String filename, String mode, String[] opts, String[] vals) {
+	private byte[] buildRQPacket(byte type, String filename, String mode, String[] opts, String[] vals) {
 		if(type > 2 || type < 1)
 			return null;
 		//Check if given file or mode is null, return null if so.
@@ -527,7 +556,7 @@ public class TFTP {
 	 * @param block Block# to be acknowledged.
 	 * @return Packet in byte[] form, null if block is invalid (such that it is < 0).
 	 */
-	private  byte[] buildACKPacket(Short block) {
+	private byte[] buildACKPacket(Short block) {
 		if(block < 0)
 			return null;
 		byte opcode = 4;
@@ -543,7 +572,7 @@ public class TFTP {
 	 * @param vals Option values
 	 * @return Packet in byte[] form, null if opts and/or vals are not valid.
 	 */
-	private  byte[] buildOACKPacket(String[] opts, String[] vals) {
+	private byte[] buildOACKPacket(String[] opts, String[] vals) {
 		if(opts == null || vals == null)
 			return null;
 		if(opts.length != vals.length)
@@ -562,7 +591,7 @@ public class TFTP {
 	 * @param data Data in byte[].
 	 * @return byte[] if parameters are valid, false if block is < 1, data is null, or length of data exceeds packet size limit for TFTP.
 	 */
-	private  byte[] buildDataPacket(Integer block, byte[] data) {
+	private byte[] buildDataPacket(Integer block, byte[] data) {
 		if(block < 0)
 			return null;
 		if(data == null)
@@ -579,7 +608,7 @@ public class TFTP {
 	 * Get a padding as byte[].
 	 * @return byte[] containing a zero-value byte.
 	 */
-	private  byte[] getPaddingByteArr() {
+	private byte[] getPaddingByteArr() {
 		byte[] arr = {getPaddingByte()};
 		return arr;
 	}
@@ -588,7 +617,7 @@ public class TFTP {
 	 * Get a padding byte as byte. 
 	 * @return Zero-value byte.
 	 */
-	private  byte getPaddingByte() {
+	private byte getPaddingByte() {
 		Integer padding = 0;
 		return padding.byteValue();
 	}
@@ -600,7 +629,7 @@ public class TFTP {
 	 * @param vals List of vals. (String to byte[][])
 	 * @return byte[] if opts and vals are valid, null if opts and vals are either null or not equal in length.
 	 */
-	private  byte[] buildOptsVals(String[] opts, String[] vals) {
+	private byte[] buildOptsVals(String[] opts, String[] vals) {
 		if(opts == null || vals == null) {
 			return null;
 		}else {
@@ -621,7 +650,7 @@ public class TFTP {
 	 * @param vals List of vals. (String[] to byte[][])
 	 * @return byte[] if opts and vals are valid, null if opts and vals are either null or not equal in length.
 	 */
-	private  byte[] buildOptsVals(byte[][] opts, byte[][] vals) {
+	private byte[] buildOptsVals(byte[][] opts, byte[][] vals) {
 		if(opts == null || vals == null) {
 			return null;
 		}else {
@@ -655,7 +684,7 @@ public class TFTP {
 	 * @param opcode Specified Opcode
 	 * @return opcode in byte[]
 	 */
-	private  byte[] buildOpcode(byte opcode) {
+	private byte[] buildOpcode(byte opcode) {
 		byte[] opcodeByte = {0, opcode};
 		return opcodeByte;
 	}

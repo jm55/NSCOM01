@@ -25,11 +25,15 @@ public class Scratch {
 		TFTP t = new TFTP();
 		System.out.println("Running scratch...");
 		
-		String hex = "68656c6c6f20776f726c64";
-		byte[] data = u.hexStringToByteArray(hex);
-		Integer block = 1;
-		byte[] result = buildDataPacket(block, data);
-		System.out.println(u.getBytesAsBits(result));
+		byte[] err = t.getErrPacket(1);
+		String err_hex = u.getBytesHex(err);
+		System.out.println(err_hex);
+		err = u.hexStringToByteArray(err_hex);
+		//System.out.println("SysGen err => hexStringToByteArray(): " + u.getBytesAsBits(err));
+		
+		String hex_raw = "0005000146696c65206e6f7420666f756e640000";
+		byte[] hex = u.hexStringToByteArray(hex_raw);
+		System.out.println("OG err: " + u.getBytesAsBits(hex));
 	}
 	
 	/**

@@ -54,9 +54,13 @@ public class Controller implements ActionListener {
 		
 		if(act.equals("EndProgram")) {
 			if(this.gui.confirmDialog("Exit Program?","Exit Program",JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-				u.printMessage(this.className, "actionPerformed(e) > EndProgram", "Exiting program...");
+				u.printMessage(this.className, "actionPerformed(e) > " + act, "Exiting program...");
 				System.exit(0);
 			}
+		}
+		
+		if(act.equals("BlockSelector")) {
+			u.printMessage(this.className, "actionPerformed(e) > " + act, "Value change: " + gui.getBlockSize());
 		}
 	}
 	

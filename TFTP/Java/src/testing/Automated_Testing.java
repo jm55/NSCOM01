@@ -27,11 +27,9 @@ public class Automated_Testing {
 	private void check_buildOACK(TFTP t) {
 		System.out.println("Check OACK Assembly: ");
 		Integer[] optVals = {1,3,5,7};
-		byte[] opts = {optVals[0].byteValue(), optVals[1].byteValue(), optVals[2].byteValue(), optVals[3].byteValue()};
-		byte[] vals = {2,4,6,8};
+		String[] opts = {"opts1", "opts2"};
+		String[] vals = {"vals1", "vals2"};
 		if(opts.length == vals.length) {
-			System.out.println("opts: " + u.getBytesAsBits(opts));
-			System.out.println("vals: " + u.getBytesAsBits(vals));
 			System.out.println(u.getBytesAsBits(t.checkOACK(opts, vals)));
 		}
 	}
