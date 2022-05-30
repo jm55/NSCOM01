@@ -382,6 +382,22 @@ public class TFTP {
 		return msg[err];
 	}
 	
+	public byte[] getACK(Integer block) {
+		return this.buildACKPacket(block.shortValue());
+	}
+	
+	/**
+	 * Build OACK packet
+	 * @param opts
+	 * @param vals
+	 * @return OACK packet for opts and vals, null if opts and vals are not valid (i.e. mismatched in length).
+	 */
+	public byte[] getOACK(String[] opts, String[] vals) {
+		if(this.validOptVal(opts, vals))
+			return this.buildOACKPacket(opts, vals);
+		return null;
+	}
+	
 	/**
 	 * ================================================
 	 * PRIVATES
@@ -413,7 +429,9 @@ public class TFTP {
 		if(opt != null && vals != null)
 			if(opt.length == vals.length)
 				return true;
-		return false;
+			else
+				return false;
+		return true;
 	}
 	
 	/**
@@ -483,8 +501,8 @@ public class TFTP {
 		if(!validErrCode(err))
 			return null;
 		byte opcodeVal = 5;
-		byte[] opcode = buildOpcode(opcodeVal), errcode = {0, err.byteValue()}, errMsg = emsg.getBytes();
-		byte[][] combined = {opcode, errcode, errMsg, getPaddingByteArr()}; //the 2nd and last paddings are for errMsg termination and err packet padding respectively
+		byte[] opcode = buildOpcode(opcodeVal), errcode = {getPaddingByte(), getPaddingByte(), getPaddingByte(),  err.byteValue()}, errMsg = emsg.getBytes();
+		byte[][] combined = {opcode, errcode, errMsg, getPaddingByteArr(), getPaddingByteArr(), getPaddingByteArr()}; //the 2nd and last paddings are for errMsg termination and err packet padding respectively
 		return combineBytes(combined);
 	}
 	
@@ -541,12 +559,12 @@ public class TFTP {
 				return null;
 			}else { //Lengths of opts and vals are equal.
 				byte[] optsVals = buildOptsVals(opts, vals); //Combines opts & vals into one byte[]; Includes the last padding for valsN
-				byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), optsVals};
+				byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), getPaddingByteArr(), optsVals};
 				return combineBytes(combined);
 			}
 		}else {
 			//Follows bytes: {0,1,filename.bytes,0,mode.bytes,0};
-			byte[][] combined = {opcode, getPaddingByteArr(), filename.getBytes(), getPaddingByteArr(), mode.getBytes()};
+			byte[][] combined = {opcode, filename.getBytes(), getPaddingByteArr(), getPaddingByteArr(), mode.getBytes(), getPaddingByteArr(), getPaddingByteArr()};			
 			return combineBytes(combined);
 		}
 	}
@@ -560,7 +578,7 @@ public class TFTP {
 		if(block < 0)
 			return null;
 		byte opcode = 4;
-		byte[][] combined = {buildOpcode(opcode),u.shortToByteArr(block)};
+		byte[][] combined = {buildOpcode(opcode), getPaddingByteArr(), u.shortToByteArr(block)};
 		byte[] ack = combineBytes(combined);
 		return ack;
 	}
@@ -599,8 +617,9 @@ public class TFTP {
 		if(data.length-1 > PACKETSIZE_LIMIT)
 			return null;
 		byte opcodeVal = 3;
-		byte[] opcode = buildOpcode(opcodeVal), blockNum = {0, block.byteValue()};
-		byte[][] preDataPacket = {opcode,blockNum,data};
+		Short blockShort = block.shortValue();
+		byte[] opcode = buildOpcode(opcodeVal), blockNum = {getPaddingByte(),blockShort.byteValue()};
+		byte[][] preDataPacket = {opcode,getPaddingByteArr(),getPaddingByteArr(),blockNum,data};
 		return combineBytes(preDataPacket);
 	}
 	
@@ -618,7 +637,7 @@ public class TFTP {
 	 * @return Zero-value byte.
 	 */
 	private byte getPaddingByte() {
-		Integer padding = 0;
+		Short padding = 0;
 		return padding.byteValue();
 	}
 	
@@ -663,9 +682,11 @@ public class TFTP {
 					for(int j = 0;  j < opts[i].length; j++)
 						optsvals.add(opts[i][j]);
 					optsvals.add(getPaddingByte());
+					optsvals.add(getPaddingByte());
 					//append vals[i] then add padding
 					for(int j = 0;  j < vals[i].length; j++)
 						optsvals.add(vals[i][j]);
+					optsvals.add(getPaddingByte());
 					optsvals.add(getPaddingByte());
 				}
 				//convert ArrayList<Byte> to byte[]
@@ -685,7 +706,7 @@ public class TFTP {
 	 * @return opcode in byte[]
 	 */
 	private byte[] buildOpcode(byte opcode) {
-		byte[] opcodeByte = {0, opcode};
+		byte[] opcodeByte = {getPaddingByte(), getPaddingByte(), getPaddingByte(), opcode};
 		return opcodeByte;
 	}
 }

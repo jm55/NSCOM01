@@ -49,12 +49,18 @@ public class Utility {
 	/**
 	 * Returns byte[] equivalent of hex string.
 	 * Only issue being that it ommits any beginning hex value of 00
-	 * Reference: https://stackoverflow.com/a/8890335
+	 * Reference: https://stackoverflow.com/a/8890335 > https://www.geeksforgeeks.org/java-program-to-convert-hex-string-to-byte-array/
 	 * @param s Hex string
 	 * @return byte[] equivalent of hex.
 	 */
 	public byte[] hexStringToByteArray(String s) {
-		byte[] b = new BigInteger(s,16).toByteArray();
+		byte[] b = new byte[s.length()/2];
+		for (int i = 0; i < b.length; i++) {
+			int index = i * 2;
+			// Using parseInt() method of Integer class
+			int val = Integer.parseInt(s.substring(index, index + 2), 16);
+			b[i] = (byte)val;
+		 }
 		return b;
 	}
 	/**
@@ -74,6 +80,7 @@ public class Utility {
 	}
 	/**
 	 * Returns Hex equivalent of bytes
+	 * ISSUES TO OVERFLOW DETERMINED SO CHECKING IS AVAILABLE BUT RESULT NEEDS FURTHER EXAMINATION
 	 * @param bytes byte[] to be converted into Hex
 	 * @return Hex string equivalent of bytes
 	 */
