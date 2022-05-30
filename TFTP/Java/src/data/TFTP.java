@@ -111,7 +111,6 @@ public class TFTP {
 	}
 	
 	/**
-	 * TODO
 	 * Extracts Data from a packet.
 	 * @param packetBytes Packet in byte[] form.
 	 * @return Data in byte[] format
@@ -124,16 +123,15 @@ public class TFTP {
 		}
 		int opcode = getOpCode(packetBytes);
 		
+		//Sample: 0003000168656c6c6f20776f726c64
+		
 		if(!validOpCode(opcode))
 			return null;
-		if(opcode == 4) {
-			byte[] data = null;
-			
-			/**
-			 * EXTRACT DATA FROM PACKET BYTES.
-			 * REFER TO RFC 1350 FOR STRUCTURE
-			 */
-			
+		if(opcode == 3) {
+			//Find length from idx 4 to last idx
+			byte[] data = new byte[packetBytes.length - 4];
+			for(int i = 4; i < packetBytes.length; i++)
+				data[i-4] = packetBytes[i];
 			return data;
 		}
 		return null;
@@ -152,7 +150,6 @@ public class TFTP {
 	}
 	
 	/**
-	 * TODO
 	 * Get the error message of a packet bytes as String[].
 	 * Content arrangement: {Error Code, Error Message}
 	 * @param packetBytes Error packets in byte[] form.
@@ -162,48 +159,13 @@ public class TFTP {
 		if(!isError(packetBytes)) //If not an error
 			return null;
 		String[] errMessage = new String[2];
+		errMessage[0] = packetBytes[3] + "";
+		errMessage[1] = this.getErrMsg((int)packetBytes[3]);
 		
-		String bits = u.getBytesAsBits(packetBytes);
-		System.out.println("extractError(byte[]): " + bits);
+		//Sample: 0005000146696c65206e6f7420666f756e640000
 		
 		return errMessage;
 	}
-	
-	/**
-	 * DIAGNOSTIC
-	 * Check resulting OpCode byte[] given its value.
-	 * @param opcode Opcode value
-	 * @return byte[] OpCode.
-	 */
-	public byte[] checkOpCode(byte opcode) {
-		return buildOpcode(opcode);
-	}
-	
-	/**
-	 * DIAGNOSTIC
-	 * Check resulting optvals given opts and vals
-	 * @param opts opts
-	 * @param vals vals
-	 * @return byte[] OptVals
-	 */
-	public byte[] checkOptVals(String[] opts, String[] vals) {
-		return this.buildOptsVals(opts, vals);
-	}
-	
-	/**
-	 * DIAGNOSTIC
-	 * Check resulting optvals given opts and vals
-	 * @param block Block# in 2bytes (Short)
-	 * @return byte[] OptVals
-	 */
-	public byte[] checkACK(Short block) {
-		return this.buildACKPacket(block);
-	}
-	
-	public byte[] checkOACK(String[] opts, String[] vals) {
-		return this.buildOACKPacket(opts, vals);
-	}
-	
 	
 	/**
 	 * Extract OpCode of a packet.
@@ -268,6 +230,17 @@ public class TFTP {
 	}
 	
 	/**
+	 * Extract ACK value from packetBytes
+	 * @param packetBytes
+	 * @return Block# indicated by ACK, returns -1 if packetBytes is null.
+	 */
+	public Integer extractACK(byte[] packetBytes) {
+		if(isACK(packetBytes))
+			return (int)packetBytes[3];
+		return -1;
+	}
+	
+	/**
 	 * Checks if a packet is an OACK packet.
 	 * @param packet Packet in DatagramPacket format. 
 	 * @return True if packet is an OACK packet, false if otherwise.
@@ -287,6 +260,109 @@ public class TFTP {
 		if(getOpCode(packetBytes)==6)
 			return true;
 		return false;
+	}
+	
+	public boolean RQHasOACK(byte[] packetBytes) {
+		int terminateCount = 0;
+		for(int j = 0; j < packetBytes.length; j++) {
+			if(packetBytes[j] == 0 && j > 0)
+				terminateCount++;
+		}
+		if(terminateCount > 2)
+			return true;
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @param packetBytes
+	 * @return
+	 */
+	public String[][] extractOACKFromRQ(byte[] packetBytes){
+		/**
+		 * REFER TO RFC 2347
+		 * SKIP THE HEADERS (OPC, FILENAME, MODE) AND PROCEED INDEX OF OPTS VALS
+		 * Sample: 00 01 || 6e 65 6e 65 63 68 69 2e 70 6e 67 00 || 6f 63 74 65 74 00 || 74 73 69 7a 65 00 || 30 00 ||
+		 * 		   OPCODE				FILENAME						MODE					OPTn		  VALN
+		 */
+		int terminateCount = 0;
+		for(int j = 0; j < packetBytes.length; j++) {
+			if(packetBytes[j] == 0 && j > 0)
+				terminateCount++;
+			if(terminateCount>=2) {
+				ArrayList<Byte> opts = new ArrayList<Byte>();
+				ArrayList<Byte> vals = new ArrayList<Byte>();
+				ArrayList<String> optStr = new ArrayList<String>();
+				ArrayList<String> valStr = new ArrayList<String>();
+				boolean opt = true; //SWITCHING ON AND OFF AS PACKET 0 IS BEING DETECTED, INITIALLY ASSUMES THAT FIRST IS OPT
+				for(int i = j+1; i < packetBytes.length; i++) {
+					if(packetBytes[i] == 0) {
+						if(opt) {
+							//CONVERT opts TO STRING, ADD TO optSTR, RESET opts
+							optStr.add(u.ByteListToString(opts));
+							opts = new ArrayList<Byte>();
+						}else {
+							//CONVERT vals TO STRING, ADD TO valStr, RESET vals
+							valStr.add(u.ByteListToString(vals));
+							vals = new ArrayList<Byte>();
+						}
+						opt = !opt; //SWITCH
+					}else {
+						if(opt) {
+							//APPEND packetBytes[i] TO opts
+							opts.add(packetBytes[i]);
+						}else {
+							//APPEND packetBytes[i] TO vals
+							vals.add(packetBytes[i]);
+						}
+					}
+				}
+				String[][] out = {u.StringListToStringArr(optStr), u.StringListToStringArr(valStr)};
+				return out;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * TODO
+	 * Extract OACK opts and vals from byte[] of packet
+	 * @param packetBytes byte[] where to extract OACK values
+	 * @return String[][] containing the opts and vals respectively.
+	 */
+	public String[][] extractOACK(byte[] packetBytes){
+		ArrayList<Byte> opts = new ArrayList<Byte>();
+		ArrayList<Byte> vals = new ArrayList<Byte>();
+		ArrayList<String> optStr = new ArrayList<String>();
+		ArrayList<String> valStr = new ArrayList<String>();
+		boolean opt = true; //SWITCHING ON AND OFF AS PACKET 0 IS BEING DETECTED, INITIALLY ASSUMES THAT FIRST IS OPT
+		for(int i = 2; i < packetBytes.length; i++) {
+			if(packetBytes[i] == 0) {
+				if(opt) {
+					//CONVERT opts TO STRING, ADD TO optSTR, RESET opts
+					optStr.add(u.ByteListToString(opts));
+					opts = new ArrayList<Byte>();
+				}else {
+					//CONVERT vals TO STRING, ADD TO valStr, RESET vals
+					valStr.add(u.ByteListToString(vals));
+					vals = new ArrayList<Byte>();
+				}
+				opt = !opt; //SWITCH
+			}else {
+				if(opt) {
+					//APPEND packetBytes[i] TO opts
+					opts.add(packetBytes[i]);
+				}else {
+					//APPEND packetBytes[i] TO vals
+					vals.add(packetBytes[i]);
+				}
+			}
+		}
+		/**
+		 * Convert optStr & valStr as String[optStr][valStr] then return.
+		 */
+		String[][] out = {u.StringListToStringArr(optStr), u.StringListToStringArr(valStr)};
+		return out;
 	}
 	
 	/**
@@ -690,12 +766,7 @@ public class TFTP {
 					optsvals.add(getPaddingByte());
 				}
 				//convert ArrayList<Byte> to byte[]
-				byte[] rawoptsvals = new byte[optsvals.size()];
-				Byte[] optsvalsArr = new Byte[optsvals.size()];
-				optsvals.toArray(optsvalsArr);
-				for(int i = 0; i < optsvals.size(); i++)
-					rawoptsvals[i] = optsvalsArr[i].byteValue();
-				return rawoptsvals;
+				return  u.ByteListToByteArr(optsvals);
 			}
 		}
 	}
@@ -708,5 +779,48 @@ public class TFTP {
 	private byte[] buildOpcode(byte opcode) {
 		byte[] opcodeByte = {getPaddingByte(), getPaddingByte(), getPaddingByte(), opcode};
 		return opcodeByte;
+	}
+	
+	/**
+	 * 
+	 * =============================
+	 * DIAGNOSTICS
+	 * =============================
+	 * 
+	 */
+
+	/**
+	 * DIAGNOSTIC
+	 * Check resulting OpCode byte[] given its value.
+	 * @param opcode Opcode value
+	 * @return byte[] OpCode.
+	 */
+	public byte[] checkOpCode(byte opcode) {
+		return buildOpcode(opcode);
+	}
+	
+	/**
+	 * DIAGNOSTIC
+	 * Check resulting optvals given opts and vals
+	 * @param opts opts
+	 * @param vals vals
+	 * @return byte[] OptVals
+	 */
+	public byte[] checkOptVals(String[] opts, String[] vals) {
+		return this.buildOptsVals(opts, vals);
+	}
+	
+	/**
+	 * DIAGNOSTIC
+	 * Check resulting optvals given opts and vals
+	 * @param block Block# in 2bytes (Short)
+	 * @return byte[] OptVals
+	 */
+	public byte[] checkACK(Short block) {
+		return this.buildACKPacket(block);
+	}
+	
+	public byte[] checkOACK(String[] opts, String[] vals) {
+		return this.buildOACKPacket(opts, vals);
 	}
 }

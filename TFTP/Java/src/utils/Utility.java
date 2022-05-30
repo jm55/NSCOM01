@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
 
 public class Utility {
 	private static boolean state = false;
@@ -167,6 +169,56 @@ public class Utility {
     	ByteBuffer buffer = ByteBuffer.allocate(1);
     	buffer.put(val);
     	return buffer.array();
+    }
+    /**
+     * Converts ArrayList<Byte> to byte[]
+     * @param list ArrayList to be converted
+     * @return byte[] equivalent of list.
+     */
+    public byte[] ByteListToByteArr(ArrayList<Byte> list) {
+    	byte[] b = new byte[list.size()];
+    	for(int i = 0; i < b.length; i++)
+    		b[i] = list.get(i).byteValue();
+    	return b;
+    }
+    /**
+     * Converts ArrayList<String> to byte[]
+     * @param list ArrayList to be converted
+     * @return String[] equivalent of list.
+     */
+    public String[] StringListToStringArr(ArrayList<String> list) {
+    	String[] b = new String[list.size()];
+    	for(int i = 0; i < b.length; i++)
+    		b[i] = list.get(i);
+    	return b;
+    }
+    /**
+     * Converts String[] as a String for printing
+     * @param arr
+     * @return
+     */
+    public String stringArrToString(String[] arr) {
+    	String out = "{";
+    	for(int i = 0; i < arr.length; i++) {
+    		if(i < arr.length-1)
+    			out+= arr[i] + ",";
+    		else
+    			out+= arr[i] + "}";
+    	}
+    	return out;
+    }
+    /**
+     * Converts ArrayList<Byte> to String (UTF-8)
+     * @param list
+     * @return String content of list
+     */
+    public String ByteListToString(ArrayList<Byte> list) {
+    	String out = "";
+    	for(int i = 0; i < list.size(); i++) {
+    		byte b = list.get(i).byteValue();
+    		out += (char) b;
+    	}
+    	return out;
     }
     /**
      * For monitoring a byte scan reaches threshold
