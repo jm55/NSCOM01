@@ -96,7 +96,6 @@ public class TFTP {
 	private Utility u = new Utility();
 	private final String className = "TFTP";
 	private final String[] MODES = {"netascii", "octet", "mail"};
-	private final int PACKETSIZE_LIMIT = 512;
 	public TFTP() {
 		
 	}
@@ -705,8 +704,6 @@ public class TFTP {
 		if(block < 0)
 			return null;
 		if(data == null)
-			return null;
-		if(data.length-1 > PACKETSIZE_LIMIT)
 			return null;
 		byte opcodeVal = 3;
 		Short blockShort = block.shortValue();
