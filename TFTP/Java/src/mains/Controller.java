@@ -142,6 +142,9 @@ public class Controller implements ActionListener {
 			gui.popDialog("Error on selected file.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > IOException: ", e.getLocalizedMessage());
 		}
+		
+		state = true; //====REMOVE BEFORE FLIGHT====
+		
 		return state;
 	}
 	
@@ -176,6 +179,9 @@ public class Controller implements ActionListener {
 			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
 			return receivedFile;
 		}
+		
+		receivedFile = new File("loremipsum.txt"); //====REMOVE BEFORE FLIGHT====
+		
 		return receivedFile;
 	}
 	
@@ -190,7 +196,7 @@ public class Controller implements ActionListener {
 		if(conn[0].equals("")||conn[1].equals("")) {
 			gui.popDialog("Please check your network configuration.", "Network", JOptionPane.WARNING_MESSAGE);
 			return false;
-		}	
+		}
 		return true;
 	}
 	

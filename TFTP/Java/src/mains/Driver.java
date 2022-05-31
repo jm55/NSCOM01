@@ -3,6 +3,8 @@ package mains;
 import java.io.IOException;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 import utils.*;
 import gui.*;
 import testing.*;
@@ -52,6 +54,18 @@ public class Driver {
     		g = new GUI(true);
     		c = new Controller(g);
     		g.setDefaultDisplay();
+    		
+    		String[] bugs = {};
+    		if(bugs.length > 0) {
+    			String strBugs = "";
+        		int ctr = 1;
+    			for(String b: bugs) {
+        			strBugs += ctr + ": " + b + "\n";
+        			ctr++;
+        		}
+    			g.popDialog("Program Bugs:\n" + strBugs, "Bugs List", JOptionPane.WARNING_MESSAGE);
+    		}
+    			
     }
     
     private static void Console() {
