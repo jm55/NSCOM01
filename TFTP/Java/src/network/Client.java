@@ -23,22 +23,28 @@ public class Client {
 		setDefaults();
 	}
 	
+	/**
+	 * Builds a Client object
+	 * @param host Target host
+	 * @param port Target port
+	 * @param BUFFER_SIZE buffersize of packets, set as <= 0 if default
+	 */
 	public Client(String host, int port, int BUFFER_SIZE) {
 		u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + "...");
 		try {
 			this.target = InetAddress.getByName(host);
 			this.PORT = port;
-			this.BUFFER_SIZE = BUFFER_SIZE;
+			if(BUFFER_SIZE > 0)
+				this.BUFFER_SIZE = BUFFER_SIZE;
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
-			u.printMessage(this.className, "Client(host,port)", "TryCatch: " + e.getLocalizedMessage());
+			
 		}
 		if(this.target == null)
-			u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " failed.");
+			u.printMessage(this.className, "Client(host,port,BUFFER_SIZE)", "Building Client as " + host + ":" + port + " failed.");
 		else 
-			u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + " successful.");
-		u.printMessage(this.className, "Client(host,port)", "Connection to " + host + ":" + port + "=" + isConnected());
+			u.printMessage(this.className, "Client(host,port,BUFFER_SIZE)", "Building Client as " + host + ":" + port + " successful.");
 	}
 	
 	public Client(InetAddress target, int port, int BUFFER_SIZE) {

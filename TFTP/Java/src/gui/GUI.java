@@ -167,7 +167,11 @@ public class GUI extends JFrame{
 	 * @return String value of the selected value.
 	 */
 	public String getBlockSize() {
-		return (String)blockSizes.getSelectedItem();
+		String str = (String)blockSizes.getSelectedItem();
+		System.out.println(str);
+		if(str.equalsIgnoreCase("default"))
+			return "512";
+		return str;
 	}
 	
 	/**
