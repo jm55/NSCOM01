@@ -2,6 +2,7 @@ package network;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 
 import data.*;
 import utils.*;
@@ -85,6 +86,7 @@ public class Client {
 			if(askWritePermission(f, opts, vals))
 				state = writeToServer(f, opts, vals);
 		closeConnection();
+		reset();
 		return state;
 	}
 	
@@ -107,6 +109,7 @@ public class Client {
 			tempFile = readFromServer(filename, tempFile, opts, vals);
 			closeConnection();
 		}
+		reset();
 		return tempFile;
 	}
 	
@@ -174,17 +177,22 @@ public class Client {
 	/**
 	 * TODO
 	 * Write file to the server.
+	 * File Bytestream Reference: https://www.codejava.net/java-se/file-io/java-io-fileinputstream-and-fileoutputstream-examples
 	 * @param f File to be transferred.
 	 * @return True if transfer completed, false if otherwise or fatal error/exception occurred.
 	 */
 	private boolean writeToServer(File f, String[] opts, String[] vals) {
 		u.printMessage(this.className, "writeToServer(File)", "f.exists()...");
+		
 		try {
-			int blockcount = -1;
-			/**
-			 * TODO: COMPUTE FOR blockcount = FILE_SIZE/BUFFER_SIZE;
-			 */
-			int tsize = -1, blocksize = -1, timeout = -1; //FOR CONFIGURATION
+			Integer BUFFER_SIZE = 512; //BUFFER/BLOCKSIZE DEFAULT TO 512
+			Integer SIZE = (int)Files.size(f.toPath()); //SIZE OF FILE
+			Integer bytesRead = -1; //FOR FILE STREAMING
+			Integer BLOCKCOUNT = 0; //NUMBER OF BLOCKS TO BE TRANSMITTED.
+			
+			InputStream inputStream = new FileInputStream(f.getAbsolutePath()); //FILE STREAMING
+			
+			int tsize = -1, blocksize = -1, timeout = -1; //FOR CONFIGURATION BY USER
 			if(tftp.validOptVal(opts, vals)) {
 				for(int i = 0; i < opts.length; i++) {
 					if(opts[i].equals("tsize"))
@@ -195,13 +203,18 @@ public class Client {
 						timeout = Integer.parseInt(vals[i]);
 				}
 			}
+			
+			//BLOCKCOUNT
 			if(blocksize != -1)
 				this.BUFFER_SIZE = blocksize;
-			InputStream inputStream = new FileInputStream(f.getAbsolutePath());
-			Integer BUFFER_SIZE = 512, SIZE = inputStream.available(), bytesRead = -1;
-			byte[] buffer = new byte[BUFFER_SIZE];
+			double blockcountD = SIZE/BUFFER_SIZE;
+			BLOCKCOUNT = (int)Math.ceil(blockcountD);
+			
+			//BUFFER BYTE[] CONFIGURATION
+			byte[] buffer = new byte[BUFFER_SIZE]; //DATA SEGMENT OF PACKET
             if(SIZE < BUFFER_SIZE) //IF FILE SIZE IS INITIALLY SMALLER THAN BUFFER SIZE THEN SET BUFFER TO JUST FILE'S SIZE
             	buffer = new byte[SIZE];
+            
             u.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");            
             int ctr = 1; //COUNTER FOR BLOCK#
             while((bytesRead = inputStream.read(buffer)) != -1) { //While file not done streaming.
@@ -222,6 +235,11 @@ public class Client {
             	 * 2. Handling of duplicate ACK
             	 * 3. User prompt for file not found, access violation, and disk full errors
             	 */
+            	//DO NOT MOVE THIS. LET IT BE PLACED LAST.
+            	if(inputStream.available() < BUFFER_SIZE) {
+					BUFFER_SIZE = inputStream.available();
+					buffer = new byte[BUFFER_SIZE];
+				}
 			}
 			u.printMessage(this.className, "writeToServer(File)", "Closing stream...");
 			inputStream.close();
@@ -237,6 +255,7 @@ public class Client {
 	/**
 	 * TODO
 	 * Read File from server.
+	 * File Bytestream Reference: https://www.codejava.net/java-se/file-io/java-io-fileinputstream-and-fileoutputstream-examples
 	 * @param filename Filename of target file on server.
 	 * @param tempFile File where the bytes will be placed.
 	 * @return File pointer with the TFTP bytes.
@@ -281,8 +300,7 @@ public class Client {
             	 * 3. User prompt for file not found, access violation, and disk full errors
 		    	 */
 				int bytesRead = 0; //BYTE LENGTH OF PACKET'S DATA SEGMENT
-				if(bytesRead != -1)
-					outputStream.write(buffer, 0, bytesRead);
+				outputStream.write(buffer, 0, bytesRead);
 			}while(false);
 			outputStream.close();
 		} catch (FileNotFoundException e) {
@@ -300,6 +318,10 @@ public class Client {
 	 * 
 	 * ==========================================================
 	 */
+	
+	public void reset() {
+		this.BUFFER_SIZE = 512;
+	}
 	
 	/**
 	 * Opens the connection of this Client's socket.
