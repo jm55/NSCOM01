@@ -9,6 +9,11 @@ import utils.*;
 import gui.*;
 import testing.*;
 
+/**
+ * Driver class of the program.
+ * Allows for arguments if executed via terminal.
+ * @author Escalona, J.M.
+ */
 public class Driver {
 	private static Utility u;
 	private static GUI g;
@@ -23,8 +28,11 @@ public class Driver {
     			}
     			if(a.equals("-C") || a.equals("--console"))
     				Console();
-    			if(a.equals("-T") || a.equals("--testing"))
+    			if(a.equals("-T") || a.equals("--testing")) {
+    				System.out.println("THIS FUNCTION IS DEPRECATED!\nEXITING...");
+    				System.exit(0);
     				Testing();
+    			}
     			if(a.equals("-P") || a.equals("--production"))
     				Production();
     			if(a.equals("-H") || a.equals("--help"))
@@ -40,7 +48,7 @@ public class Driver {
     	System.out.println("Escalona & Fadrigo");
     	System.out.println("=========================================");
     	System.out.println("-V or --verbose: " + "Verbose mode.");
-    	System.out.println("-T or --testing: " + "Testing mode.");
+    	System.out.println("-T or --testing: " + "Testing mode. [DEPRECATED]");
     	System.out.println("-P or --production: " + "Production mode.");
     	System.out.println("-H or --help: " + "Help (you're looking at this).");
     	System.out.println("=========================================");

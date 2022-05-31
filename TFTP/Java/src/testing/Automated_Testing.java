@@ -3,6 +3,11 @@ package testing;
 import data.*;
 import utils.*;
 
+/**
+ * @deprecated
+ * Conducts automated testing of functions.
+ * @author Escalona, J.M.
+ */
 public class Automated_Testing {
 	Utility u = new Utility();
 	public Automated_Testing(){

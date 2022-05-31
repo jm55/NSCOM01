@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.util.Scanner;
 
 import utils.*;
-
+/**
+ * @deprecated
+ * Conducts specific and automated testing of functions.
+ * @author Escalona, J.M.
+ */
 public class Testing {
 	private Scanner scan;
 	private Utility m = new Utility();

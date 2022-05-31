@@ -7,6 +7,12 @@ import java.nio.file.Files;
 import data.*;
 import utils.*;
 
+/**
+ * Client network object of the program.
+ * Contains functions for sending, receiving, and pinging target host.
+ * Also handles file writing.
+ * @author Escalona, J.M.
+ */
 public class Client {
 	private Utility u = new Utility();
 	private final String className = "Client";

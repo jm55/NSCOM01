@@ -10,7 +10,11 @@ import data.*;
 import network.*;
 import utils.*;
 
-
+/**
+ * Used for testing functions/methods before actual implementation.
+ * Executable on its own.
+ * @author Escalona, J.M.
+ */
 public class Scratch {
 	private static Utility u = new Utility();
 	private static final String className = "Scratch";

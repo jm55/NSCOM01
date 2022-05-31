@@ -9,6 +9,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 
+/**
+ * Contains all utility functions for used by other class files.
+ * @author Escalona, J.M.
+ */
 public class Utility {
 	private static boolean state = false;
 	private DateTimeFormatter datetimeFormat;

@@ -1,11 +1,7 @@
 package data;
 
 /**
- * References:
- * https://www.programiz.com/java-programming/examples/get-file-extension
- * https://stackoverflow.com/a/17011063
- * https://mkyong.com/java/how-to-convert-array-of-bytes-into-file
- * https://www.baeldung.com/java-write-byte-array-file
+ * 
  */
 
 import java.io.*;
@@ -15,6 +11,18 @@ import javax.swing.*;
 import gui.GUI;
 import utils.Utility;
 
+/**
+ * Contains functions for opening, saving, and handling file objects.
+ * 
+ * References:
+ * https://www.programiz.com/java-programming/examples/get-file-extension
+ * https://stackoverflow.com/a/17011063
+ * https://mkyong.com/java/how-to-convert-array-of-bytes-into-file
+ * https://www.baeldung.com/java-write-byte-array-file
+ * 
+ * @author Escalona, J.M.
+ * 
+ */
 public class FileHandlers {
 	private File f;
 	private Utility u = new Utility();

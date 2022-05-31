@@ -7,8 +7,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
+ * @deprecated
+ * Used for checking hashes of files.
  * Reference: https://howtodoinjava.com/java/java-security/sha-md5-file-checksum-hash/
- * @author Escalona, Jose Miguel
+ * @author Escalona, J.M.
  */
 public class Hasher {
 	Utility u = new Utility();
