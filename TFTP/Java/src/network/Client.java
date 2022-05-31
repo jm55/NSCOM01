@@ -19,14 +19,15 @@ public class Client {
 	private TFTP tftp = new TFTP();
 	
 	public Client() {
-		
+		setDefaults();
 	}
 	
-	public Client(String host, int port) {
+	public Client(String host, int port, int BUFFER_SIZE) {
 		u.printMessage(this.className, "Client(host,port)", "Building Client as " + host + ":" + port + "...");
 		try {
 			this.target = InetAddress.getByName(host);
 			this.PORT = port;
+			this.BUFFER_SIZE = BUFFER_SIZE;
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
@@ -39,9 +40,10 @@ public class Client {
 		u.printMessage(this.className, "Client(host,port)", "Connection to " + host + ":" + port + "=" + isConnected());
 	}
 	
-	public Client(InetAddress target, int port) {
+	public Client(InetAddress target, int port, int BUFFER_SIZE) {
 		this.target = target;
 		this.PORT = port;
+		this.BUFFER_SIZE = BUFFER_SIZE;
 		u.printMessage(this.className, "Client(host,port)", "Connection to " + this.target.getHostAddress() + ":" + port + "=" + isConnected());
 	}
 	
@@ -60,58 +62,139 @@ public class Client {
 	}
 	
 	/**
+	 * Sets the BUFFER SIZE of the TFTP transmission.
+	 * @param BUFFER_SIZE
+	 */
+	public void setBufferSize(int BUFFER_SIZE) {
+		this.BUFFER_SIZE = BUFFER_SIZE;
+	}
+	
+	/**
 	 * Delegates sending of File to TFTP server connected by socket using the TFTP protocol instructions.
 	 * @param f File to be sent.
 	 * @return True if successful, false if an valid/acceptable error occurs.
 	 */
-	public boolean send(File f) {
+	public boolean send(File f, String[] opts, String[] vals) {
+		boolean state = false;
 		if(f == null)
-			return false;
+			return state;
+		openConnection();
 		if(f.exists() && socket.isConnected())
-			if(askWritePermission(f))
-				return writeToServer(f);
-		return false;
+			if(askWritePermission(f, opts, vals))
+				state = writeToServer(f);
+		closeConnection();
+		return state;
+	}
+	
+	/**
+	 * Delegates receiving of File to TFTP server connected by socket using the TFTP protocol instructions.
+	 * @param filename Filename of the file intended.
+	 * @return Tempfile pointed at /downloads in program's folder.
+	 */
+	public File receive(String filename, String[] opts, String[] vals) {
+		if(filename == null)
+			return null;
+		File tempFile = new File(u.getTempOutPath(filename)); //To save on a temp folder of the program.
+		
+		int tsize = askReadPermission(filename, opts, vals);
+		if(tsize > -1) {
+			openConnection();
+			tempFile = readFromServer(filename, tempFile);
+			closeConnection();
+		}
+		return tempFile;
+	}
+	
+	/**
+	 * TODO
+	 * Ask permission to write file on the server connected to this Client.
+	 * @param f File to write permission to.
+	 * @return True if allowed, false if otherwise.
+	 */
+	private boolean askWritePermission(File f, String[] opts, String[] vals) {
+		if(!isConnected() || f == null)
+			return false;
+		/**
+		 * 
+		 * BUILD WRITE REQUEST via TFTP.getWRQPacket();
+		 * 
+		 * WHERE OPTSVALS ARE:
+		 * String[] OPTS = {'tsize'}
+		 * String[] VALS = {filesize of file in bytes}
+		 * 
+		 * BLOCKSIZE OPTION (MUST COME FIRST BEFORE TSIZE):
+		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {BLOCK_SIZE} (SET BY USER)
+		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
+		 * 
+		 * IF ERROR WAS RECEIVED RETURN FALSE
+		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS
+		 * 
+		 */		
+		return true; //Modify freely when needed.
+	}
+	
+	/**
+	 * TODO
+	 * Ask permission to read file on the server connected to this Client.
+	 * @param filename Filename of the File requested.
+	 * @return True if allowed/possible, false if otherwise.
+	 */
+	private int askReadPermission(String filename, String[] opts, String[] vals) {
+		if(!isConnected() || filename == null || filename.length() == 0)
+			return -1;
+		/**
+		 * 
+		 * BUILD READ REQUEST via TFTP.getRRQPacket();
+		 * 
+		 * WHERE OPTSVALS ARE:
+		 * String[] OPTS = {tsize}
+		 * String[] VALS = {0}
+		 * 
+		 * BLOCKSIZE OPTION (MUST COME FIRST BEFORE TSIZE):
+		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {BLOCK_SIZE} (SET BY USER)
+		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
+		 * 
+		 * IF ERROR WAS RECEIVED RETURN -1
+		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS (IF IT EVEN EXISTS)
+		 * AND RETURN VALS OF OPTS-tsize.
+		 */	
+		return 0; //Modify freely when needed.
 	}
 	
 	/**
 	 * TODO
 	 * Write file to the server.
 	 * @param f File to be transferred.
-	 * @return True if transfer completed, false if otherwise or fatal error/exception occured.
+	 * @return True if transfer completed, false if otherwise or fatal error/exception occurred.
 	 */
 	private boolean writeToServer(File f) {
 		u.printMessage(this.className, "writeToServer(File)", "f.exists()...");
 		try {
+			int blocksize = 0;
+			/**
+			 * TODO: COMPUTE FOR BLOCKSIZE (FILE_SIZE/BUFFER_SIZE);
+			 */
+			
 			InputStream inputStream = new FileInputStream(f.getAbsolutePath());
 			Integer BUFFER_SIZE = 512, SIZE = inputStream.available(), bytesRead = -1;
 			byte[] buffer = new byte[BUFFER_SIZE];
-            if(SIZE < BUFFER_SIZE)
+            if(SIZE < BUFFER_SIZE) //IF FILE SIZE IS INITIALLY SMALLER THAN BUFFER SIZE THEN SET BUFFER TO JUST FILE'S SIZE
             	buffer = new byte[SIZE];
-            int ctr = 0;
-            boolean isTerminating = false;
-            DatagramPacket serverReplyPacket = null;
-            u.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");
-			while((bytesRead = inputStream.read(buffer)) != -1) { //While file not done streaming.
-				do{
-					u.writeMonitor(this.className,"writeToServer(File)", bytesRead, inputStream.available(), 2500, this.BUFFER_SIZE); //DO NOT DELETE, FOR MONITORING PURPOSES.
-					/**
-					 * PROCESS PSEUDOCODE:
-					 * 1. BUILD A PACKET FROM TFTP().getDataPacket(ctr,buffer) (THOUGH CONVERT BYTE[] => DATAGRAMPACKET).
-					 * 2. SEND DATA PACKET THEN INCREMENT ctr.
-					 * 3. LISTEN TO SOCKET FOR ANY ACK OR ERROR. PLACE RECEIVED VALUE TO serverReplyPacket.
-					 * 4. CHECK FOR SOCKET IF ACK OR ERROR. RECOMMEND TO USE TFTP().isError(packet) and TFTP().isACK(packet)
-					 * 5. 
-					 * 
-					 * Note:	Suggested to be done in a loop where the ending condition is if the ACK Block# equals to the Packet Block.
-					 * 			Refer to RFC Files for a much clearer instructions.
-					 */
-					serverReplyPacket = null; //Place the output of socket.receive() here.
-				}while(isTerminating || !tftp.isError(serverReplyPacket));
-				//Check if remaining file bytes is <512. Resize buffer accordingly if so.
-				if(inputStream.available() < BUFFER_SIZE) {
-					BUFFER_SIZE = inputStream.available();
-					buffer = new byte[BUFFER_SIZE];
-				}
+            u.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");            
+            int ctr = 1; //COUNTER FOR BLOCK#
+            while((bytesRead = inputStream.read(buffer)) != -1) { //While file not done streaming.
+            	/***
+            	 * 
+            	 * TODO: SEND BYTES HERE
+            	 * EACH DATA BYTES ARE HELD IN buffer AND THE LENGTH IS 0-bytesRead 
+            	 * 
+            	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.SEND AND SOCKET.RECEIVE
+            	 * WITH THE FIRST (ODD NUMBERED) ACTION BEING SEND DATA AND RECEIVE ACKS
+            	 * 
+            	 * INCREMENT CTR FOR EVER ACK RECEIVED (AND IF ACK'S BLOCK# EQUAL TO CTR)
+            	 * 
+            	 * WATCH OUT FOR ERROR(!) AND ACKS
+            	 */
 			}
 			u.printMessage(this.className, "writeToServer(File)", "Closing stream...");
 			inputStream.close();
@@ -126,78 +209,52 @@ public class Client {
 	
 	/**
 	 * TODO
-	 * Ask permission to write file on the server connected to this Client.
-	 * @param f File to write permission to.
-	 * @return True if allowed, false if otherwise.
-	 */
-	private boolean askWritePermission(File f) {
-		if(!isConnected() || f == null)
-			return false;
-		/**
-		 * Ask for permission to write and await for ACK.
-		 * 
-		 * If ACK grants writing, return true.
-		 * If ACK is ERROR such that it does not grant writing or timeout has been reached return false.
-		 * 
-		 * Recommended to use TFTP for packet building and checking for both in and outgoing packets.
-		 */
-		return true; //Modify freely when needed.
-	}
-	
-	/**
-	 * TODO
-	 * Ask permission to read file on the server connected to this Client.
-	 * @param filename Filename of the File requested.
-	 * @return True if allowed/possible, false if otherwise.
-	 */
-	private boolean askReadPermission(String filename) {
-		if(!isConnected() || filename == null || filename.length() == 0)
-			return false;
-		/**
-		 * Ask for permission to read and await for ACK.
-		 * 
-		 * If ACK grants reading, return true.
-		 * If ACK is ERROR such that it does not grant reading, file does not exists, or timeout has been reached return false.
-		 * 
-		 * Recommended to use TFTP for packet building and checking for both in and outgoing packets.
-		 */
-		return true; //Modify freely when needed.
-	}
-	
-	/**
-	 * TODO
-	 * Receive the File pointed by filename from server.
-	 * @param filename Filename of the file intended.
-	 * @return
-	 */
-	public File receive(String filename) {
-		if(filename == null)
-			return null;
-		File tempFile = new File(u.getTempOutPath(filename)); //To save on a temp folder of the program.
-		if(askReadPermission(filename)) {
-			return readFromServer(filename, tempFile);
-		}else
-			return null;
-	}
-	
-	/**
-	 * TODO
 	 * Read File from server.
 	 * @param filename Filename of target file on server.
-	 * @param tempFile
-	 * @return
+	 * @param tempFile File where the bytes will be placed.
+	 * @return File pointer with the TFTP bytes.
 	 */
 	private File readFromServer(String filename, File tempFile) {
 		if(tempFile == null)
 			return null;
 		if(!tempFile.exists())
 			return null;
-		/**
-		 * WRITE RECEIVING METHOD FOR TFTP
-		 * SUGGESTED TO USE FILESTREAMING METHOD. REFER TO https://www.codejava.net/java-se/file-io/java-io-fileinputstream-and-fileoutputstream-examples#:~:text=Example%20%231%3A%20Copy%20a%20File
-		 */
+		OutputStream outputStream = null; //BYTE STREAM FILE WRITING
+		try {
+			outputStream = new FileOutputStream(tempFile);
+			do {
+				/***
+		    	 * 
+		    	 * TODO: RECEIVE BYTES HERE
+		    	 * EACH DATA BYTES ARE HELD IN buffer AND THE LENGTH IS 0-bytesRead 
+		    	 * 
+		    	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.RECEIVE AND SOCKET.SEND
+		    	 * WITH THE FIRST (ODD NUMBERED) ACTION BEING RECEIVE DATA AND SEND ACKS
+		    	 * 
+		    	 * COPY BLOCK# OF DATA RECEIVED AS ACK
+		    	 * 
+		    	 * WATCH OUT FOR ERROR(!) AND ACKS
+		    	 */
+				int bytesRead = 0; //BYTE LENGTH OF PACKET'S DATA SEGMENT
+				if(bytesRead != -1)
+					outputStream.write(buffer, 0, bytesRead);
+			}while(false);
+			outputStream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return tempFile;
 	}
+	
+	/**
+	 * ==========================================================
+	 * 
+	 * AUXILLIARY NETWORK FUNCTIONS
+	 * 
+	 * ==========================================================
+	 */
 	
 	/**
 	 * Opens the connection of this Client's socket.

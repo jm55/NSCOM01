@@ -123,7 +123,7 @@ public class TFTP {
 		}
 		int opcode = getOpCode(packetBytes);
 		
-		//Sample: 0003000168656c6c6f20776f726c64
+		//Sample: 0003　0001　68656c6c6f20776f726c64
 		
 		if(!validOpCode(opcode))
 			return null;
@@ -262,7 +262,14 @@ public class TFTP {
 		return false;
 	}
 	
+	/**
+	 * Checks if RQ has OACK
+	 * @param packetBytes Packet in byte[] format.
+	 * @return True if packet is an OACK packet, false if otherwise.
+	 */
 	public boolean RQHasOACK(byte[] packetBytes) {
+		if(getOpCode(packetBytes) >= 3) //It is not a request.
+			return false;
 		int terminateCount = 0;
 		for(int j = 0; j < packetBytes.length; j++) {
 			if(packetBytes[j] == 0 && j > 0)
@@ -274,9 +281,9 @@ public class TFTP {
 	}
 	
 	/**
-	 * 
+	 * It will extract OACK from RQ.
 	 * @param packetBytes
-	 * @return
+	 * @return String[][] containing [opts][] and [vals][];
 	 */
 	public String[][] extractOACKFromRQ(byte[] packetBytes){
 		/**
@@ -458,6 +465,11 @@ public class TFTP {
 		return msg[err];
 	}
 	
+	/**
+	 * Build ACK packet
+	 * @param block Block#
+	 * @return ACK packet in byte[].
+	 */
 	public byte[] getACK(Integer block) {
 		return this.buildACKPacket(block.shortValue());
 	}
@@ -476,7 +488,11 @@ public class TFTP {
 	
 	/**
 	 * ================================================
+	 * 
+	 * 
 	 * PRIVATES
+	 * 
+	 * 
 	 * ================================================
 	 */
 	

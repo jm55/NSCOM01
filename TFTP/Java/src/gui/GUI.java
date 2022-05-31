@@ -240,7 +240,13 @@ public class GUI extends JFrame{
 		return isVisible();
 	}
 	
-	//PRIVATE METHODS
+	/***
+	 * =============================================
+	 * 
+	 * PRIVATE METHODS
+	 * 
+	 * =============================================
+	 */
 	
 	private void buildDisplayContents(){
 		u.printMessage(this.className, "buildDisplayContents()", "Setting DefaultDisplay...");
@@ -278,7 +284,7 @@ public class GUI extends JFrame{
 		panel.add(remoteSelectedFileField);
 		outputArea = createTextArea(newFont(consoleFace,Font.PLAIN, 12),256+64,(64*4)+32,656,210,false);
 		outputScroll = createScrollPane(outputArea);
-		outputArea.setText("Console Log");
+		outputArea.setText("");
 		panel.add(outputScroll);
 		
 		//CHECKBOX

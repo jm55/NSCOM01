@@ -12,7 +12,7 @@ import java.util.Base64;
 public class Utility {
 	private static boolean state = false;
 	private DateTimeFormatter datetimeFormat;
-	private final String TEMP_OUTPUT_DIR = ".\\temp\\"; //Saves on a temporary location for file
+	private final String TEMP_OUTPUT_DIR = ".\\downloads\\"; //Saves on a temporary location for file
 	public Utility() {
 		datetimeFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	}
