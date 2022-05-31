@@ -87,7 +87,7 @@ public class Controller implements ActionListener {
 		}
 		
 		if(act.equals("AboutProgram")) {
-			String message = "©2022\n\nNSCOM01 - TFTP Client Project\nS12\n\nEscalona, J.M.\nFadrigo, A.";
+			String message = "©2022\n\nNSCOM01 - TFTP Client Project\nS12\n\nEscalona, J.M.\nFadrigo, J.A.M.\n";
 			String title = "About";
 			gui.popDialog(message, title, JOptionPane.PLAIN_MESSAGE);
 		}
