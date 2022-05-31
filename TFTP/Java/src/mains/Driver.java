@@ -49,7 +49,7 @@ public class Driver {
     }
     
     private static void Production() {
-    		g = new GUI();
+    		g = new GUI(true);
     		c = new Controller(g);
     		g.setDefaultDisplay();
     }

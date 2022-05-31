@@ -42,13 +42,6 @@ public class GUI extends JFrame{
 	 * Default constructor that builds the window.
 	 */
 	public GUI() {
-		setSize(WIDTH, HEIGHT);
-		setResizable(false);
-		setTitle(WindowTitle);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setVisible(true);
-		
-		testMode();
 	}
 	
 	/**

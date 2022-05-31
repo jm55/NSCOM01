@@ -487,6 +487,22 @@ public class TFTP {
 	}
 	
 	/**
+	 * Checks if an opt and val byte[] are equal in length.
+	 * Follows RFC 2347
+	 * @param opt Opt String[]
+	 * @param vals Vals String[]
+	 * @return True if equal in length, false if otherwise.
+	 */
+	public boolean validOptVal(String[] opt, String[] vals) {
+		if(opt != null && vals != null)
+			if(opt.length == vals.length)
+				return true;
+			else
+				return false;
+		return true;
+	}
+	
+	/**
 	 * ================================================
 	 * 
 	 * 
@@ -508,22 +524,6 @@ public class TFTP {
 			byteArr[i] = text[i].getBytes();
 		
 		return byteArr;
-	}
-	
-	/**
-	 * Checks if an opt and val byte[] are equal in length.
-	 * Follows RFC 2347
-	 * @param opt Opt String[]
-	 * @param vals Vals String[]
-	 * @return True if equal in length, false if otherwise.
-	 */
-	private boolean validOptVal(String[] opt, String[] vals) {
-		if(opt != null && vals != null)
-			if(opt.length == vals.length)
-				return true;
-			else
-				return false;
-		return true;
 	}
 	
 	/**

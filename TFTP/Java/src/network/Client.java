@@ -15,7 +15,7 @@ public class Client {
 	private int PORT = -1, BUFFER_SIZE = 512;
 	private byte[] buffer = null;
 	private InetAddress target = null;
-	private final int CheckTimeout = 5000;
+	private final int CheckTimeout = 5000; //NETWORK TARGET CHECKING, NOT RELATED TO TFTP
 	private TFTP tftp = new TFTP();
 	
 	public Client() {
@@ -72,6 +72,8 @@ public class Client {
 	/**
 	 * Delegates sending of File to TFTP server connected by socket using the TFTP protocol instructions.
 	 * @param f File to be sent.
+	 * @param opts Options
+	 * @param vals Option values
 	 * @return True if successful, false if an valid/acceptable error occurs.
 	 */
 	public boolean send(File f, String[] opts, String[] vals) {
@@ -81,7 +83,7 @@ public class Client {
 		openConnection();
 		if(f.exists() && socket.isConnected())
 			if(askWritePermission(f, opts, vals))
-				state = writeToServer(f);
+				state = writeToServer(f, opts, vals);
 		closeConnection();
 		return state;
 	}
@@ -89,17 +91,20 @@ public class Client {
 	/**
 	 * Delegates receiving of File to TFTP server connected by socket using the TFTP protocol instructions.
 	 * @param filename Filename of the file intended.
+	 * @param saveAs Specified filename of user when downloaded.
+	 * @param opts Options
+	 * @param vals Option values
 	 * @return Tempfile pointed at /downloads in program's folder.
 	 */
-	public File receive(String filename, String[] opts, String[] vals) {
+	public File receive(String filename, String saveAs, String[] opts, String[] vals) {
 		if(filename == null)
 			return null;
-		File tempFile = new File(u.getTempOutPath(filename)); //To save on a temp folder of the program.
+		File tempFile = new File(saveAs); //To save on a temp folder of the program.
 		
 		int tsize = askReadPermission(filename, opts, vals);
 		if(tsize > -1) {
 			openConnection();
-			tempFile = readFromServer(filename, tempFile);
+			tempFile = readFromServer(filename, tempFile, opts, vals);
 			closeConnection();
 		}
 		return tempFile;
@@ -122,13 +127,15 @@ public class Client {
 		 * String[] OPTS = {'tsize'}
 		 * String[] VALS = {filesize of file in bytes}
 		 * 
-		 * BLOCKSIZE OPTION (MUST COME FIRST BEFORE TSIZE):
+		 * BLOCKSIZE OPTION:
 		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {BLOCK_SIZE} (SET BY USER)
 		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
 		 * 
+		 * TIMEOUT OPTION: 
+		 * OPTIONAL TO INCLUDE OPTS = {'timeout'} and VALS {vals['timeout']} (SET BY USER/SYSTEM CONFIG)
+		 * 
 		 * IF ERROR WAS RECEIVED RETURN FALSE
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS
-		 * 
 		 */		
 		return true; //Modify freely when needed.
 	}
@@ -150,9 +157,12 @@ public class Client {
 		 * String[] OPTS = {tsize}
 		 * String[] VALS = {0}
 		 * 
-		 * BLOCKSIZE OPTION (MUST COME FIRST BEFORE TSIZE):
-		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {BLOCK_SIZE} (SET BY USER)
+		 * BLOCKSIZE OPTION:
+		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {vals[blocksize]} (SET BY USER)
 		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
+		 * 
+		 * TIMEOUT OPTION: 
+		 * OPTIONAL TO INCLUDE OPTS = {'timeout'} and VALS {vals['timeout']} (SET BY USER/SYSTEM CONFIG)
 		 * 
 		 * IF ERROR WAS RECEIVED RETURN -1
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS (IF IT EVEN EXISTS)
@@ -167,14 +177,26 @@ public class Client {
 	 * @param f File to be transferred.
 	 * @return True if transfer completed, false if otherwise or fatal error/exception occurred.
 	 */
-	private boolean writeToServer(File f) {
+	private boolean writeToServer(File f, String[] opts, String[] vals) {
 		u.printMessage(this.className, "writeToServer(File)", "f.exists()...");
 		try {
-			int blocksize = 0;
+			int blockcount = -1;
 			/**
-			 * TODO: COMPUTE FOR BLOCKSIZE (FILE_SIZE/BUFFER_SIZE);
+			 * TODO: COMPUTE FOR blockcount = FILE_SIZE/BUFFER_SIZE;
 			 */
-			
+			int tsize = -1, blocksize = -1, timeout = -1; //FOR CONFIGURATION
+			if(tftp.validOptVal(opts, vals)) {
+				for(int i = 0; i < opts.length; i++) {
+					if(opts[i].equals("tsize"))
+						tsize = Integer.parseInt(vals[i]);
+					if(opts[i].equals("blocksize"))
+						blocksize = Integer.parseInt(vals[i]);
+					if(opts[i].equals("timeout"))
+						timeout = Integer.parseInt(vals[i]);
+				}
+			}
+			if(blocksize != -1)
+				this.BUFFER_SIZE = blocksize;
 			InputStream inputStream = new FileInputStream(f.getAbsolutePath());
 			Integer BUFFER_SIZE = 512, SIZE = inputStream.available(), bytesRead = -1;
 			byte[] buffer = new byte[BUFFER_SIZE];
@@ -194,6 +216,11 @@ public class Client {
             	 * INCREMENT CTR FOR EVER ACK RECEIVED (AND IF ACK'S BLOCK# EQUAL TO CTR)
             	 * 
             	 * WATCH OUT FOR ERROR(!) AND ACKS
+            	 * 
+            	 * ERRORS TO WATCH OUT FOR: 
+            	 * 1. Timeout for unresponsive server
+            	 * 2. Handling of duplicate ACK
+            	 * 3. User prompt for file not found, access violation, and disk full errors
             	 */
 			}
 			u.printMessage(this.className, "writeToServer(File)", "Closing stream...");
@@ -214,12 +241,25 @@ public class Client {
 	 * @param tempFile File where the bytes will be placed.
 	 * @return File pointer with the TFTP bytes.
 	 */
-	private File readFromServer(String filename, File tempFile) {
+	private File readFromServer(String filename, File tempFile, String[] opts, String[] vals) {
 		if(tempFile == null)
 			return null;
 		if(!tempFile.exists())
 			return null;
 		OutputStream outputStream = null; //BYTE STREAM FILE WRITING
+		int tsize = -1, blocksize = -1, timeout = -1; //FOR CONFIGURATION
+		if(tftp.validOptVal(opts, vals)) {
+			for(int i = 0; i < opts.length; i++) {
+				if(opts[i].equals("tsize"))
+					tsize = Integer.parseInt(vals[i]);
+				if(opts[i].equals("blocksize"))
+					blocksize = Integer.parseInt(vals[i]);
+				if(opts[i].equals("timeout"))
+					timeout = Integer.parseInt(vals[i]);
+			}
+		}
+		if(blocksize != -1)
+			this.BUFFER_SIZE = blocksize;
 		try {
 			outputStream = new FileOutputStream(tempFile);
 			do {
@@ -234,6 +274,11 @@ public class Client {
 		    	 * COPY BLOCK# OF DATA RECEIVED AS ACK
 		    	 * 
 		    	 * WATCH OUT FOR ERROR(!) AND ACKS
+		    	 * 
+		    	 * ERRORS TO WATCH OUT FOR: 
+            	 * 1. Timeout for unresponsive server
+            	 * 2. Handling of duplicate ACK
+            	 * 3. User prompt for file not found, access violation, and disk full errors
 		    	 */
 				int bytesRead = 0; //BYTE LENGTH OF PACKET'S DATA SEGMENT
 				if(bytesRead != -1)
