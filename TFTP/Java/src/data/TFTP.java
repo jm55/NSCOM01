@@ -331,7 +331,6 @@ public class TFTP {
 	}
 	
 	/**
-	 * TODO
 	 * Extract OACK opts and vals from byte[] of packet
 	 * @param packetBytes byte[] where to extract OACK values
 	 * @return String[][] containing the opts and vals respectively.
