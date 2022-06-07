@@ -151,8 +151,39 @@ public class Client {
 		 * 
 		 * IF ERROR WAS RECEIVED RETURN FALSE
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS
-		 */		
-		return true; //Modify freely when needed.
+		 */
+
+		String mode = "octet";
+		byte[] wrq = tftp.getWRQPacket(f, mode, opts, vals);
+		packet = new DatagramPacket(wrq, wrq.length);
+		try {
+			socket.send(packet);
+		}catch (IOException e) {
+			u.printMessage(this.className, "askWritePermission(*)", "IOException: " + e.getLocalizedMessage());
+		}
+		byte[] rcv = new byte[65535];
+		packet = new DatagramPacket(rcv, rcv.length);
+		try {
+			socket.receive(packet);
+		}catch (IOException e) {
+			u.printMessage(this.className, "askWritePermission(*)", "IOException: " + e.getLocalizedMessage());
+		}
+		if(tftp.isOACK(packet) && !tftp.isError(packet)){
+			String[][] checking = tftp.extractOACK(packet.getData());
+			int match = 0;
+			for(int i=0;i<vals.length;i++){
+				for(int j=0;j<checking[1].length;j++){
+					if(vals[i].equals(checking[1][j]))
+						match++;
+				}
+			}
+			if(match == vals.length)
+				return true;
+		}
+		//socket receive, check what type of packet, if is oack && !iserror, extract oack and compare wrq vals ();
+
+
+		return false; //Modify freely when needed.
 	}
 	
 	/**
@@ -182,7 +213,7 @@ public class Client {
 		 * IF ERROR WAS RECEIVED RETURN -1
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS (IF IT EVEN EXISTS)
 		 * AND RETURN VALS OF OPTS-tsize.
-		 */	
+		 */
 		return 0; //Modify freely when needed.
 	}
 	
