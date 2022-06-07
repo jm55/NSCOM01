@@ -42,8 +42,7 @@ public class Scratch {
 		 * TESTING DATA PACKET BUILDING ON A FILE WHERE
 		 * THE INPUT AND OUTPUT FILES MUST RESULT THE SAME.
 		 */
-		
-		
+
 		//THIS TEST CONTAINS ISSUES ON BYTE TO HEX DECODING, THUS THE OUTPUTS MAY SEEM OF FROM THE ORIGINAL.
 		//HOWEVER, SOME OF THE COMPONENTS FOR THE TRUE RESULT CAN BE FOUND (THOUGH OBSCURED) IN THE SYSTEM OUTPUT.
 		System.out.println("Data Packet");
@@ -213,5 +212,12 @@ public class Scratch {
 		System.out.println("isError: " + t.isError(hex));
 		String[] error = t.extractError(hex);
 		System.out.println("Extract Error: " + error[0] + " = " + error[1]);
+
+		System.out.println("\n\n");
+
+		System.out.println("Extract Block Number");
+		hex_raw = "0003000168656c6c6f20776f726c64";
+		int block = t.extractBlockNumber(u.hexStringToByteArray(hex_raw));
+		System.out.println("Block#: " + block);
 	}	
 }
