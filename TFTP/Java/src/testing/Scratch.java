@@ -217,7 +217,10 @@ public class Scratch {
 
 		System.out.println("Extract Block Number");
 		hex_raw = "0003000168656c6c6f20776f726c64";
+		System.out.println("Hex Raw: " + hex_raw);
+		System.out.println("Bits: " + u.getBytesAsBits(u.hexStringToByteArray(hex_raw)));
+		System.out.println("Expected output: " + 1);
 		int block = t.extractBlockNumber(u.hexStringToByteArray(hex_raw));
-		System.out.println("Block#: " + block);
+		System.out.println("System Result Block#: " + block);
 	}	
 }

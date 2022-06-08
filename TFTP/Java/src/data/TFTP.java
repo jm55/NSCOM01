@@ -181,7 +181,6 @@ public class TFTP {
 	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
 	 */
 	public int extractBlockNumber(byte[] packetBytes){
-		System.out.println(this.getOpCode(packetBytes));
 		if(this.getOpCode(packetBytes) == 3 || this.getOpCode(packetBytes) == 4){
 			return packetBytes[3];
 		}else

@@ -6,6 +6,9 @@ import java.nio.file.Files;
 
 import data.*;
 import utils.*;
+import gui.*;
+
+import javax.swing.*;
 
 /**
  * Client network object of the program.
@@ -24,6 +27,8 @@ public class Client {
 	private InetAddress target = null;
 	private final int CheckTimeout = 5000; //NETWORK TARGET CHECKING, NOT RELATED TO TFTP
 	private TFTP tftp = new TFTP();
+
+	private GUI gui = new GUI();
 	
 	public Client() {
 		setDefaults();
@@ -126,7 +131,6 @@ public class Client {
 	}
 	
 	/**
-	 * TODO
 	 * Ask permission to write file on the server connected to this Client.
 	 * @param f File to write permission to.
 	 * @return True if allowed, false if otherwise.
@@ -134,56 +138,54 @@ public class Client {
 	private boolean askWritePermission(File f, String[] opts, String[] vals) {
 		if(!isConnected() || f == null)
 			return false;
-		/**
-		 * 
-		 * BUILD WRITE REQUEST via TFTP.getWRQPacket();
-		 * 
-		 * WHERE OPTSVALS ARE:
-		 * String[] OPTS = {'tsize'}
-		 * String[] VALS = {filesize of file in bytes}
-		 * 
-		 * BLOCKSIZE OPTION:
-		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {BLOCK_SIZE} (SET BY USER)
-		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
-		 * 
-		 * TIMEOUT OPTION: 
-		 * OPTIONAL TO INCLUDE OPTS = {'timeout'} and VALS {vals['timeout']} (SET BY USER/SYSTEM CONFIG)
-		 * 
-		 * IF ERROR WAS RECEIVED RETURN FALSE
-		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS
-		 */
-
 		String mode = "octet";
 		byte[] wrq = tftp.getWRQPacket(f, mode, opts, vals);
 		packet = new DatagramPacket(wrq, wrq.length);
 		try {
+			//Send packet to serve
 			socket.send(packet);
-		}catch (IOException e) {
-			u.printMessage(this.className, "askWritePermission(*)", "IOException: " + e.getLocalizedMessage());
-		}
-		byte[] rcv = new byte[65535];
-		packet = new DatagramPacket(rcv, rcv.length);
-		try {
+
+			//Receive ACK or ERROR packet
+			byte[] rcv = new byte[65535];
+			packet = new DatagramPacket(rcv, rcv.length);
 			socket.receive(packet);
-		}catch (IOException e) {
-			u.printMessage(this.className, "askWritePermission(*)", "IOException: " + e.getLocalizedMessage());
-		}
-		if(tftp.isOACK(packet) && !tftp.isError(packet)){
-			String[][] checking = tftp.extractOACK(packet.getData());
-			int match = 0;
-			for(int i=0;i<vals.length;i++){
-				for(int j=0;j<checking[1].length;j++){
-					if(vals[i].equals(checking[1][j]))
-						match++;
+
+			//Trim excess bytes from packets
+			byte[] trimmedPacket = new byte[packet.getLength()]; //TRIMMED RCV
+			System.arraycopy(packet.getData(), packet.getOffset(), trimmedPacket, 0, packet.getLength());
+
+			//Confirm that the packet is an OACK and not an Error
+			if(tftp.isOACK(trimmedPacket) && !tftp.isError(trimmedPacket)){
+				String[][] checking = tftp.extractOACK(trimmedPacket);
+				int match = 0;
+				for(int i=0;i<vals.length;i++){
+					for(int j=0;j<checking[1].length;j++){
+						if(vals[i].equals(checking[1][j]))
+							match++;
+					}
+				}
+				if(match == vals.length)
+					return true;
+			}else{
+				//Confirm that the packet is an Error
+				if(tftp.isError(trimmedPacket)){
+					String[] error = tftp.extractError(trimmedPacket);
+					if(error[0] == "1") //FILE NOT FOUND
+						gui.popDialog("Error: File Not Found", "Error", JOptionPane.ERROR_MESSAGE);
+					else if(error[0] == "2") //ACCESS VIOLATION
+						gui.popDialog("Error: Access Violation", "Error", JOptionPane.ERROR_MESSAGE);
+					else if(error[0] == "3") //DISK FULL
+						gui.popDialog("Error: Disk Full", "Error", JOptionPane.ERROR_MESSAGE);
+					else //FATAL ERROR (AS PER SPECIFICATION)
+						gui.popDialog("Error: Fatal Error Occurred", "Error", JOptionPane.ERROR_MESSAGE);
+					return false;
 				}
 			}
-			if(match == vals.length)
-				return true;
+		}catch (IOException e) {
+			gui.popDialog("IOException occured:\n" + e.getLocalizedMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+			u.printMessage(this.className, "askWritePermission(*)", "IOException: " + e.getLocalizedMessage());
 		}
-		//socket receive, check what type of packet, if is oack && !iserror, extract oack and compare wrq vals ();
-
-
-		return false; //Modify freely when needed.
+		return false;
 	}
 	
 	/**
