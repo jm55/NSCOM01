@@ -165,6 +165,28 @@ public class TFTP {
 		
 		return errMessage;
 	}
+
+	/**
+	 * Extracts the block number of a given TFTP data packet.
+	 * @param packet TFTP data packet
+	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
+	 */
+	public int extractBlockNumber(DatagramPacket packet){
+		return extractBlockNumber(packet.getData());
+	}
+
+	/**
+	 * Extracts the block number of a given TFTP data packet in byte[]
+	 * @param packetBytes TFTP data packet in byte[]
+	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
+	 */
+	public int extractBlockNumber(byte[] packetBytes){
+		System.out.println(this.getOpCode(packetBytes));
+		if(this.getOpCode(packetBytes) == 3 || this.getOpCode(packetBytes) == 4){
+			return packetBytes[3];
+		}else
+			return -1;
+	}
 	
 	/**
 	 * Extract OpCode of a packet.
