@@ -2,12 +2,16 @@ package testing;
 
 
 import java.io.*;
-import java.nio.*;
-import java.security.*;
-import java.util.ArrayList;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
 
 import data.*;
-import network.*;
 import utils.*;
 
 /**
@@ -222,5 +226,117 @@ public class Scratch {
 		System.out.println("Expected output: " + 1);
 		int block = t.extractBlockNumber(u.hexStringToByteArray(hex_raw));
 		System.out.println("System Result Block#: " + block);
+		
+		/***
+		 * 
+		 * NETWORK RELATED ZONE
+		 * 
+		 */
+		
+		System.out.println("\n\n");
+		System.out.println("========================================");
+		System.out.println("========THIS IS THE NETWORK ZONE========");
+		System.out.println("========================================");
+		System.out.println("\n\n");
+		
+		String target = "192.168.24.253";
+		int port = 69;
+		DatagramSocket socket = null;
+		try {
+			SocketAddress sa = new InetSocketAddress(InetAddress.getByName(target), port);
+			socket = new DatagramSocket();
+			socket.connect(InetAddress.getByName(target), port);
+			System.out.println("Socket bind: " + socket.isBound());
+			System.out.println("Socket connected: " + socket.isConnected());
+		} catch (SocketException | UnknownHostException e1) {
+			System.out.println("Scratch Network Related: " + e1.getLocalizedMessage());
+		}
+		if(socket.isConnected())
+			System.out.println("Scratch Connection: " + socket.isConnected());
+		DatagramPacket p = null;
+		
+		//WRQ SEND
+		
+//		System.out.println("\n\n");
+//		System.out.println("WRQ Send");
+//		FileHandlers fh = new FileHandlers();
+//		File f = fh.openAsFile();
+//		int fileSize = 0;
+//		try {
+//			fileSize = (int)Files.size(f.toPath());
+//		} catch (IOException e) {
+//			System.out.println("Scratch Network Related - File Size: " + e.getLocalizedMessage());
+//		}
+//		String[] opts2 = {"tsize","blocksize"};
+//		String[] vals2 = {fileSize+"","512"};
+//		byte[] wrq = t.getWRQPacket(f, "octet", opts2, vals2);
+//		p = new DatagramPacket(wrq, wrq.length);
+//		try {
+//			System.out.println("WRQ Sending...");
+//			socket.send(p);
+//			System.out.println("WRQ Sent!");
+//		} catch (IOException e) {
+//			System.out.println("Scratch Network Related - WRQ Send: " + e.getLocalizedMessage());
+//		}
+		
+//		System.out.println("\n\n");
+//		System.out.println("RRQ Send");
+//		String filename = "Hello World.txt";
+//		String[] opts3 = {"blocksize"};
+//		String[] vals3 = {"512"};
+//		byte[] rrq = t.getRRQPacket(filename, "octet", opts3, vals3);
+//		p = new DatagramPacket(rrq, rrq.length);
+//		try {
+//			System.out.println("RRQ Sending...");
+//			socket.send(p);
+//			System.out.println("RRQ Sent!");
+//		} catch (IOException e) {
+//			System.out.println("Scratch Network Related - RRQ Send: " + e.getLocalizedMessage());
+//		}
+		
+//		System.out.println("\n\n");
+//		System.out.println("ACK Send");
+//		byte[] ack = t.getACK(1);
+//		p = null;
+//		p = new DatagramPacket(ack, ack.length);
+//		try {
+//			System.out.println("ACK Sending...");
+//			socket.send(p);
+//			System.out.println("ACK Sent!");
+//		} catch (IOException e) {
+//			System.out.println("Scratch Network Related - ACK Send: " + e.getLocalizedMessage());
+//		}
+		
+//		System.out.println("\n\n");
+//		System.out.println("OACK Send");
+//		String[] opts4 = {"tsize"};
+//		String[] vals4 = {"12"};
+//		byte[] oack = t.getOACK(opts4, vals4);
+//		p = null;
+//		p = new DatagramPacket(oack, oack.length);
+//		try {
+//			System.out.println("OACK Sending...");
+//			socket.send(p);
+//			System.out.println("OACK Sent!");
+//		} catch (IOException e) {
+//			System.out.println("Scratch Network Related - OACK Send: " + e.getLocalizedMessage());
+//		}
+		
+		System.out.println("\n\n");
+		System.out.println("Data Send");
+		byte[] data2 = "Hello World!".getBytes();
+		byte[] dataPacket = t.getDataPacket(1, data2);
+		p = null;
+		p = new DatagramPacket(dataPacket, dataPacket.length);
+		try {
+			System.out.println("Data Sending...");
+			socket.send(p);
+			System.out.println("Data Sent!");
+		} catch (IOException e) {
+			System.out.println("Scratch Network Related - Data Send: " + e.getLocalizedMessage());
+		}
+		
+		
+		socket.close();
 	}	
 }

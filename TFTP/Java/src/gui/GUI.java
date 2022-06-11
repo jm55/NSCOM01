@@ -168,10 +168,13 @@ public class GUI extends JFrame{
 	 */
 	public String getBlockSize() {
 		String str = (String)blockSizes.getSelectedItem();
-		System.out.println(str);
 		if(str.equalsIgnoreCase("default"))
 			return "512";
 		return str;
+	}
+	
+	public int getBlockSizeInt() {
+		return Integer.parseInt(getBlockSize());
 	}
 	
 	/**

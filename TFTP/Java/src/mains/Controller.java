@@ -123,14 +123,13 @@ public class Controller implements ActionListener {
 			//CREATE SEND CLIENT
 			c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
 			
-			//SEND PARAETERS
-			File saveAs = fh.openAsFile();
+			//SEND PARAMETERS
 			Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
-			String blkSize = "";
+			String blkSize = "512";
 			if(setBlkSize != 512)
 				blkSize = setBlkSize + "";
-			String[] opts = {"tsize","blocksize","timeout"};
-			String[] vals = {Files.size(f.toPath())+"",blkSize,"1"};
+			String[] opts = {"tsize","blocksize"};
+			String[] vals = {Files.size(f.toPath())+"",blkSize};
 			
 			//DELEGATE RECEIVE
 			state = c.send(f, opts, vals);
@@ -166,7 +165,7 @@ public class Controller implements ActionListener {
 			//RECEIVE PARAETERS
 			File saveAs = fh.openAsFile();
 			Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
-			String blkSize = "";
+			String blkSize = "512";
 			if(setBlkSize != 512)
 				blkSize = setBlkSize + "";
 			String[] opts = {"tsize","blocksize","timeout"};

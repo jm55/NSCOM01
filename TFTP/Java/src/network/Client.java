@@ -98,10 +98,18 @@ public class Client {
 		boolean state = false;
 		if(f == null)
 			return state;
+		u.printMessage(this.className, "send(File, String[], String[])", "Connecting...");
 		openConnection();
-		if(f.exists() && socket.isConnected())
-			if(askWritePermission(f, opts, vals))
+		if(f.exists() && socket.isConnected()) {
+			u.printMessage(this.className, "send(File, String[], String[])", "File exists and client is connected");
+			if(askWritePermission(f, opts, vals)) {
+				u.printMessage(this.className, "send(File, String[], String[])", "Write Permission Accepted!");
 				state = writeToServer(f, opts, vals);
+			}else {
+				u.printMessage(this.className, "send(File, String[], String[])", "Write Permission Failed!");
+			}
+		}
+			
 		closeConnection();
 		reset();
 		return state;
@@ -138,34 +146,42 @@ public class Client {
 	private boolean askWritePermission(File f, String[] opts, String[] vals) {
 		if(!isConnected() || f == null)
 			return false;
+		u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Building write request packet...");
 		String mode = "octet";
 		byte[] wrq = tftp.getWRQPacket(f, mode, opts, vals);
 		packet = new DatagramPacket(wrq, wrq.length);
 		try {
 			//Send packet to serve
+			u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Sending packet from " + socket.getLocalPort() + " to " + socket.getRemoteSocketAddress() + "...");
 			socket.send(packet);
-
+			
 			//Receive ACK or ERROR packet
-			byte[] rcv = new byte[65535];
-			packet = new DatagramPacket(rcv, rcv.length);
-			socket.receive(packet);
+			u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Receiving OACK packet to: " + socket.getLocalPort() + "...");
+			packet = new DatagramPacket(new byte[512], 512); //LIMITED TO 512 AS THE RFC DOCUMENT REVEALS THAT ANY REQUEST IS LIMITED TO 512 OCTETS, IMPLYING THAT ANY OACK MAY BE THE SAME.
+			socket.receive(packet); //NOT WORKING
 
 			//Trim excess bytes from packets
+			u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Trimming OACK packet...");
 			byte[] trimmedPacket = new byte[packet.getLength()]; //TRIMMED RCV
 			System.arraycopy(packet.getData(), packet.getOffset(), trimmedPacket, 0, packet.getLength());
 
 			//Confirm that the packet is an OACK and not an Error
 			if(tftp.isOACK(trimmedPacket) && !tftp.isError(trimmedPacket)){
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "isOACK and !isError");
 				String[][] checking = tftp.extractOACK(trimmedPacket);
 				int match = 0;
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "OACK opts: " + u.arrayToString(checking[0]));
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "OACK vals: " + u .arrayToString(checking[1]));
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Checking matches...");
 				for(int i=0;i<vals.length;i++){
 					for(int j=0;j<checking[1].length;j++){
 						if(vals[i].equals(checking[1][j]))
 							match++;
 					}
 				}
-				if(match == vals.length)
+				if(match == vals.length) {
 					return true;
+				}
 			}else{
 				//Confirm that the packet is an Error
 				if(tftp.isError(trimmedPacket)){
@@ -363,6 +379,19 @@ public class Client {
 	 * 
 	 * ==========================================================
 	 */
+	
+	public boolean sendScratch(byte[] sample) {
+		if(socket.isConnected()){
+			try {
+				DatagramPacket p = new DatagramPacket(sample, sample.length);
+				socket.send(p);
+				return true;
+			} catch (IOException e) {
+				u.printMessage(this.className,"sendScratch(byte[])",e.getLocalizedMessage());
+			}
+		}
+		return false;
+	}
 	
 	public void reset() {
 		this.BUFFER_SIZE = 512;

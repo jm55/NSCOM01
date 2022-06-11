@@ -240,4 +240,19 @@ public class Utility {
 		if(bytesRead < blocksize)
 			printMessage(className, method, "Last piece of data[]");
 	}
+    /**
+     * Prints a String[] as a String
+     * @param arr
+     * @return String as '[a,b,...,c]'
+     */
+    public String arrayToString(String[] arr) {
+    	String out = "[";
+    	for(int i = 0; i < arr.length; i++) {
+    		out += arr[i];
+    		if(i < arr.length-1)
+    			out += ", ";
+    	}
+    	out += "]";
+    	return out;
+    }
 }
