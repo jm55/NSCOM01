@@ -69,7 +69,7 @@ public class Scratch {
 		
 		System.out.println("WRQ Packet Without Opts & Vals");
 		System.out.println("System: ");
-		syspacket = t.getWRQPacket(new File("tote_tilt.jpg"), "octet", null, null);
+		syspacket = t.getWRQPacket(new File("bitdefender.jpg"), "octet", null, null);
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
