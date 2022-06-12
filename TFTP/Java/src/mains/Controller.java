@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  * Carried over from previous project for CSARCH2
  *
  */
-public class Controller implements ActionListener {
+public class Controller implements ActionListener{
 	private Utility u = new Utility();
 	private final String className = "Controller";
 	private Client c = null;
@@ -77,8 +77,6 @@ public class Controller implements ActionListener {
 			if(fh.getFile() == null)
 				return;
 			gui.setLocalSelectedFileText(fh.getFile().getAbsolutePath());
-			//============================================================================
-			
 			File f = fh.getFile(); //USE THIS FILE TO SEND ON CLIENT
 			this.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ "...");
 			if(sendFile(f)) {
@@ -105,7 +103,11 @@ public class Controller implements ActionListener {
 		}
 		
 		if(act.equals("AboutProgram")) {
-			String message = "©2022\n\nNSCOM01 - TFTP Client Project\nS12\n\nEscalona, J.M.\nFadrigo, J.A.M.\n";
+			String message = "©2022\n\nNSCOM01 - TFTP Client Project\nS12\n\n"
+					+ "Balcueva, J.\n"
+					+ "Escalona, J.M.\n"
+					+ "Fadrigo, J.A.M.\n"
+					+ "Fortiz, P.R.\n";
 			String title = "About";
 			gui.popDialog(message, title, JOptionPane.PLAIN_MESSAGE);
 		}
