@@ -28,6 +28,24 @@ public class Controller implements ActionListener {
 		this.gui.setListener(this);
 	}
 	
+	private boolean pingServer() {
+		boolean state = false;
+		String act = "pingServer()";
+		String host = gui.getServerIPInput();
+		int port = Integer.parseInt(gui.getServerPortInput());
+		c = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
+		u.printMessage(this.className, act, "Opening connection...");
+		c.openConnection();
+		u.printMessage(this.className, act, "Pinging: " + c.getConnectionDetails());
+		String ping = "Target " + c.getConnectionDetails() + " online: " + c.targetIsOnline();
+		state = c.targetIsOnline();
+		this.printConsole(ping);
+		u.printMessage(this.className, act, "c.targetIsOnline(): " + c.targetIsOnline());
+		u.printMessage(this.className, act, "Closing connection...");
+		c.closeConnection();
+		return state;
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String act = e.getActionCommand();
@@ -37,17 +55,7 @@ public class Controller implements ActionListener {
 		if(act.equals("ServerConnection")) {
 			if(!validNetwork())
 				return;
-			String host = gui.getServerIPInput();
-			int port = Integer.parseInt(gui.getServerPortInput());
-			c = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
-			u.printMessage(this.className, act, "Opening connection...");
-			c.openConnection();
-			u.printMessage(this.className, act, "Pinging: " + c.getConnectionDetails());
-			String ping = "Target " + c.getConnectionDetails() + " online: " + c.targetIsOnline();
-			this.printConsole(ping);
-			u.printMessage(this.className, act, "c.targetIsOnline(): " + c.targetIsOnline());
-			u.printMessage(this.className, act, "Closing connection...");
-			c.closeConnection();
+			pingServer();
 		}
 		
 		if(act.equals("OpenFile")) {
@@ -72,19 +80,28 @@ public class Controller implements ActionListener {
 			//============================================================================
 			
 			File f = fh.getFile(); //USE THIS FILE TO SEND ON CLIENT
+			this.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ "...");
 			if(sendFile(f)) {
-				gui.appendOutputText("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " successful!");
+				this.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " successful!");
 			}else {
-				gui.appendOutputText("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " not successful!");
+				this.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " not successful!");
 			}
 		}
 		
 		if(act.equals("RecvFile")) {
 			String targetFile = gui.getRemoteSelectedFileText();
 			if(targetFile.equals("")) {
+				this.printConsole("No Remote File Specified");
 				gui.popDialog("No Remote File Specified", "Receive File", JOptionPane.WARNING_MESSAGE);
-			}else
-				receiveFile(targetFile);
+			}else {
+				this.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ "...");
+				File recvFile = receiveFile(targetFile);
+				if(recvFile != null) {
+					this.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " successful!");
+				}else {
+					this.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " not successful!");
+				}
+			}
 		}
 		
 		if(act.equals("AboutProgram")) {
@@ -121,19 +138,25 @@ public class Controller implements ActionListener {
 		u.printMessage(this.className, "sendFile(f)", "File to send is: " + f.getName());
 		boolean state = false;
 		try {
-			//CREATE SEND CLIENT
-			c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
-			
-			//SEND PARAMETERS
-			Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
-			String blkSize = "512";
-			if(setBlkSize != 512)
-				blkSize = setBlkSize + "";
-			String[] opts = {"tsize","blksize"};
-			String[] vals = {Files.size(f.toPath())+"",blkSize};
-			
-			//DELEGATE RECEIVE
-			state = c.send(f, opts, vals);
+			//Ping Server
+			if(pingServer()) {
+				u.printMessage(this.className, "sendFile(f)", "Target does respond to ping");
+				//CREATE SEND CLIENT
+				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
+				
+				//SEND PARAMETERS
+				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
+				String blkSize = "512";
+				if(setBlkSize != 512)
+					blkSize = setBlkSize + "";
+				String[] opts = {"tsize","blksize"};
+				String[] vals = {Files.size(f.toPath())+"",blkSize};
+				
+				//DELEGATE RECEIVE
+				state = c.send(f, opts, vals);
+			}else {
+				u.printMessage(this.className, "sendFile(f)", "Target does not respond to ping");
+			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
@@ -157,20 +180,25 @@ public class Controller implements ActionListener {
 		u.printMessage(this.className, "sendFile(f)", "File to receive is: " + f);
 		File receivedFile = null;
 		try {
-			//CREATE SEND CLIENT
-			c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
-			
-			//RECEIVE PARAETERS
-			File saveAs = fh.openAsFile();
-			Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
-			String blkSize = "512";
-			if(setBlkSize != 512)
-				blkSize = setBlkSize + "";
-			String[] opts = {"tsize","blksize"};
-			String[] vals = {"0",blkSize};
-			
-			//DELEGATE RECEIVE
-			receivedFile = c.receive(f, saveAs.getAbsolutePath(), opts, vals);
+			if(pingServer()) {
+				u.printMessage(this.className, "receiveFile(f)", "Target does respond to ping");
+				//CREATE SEND CLIENT
+				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
+				
+				//RECEIVE PARAETERS
+				File saveAs = fh.openAsFile();
+				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
+				String blkSize = "512";
+				if(setBlkSize != 512)
+					blkSize = setBlkSize + "";
+				String[] opts = {"tsize","blksize"};
+				String[] vals = {"0",blkSize};
+				
+				//DELEGATE RECEIVE
+				receivedFile = c.receive(f, saveAs.getAbsolutePath(), opts, vals);
+			}else {
+				u.printMessage(this.className, "receiveFile(f)", "Target does not respond to ping");
+			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
