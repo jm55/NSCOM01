@@ -9,11 +9,8 @@ import java.io.File;
 
 /**
  * Hasher contains all the necessary methods for hashing a given byte[] of a File.
- * 
  * Reference:
  * https://www.geeksforgeeks.org/sha-256-hash-in-java/
- * 
- * @author Escalona, Jose Miguel
  *
  */
 public class Hasher {

@@ -14,12 +14,10 @@ import javax.swing.*;
  * Client network object of the program.
  * Contains functions for sending, receiving, and pinging target host.
  * Also handles file writing.
- * @author Escalona, J.M.
  */
 public class Client {
 	private Utility u = new Utility();
 	private final String className = "Client";
-	
 	private final int DATAPORT = 61001;
 	private DatagramSocket socket = null;
 	private DatagramPacket packet = null;
@@ -28,7 +26,6 @@ public class Client {
 	private InetAddress target = null;
 	private final int CheckTimeout = 5000; //NETWORK TARGET CHECKING, NOT RELATED TO TFTP
 	private TFTP tftp = new TFTP();
-
 	private GUI gui = new GUI();
 	
 	public Client() {
@@ -216,26 +213,20 @@ public class Client {
 		if(!isConnected() || filename == null || filename.length() == 0)
 			return -1;
 		/**
-		 * 
-		 * BUILD READ REQUEST via TFTP.getRRQPacket();
-		 * 
-		 * WHERE OPTSVALS ARE:
+				 * BUILD READ REQUEST via TFTP.getRRQPacket();
+				 * WHERE OPTSVALS ARE:
 		 * String[] OPTS = {tsize}
 		 * String[] VALS = {0}
-		 * 
-		 * BLOCKSIZE OPTION:
+				 * BLOCKSIZE OPTION:
 		 * OPTIONAL TO INCLUDE OPTS = {'blksize'} and VALS {vals[blksize]} (SET BY USER)
 		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
-		 * 
-		 * IF CONDUCTING socket.send(<packet>), DO THIS:
+				 * IF CONDUCTING socket.send(<packet>), DO THIS:
 		 * socket.connect(target, this.PORT); //USE 'CONTROL' SOCKET OF TFTP
 		 * socket.send(packet);
-		 * 
-		 * IF CONDUCTING socket.receive(<packet>, DO THIS:
+				 * IF CONDUCTING socket.receive(<packet>, DO THIS:
 		 * socket.connect(this.target, this.DATAPORT); //SWITCH OVER PACKET TO SPECIFIED DATAPORT (61001) AND NOT TO PORT 69
 		 * socket.receive(packet);
-		 * 
-		 * IF ERROR WAS RECEIVED RETURN -1
+				 * IF ERROR WAS RECEIVED RETURN -1
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS (IF IT EVEN EXISTS)
 		 * AND RETURN VALS OF OPTS-tsize.
 		 */
@@ -309,8 +300,7 @@ public class Client {
             		/**
             		 * TODO:
             		 * HANDLE ERRORS HERE
-            		 * 
-            		 * SUGGESTED TO FOLLOW THE ERROR HANDLING ON askWritePermission();
+            		            		 * SUGGESTED TO FOLLOW THE ERROR HANDLING ON askWritePermission();
             		 */
             	}
             	//DO NOT MOVE THIS. LET IT BE PLACED LAST.
@@ -364,18 +354,13 @@ public class Client {
 			outputStream = new FileOutputStream(tempFile);
 			do {
 				/***
-		    	 * 
-		    	 * TODO: RECEIVE BYTES HERE
+		    			    	 * TODO: RECEIVE BYTES HERE
 		    	 * EACH DATA BYTES ARE HELD IN buffer AND THE LENGTH IS 0-bytesRead 
-		    	 * 
-		    	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.RECEIVE AND SOCKET.SEND
+		    			    	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.RECEIVE AND SOCKET.SEND
 		    	 * WITH THE FIRST (ODD NUMBERED) ACTION BEING RECEIVE DATA AND SEND ACKS
-		    	 * 
-		    	 * COPY BLOCK# OF DATA RECEIVED AS ACK
-		    	 * 
-		    	 * WATCH OUT FOR ERROR(!) AND ACKS
-		    	 * 
-		    	 * ERRORS TO WATCH OUT FOR: 
+		    			    	 * COPY BLOCK# OF DATA RECEIVED AS ACK
+		    			    	 * WATCH OUT FOR ERROR(!) AND ACKS
+		    			    	 * ERRORS TO WATCH OUT FOR: 
             	 * 1. Timeout for unresponsive server
             	 * 2. Handling of duplicate ACK
             	 * 3. User prompt for file not found, access violation, and disk full errors
@@ -394,10 +379,8 @@ public class Client {
 	
 	/**
 	 * ==========================================================
-	 * 
-	 * AUXILLIARY NETWORK FUNCTIONS
-	 * 
-	 * ==========================================================
+		 * AUXILLIARY NETWORK FUNCTIONS
+		 * ==========================================================
 	 */
 	
 	public boolean sendScratch(byte[] sample) {

@@ -2,8 +2,6 @@ package data;
 
 /**
  * This class file will handle file related functions.
- * 
- * 
  * References:
  * https://simplesolution.dev/java-convert-file-to-byte-array/
  * https://www.javatpoint.com/java-jfilechooser

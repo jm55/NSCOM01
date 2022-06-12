@@ -18,7 +18,6 @@ import utils.*;
 /**
  * Used for testing functions/methods before actual implementation.
  * Executable on its own.
- * @author Escalona, J.M.
  */
 public class Scratch {
 	private static Utility u = new Utility();
@@ -229,10 +228,8 @@ public class Scratch {
 		System.out.println("System Result Block#: " + block);
 		
 		/***
-		 * 
-		 * NETWORK RELATED ZONE
-		 * 
-		 */
+				 * NETWORK RELATED ZONE
+				 */
 		
 		System.out.println("\n\n");
 		System.out.println("========================================");

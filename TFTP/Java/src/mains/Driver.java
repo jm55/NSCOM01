@@ -12,7 +12,6 @@ import testing.*;
 /**
  * Driver class of the program.
  * Allows for arguments if executed via terminal.
- * @author Escalona, J.M.
  */
 public class Driver {
 	private static Utility u;

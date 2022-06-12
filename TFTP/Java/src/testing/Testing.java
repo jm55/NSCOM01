@@ -7,7 +7,6 @@ import utils.*;
 /**
  * @deprecated
  * Conducts specific and automated testing of functions.
- * @author Escalona, J.M.
  */
 public class Testing {
 	private Scanner scan;

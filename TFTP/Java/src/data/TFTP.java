@@ -9,13 +9,10 @@ import utils.Utility;
 
 /**
  * Builds the TFTP packet that the Client will submit or receive, and process accordingly.
- * 
  * Packets implemented: RFC 1350 & 2347
- * 
  * Reference: 
  * 		Files of RFC 1350, 2347, 2348(!), & 2349(!)
  * 		https://faculty-web.msoe.edu/yoder/a/cs2911/20q1/lab7res/CS2911Lab7.pdf
- * 
  * OPCODES (Most from RFC 1350):
  * Value	Meaning
  * 1		Read Request 
@@ -24,14 +21,12 @@ import utils.Utility;
  * 4		Acknowledgement Message
  * 5		Error Message
  * 6		Option Acknowledgement (RFC2347; OACK)
- * 
  * READ/WRITE REQUEST (RRQ/WRQ) PACKET STRUCTURE (RFC 1350; OBSELETE, UPDATED BY RFC 2347)
  * ==========================================================
  * 2bytes    ||   String   ||  1byte  ||  String   ||  1byte
  * ==========================================================
  * Opcode    ||  Filename  ||    0    ||   Mode    ||    0
  * ==========================================================
- * 
  * READ/WRITE REQUEST (RRQ/WRQ) PACKET STRUCTURE (RFC 2347; MAX PACKET SIZE OF 512BYTES/OCTETS)
  * Note that opt and val are combined with the terminating 0 byte.
  * ==============================================================================================================
@@ -39,7 +34,6 @@ import utils.Utility;
  * ==============================================================================================================
  * Opcode  ||  Filename  ||    0    ||   mode   ||    0    ||   opt1  ||  value1  || ... ||   optn   ||   valn   
  * ==============================================================================================================
- * 
  * DATA PACKET STRUCTURE (RFC 1350)
  * ================================
  * 2bytes  ||  2bytes  ||  nbytes    
@@ -53,7 +47,6 @@ import utils.Utility;
  * ====================
  * Opcode  ||  Block#  
  * ====================
- * 
  * OACK PACKET STRUCTURE (RFC 2347)
  * Note that opt and val are combined with the terminating 0 byte.
  * ================================= ============================
@@ -61,14 +54,12 @@ import utils.Utility;
  * ==============================================================
  * Opcode  ||   opt1   ||   val1   || ... ||   optn   ||   valn
  * ==============================================================
- * 
  * ERROR PACKET STRUCTURE (RFC 1350)
  * ========================================================
  * 2bytes    ||    2bytes    ||    String   ||    1byte
  * ========================================================
  * Opcode    ||    ErrCode   ||    ErrMsg   ||      0
  * ========================================================
- * 
  * ERROR CODES (Most from RFC 1350):
  * Value 	Meaning
  * 0		Not defined, see error message (if any).
@@ -80,7 +71,6 @@ import utils.Utility;
  * 6 		File already exists.
  * 7 		No such user.
  * 8		Transfer terminated due to option negotiation (RFC 2347)
- * 
  * MODE (RFC 1350):
  * netascii: A host which receives netascii mode data must translate the data to its own format.
  * octet: 	Octet mode is used to transfer a file that is in the 8-bit format of the machine from which the file is being transferred. 
@@ -523,12 +513,8 @@ public class TFTP {
 	
 	/**
 	 * ================================================
-	 * 
-	 * 
-	 * PRIVATES
-	 * 
-	 * 
-	 * ================================================
+			 * PRIVATES
+			 * ================================================
 	 */
 	
 	/**
@@ -813,12 +799,10 @@ public class TFTP {
 	}
 	
 	/**
-	 * 
-	 * =============================
+		 * =============================
 	 * DIAGNOSTICS
 	 * =============================
-	 * 
-	 */
+		 */
 
 	/**
 	 * DIAGNOSTIC

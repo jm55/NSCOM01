@@ -6,8 +6,7 @@ import java.util.zip.*;
 /**
  * Reference:
  * https://www.demo2s.com/java/java-compressing-byte-arrays.html
- * 
- * @author ESCALONA-LTP02
+ *  ESCALONA-LTP02
  *
  */
 

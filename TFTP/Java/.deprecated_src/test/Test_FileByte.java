@@ -2,7 +2,6 @@ package test;
 
 /**
  * Driver for FileByte.java
- * 
  * Shows how it can be used.
  */
 

@@ -13,10 +13,7 @@ import java.nio.file.Files;
 import javax.swing.JOptionPane;
 /**
  * GUI Controller for the program.
- * 
  * Carried over from previous project for CSARCH2
- * 
- * @author Escalona, Jose Miguel
  *
  */
 public class Controller implements ActionListener {
@@ -113,7 +110,7 @@ public class Controller implements ActionListener {
 		}
 	}
 	/**
-	 * TODO
+	 * Conduct sending of file to the TFTP server. Return boolean value indicating success or failure.
 	 * @param f File to be sent
 	 * @return True if successful, false if otherwise.
 	 */
@@ -149,7 +146,7 @@ public class Controller implements ActionListener {
 	}
 	
 	/**
-	 * TODO
+	 * Conduct receiving file from the TFTP server. Return File object or null if successful or not respectively.
 	 * @param f Filename of file to be received.
 	 * @return True if successful, false if otherwise.
 	 */

@@ -2,7 +2,6 @@ package data;
 
 /**
  * Builds the TFTP packet that the Client will submit or receive, and process accordingly.
- * 
  * Reference: https://faculty-web.msoe.edu/yoder/a/cs2911/20q1/lab7res/CS2911Lab7.pdf
  * OPCODES:
  * Value	Meaning
@@ -11,35 +10,30 @@ package data;
  * 3		Data Message
  * 4		Acknowledgement Message
  * 5		Error Message
- * 
  * READ/WRITE REQUEST (RRQ/WRQ) PACKET STRUCTURE
  * ========================================================
  * 2bytes    ||    String    ||    1byte    ||    1byte
  * ========================================================
  * Opcode    ||   Filename   ||     Mode    ||      0
  * ========================================================
- * 
  * DATA PACKET STRUCTURE
  * ==========================================
  * 2bytes    ||    2bytes    ||    nbytes    
  * ==========================================
  * Opcode    ||    Block#    ||    1byte    
  * ==========================================
- * 
  * ACK PACKET STRUCTURE
  * ==========================
  * 2bytes    ||    2bytes    
  * ==========================
  * Opcode    ||    Block#    
  * ==========================
- * 
  * ERROR PACKET STRUCTURE
  * ========================================================
  * 2bytes    ||    2bytes    ||    String   ||    1byte
  * ========================================================
  * Opcode    ||    ErrCode   ||    ErrMsg   ||      0
  * ========================================================
- * 
  * ERROR CODES:
  * Value 	Meaning
  * 0		Not defined, see error message (if any).
@@ -75,9 +69,7 @@ public class TFTP {
 		byte[] RRQ = null;
 		/**
 		 * BUILD REQUEST PACKET HERE
-		 * 
-		 * 
-		 */
+						 */
 		return RRQ;
 	}
 	

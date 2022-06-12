@@ -11,10 +11,7 @@ import java.awt.event.*;
 
 /**
  * GUI for the program.
- * 
  * Carried over from previous project for CSARCH2
- * 
- * @author Escalona, Jose Miguel
  *
  */
 public class GUI extends JFrame{

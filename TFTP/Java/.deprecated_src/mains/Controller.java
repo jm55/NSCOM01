@@ -9,10 +9,7 @@ import java.awt.event.*;
 import javax.swing.JOptionPane;
 /**
  * GUI Controller for the program.
- * 
  * Carried over from previous project for CSARCH2
- * 
- * @author Escalona, Jose Miguel
  *
  */
 public class Controller implements ActionListener {
