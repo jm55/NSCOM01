@@ -36,8 +36,15 @@ public class UDP_Client_Simple{
             // 3 SEND UDP PACKET USING SOCKET
             socket.send(packet);
 
+            byte[] rcv = new byte[65535];
+            DatagramPacket p = new DatagramPacket(rcv,rcv.length);
+            socket.receive(p);
+
             if(text.equals("/exit"))
                 runtime = false;
+            else{
+                System.out.println(data(p.getData()));
+            }
         }
         
         // 4 CLOSING SOCKET
@@ -45,5 +52,21 @@ public class UDP_Client_Simple{
 
         //CLOSING SCANNER
         sc.close();
+    }
+
+
+    /**
+     * Reassembles byte[] as string
+     * @param b Received packet in byte[] 
+     * @return Reassembled String from b.
+     */
+    private static String data(byte[] b){
+        if(b == null)
+            return null;
+        StringBuilder sb = new StringBuilder();
+        int i, len = b.length;
+        for(i = 0; i < len; i++)
+            sb.append((char)b[i]);
+        return sb.toString();
     }
 }

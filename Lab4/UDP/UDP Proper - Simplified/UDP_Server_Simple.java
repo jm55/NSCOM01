@@ -15,11 +15,11 @@ public class UDP_Server_Simple {
 
         // 1 CREATE/OPEN SOCKET THAT THE SERVER WILL BIND TO
         socket = new DatagramSocket(port); //BINDS SOCKET TO PORT SPECIFIED IN PARAMETER
-        
+
         // 1.1 DISPLAYING SOCKET INFORMATION (SHOULD BE THE SAME AS VALUE OF PORT)
         System.out.println("Socket is binded to: " + socket.getLocalPort());
 
-        receive = new byte[1]; //SET BUFFER SIZE FOR RECEIVING DATA
+        receive = new byte[65535]; //SET BUFFER SIZE FOR RECEIVING DATA
         /** WHY 65535 BYTES?
          * UDP Max Payload Size: 65507 bytes (IPv4) & 65527 bytes (IPv6)
          * UDP Header Size: 8 bytes
@@ -41,7 +41,8 @@ public class UDP_Server_Simple {
             // 3.1 PRINT MESSAGE FOR USER
             String rec_ip = packet.getAddress().getHostAddress();
             String rec_host = packet.getAddress().getHostName();
-            System.out.println("Client " + rec_ip + ":" + socket.getLocalPort() + " (" + rec_host + "): " + data(receive));
+            String rec_port = packet.getPort() + "";
+            System.out.println(rec_host + ":" + rec_port + " - " + data(packet.getData()));
 
             //RESET RECEIVE BYTE[]
             receive = new byte[65535];
@@ -50,6 +51,10 @@ public class UDP_Server_Simple {
             if(data(receive).equals("/exit")){
                 System.out.println("Client " + rec_ip + " has exited.\nClosing server...");
                 runtime = false;
+            }else{
+                String response = "Received!";
+                DatagramPacket p = new DatagramPacket(response.getBytes(),response.getBytes().length,InetAddress.getByName(rec_host),Integer.parseInt(rec_port));
+                socket.send(p);
             }
         }
 

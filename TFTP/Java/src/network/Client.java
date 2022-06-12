@@ -20,6 +20,7 @@ public class Client {
 	private Utility u = new Utility();
 	private final String className = "Client";
 	
+	private final int DATAPORT = 61001;
 	private DatagramSocket socket = null;
 	private DatagramPacket packet = null;
 	private int PORT = -1, BUFFER_SIZE = 512;
@@ -153,13 +154,15 @@ public class Client {
 		try {
 			//Send packet to serve
 			u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Sending packet from " + socket.getLocalPort() + " to " + socket.getRemoteSocketAddress() + "...");
+			socket.connect(target, this.PORT); //USE 'CONTROL' SOCKET OF TFTP
 			socket.send(packet);
 			
 			//Receive ACK or ERROR packet
 			u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Receiving OACK packet to: " + socket.getLocalPort() + "...");
 			packet = new DatagramPacket(new byte[512], 512); //LIMITED TO 512 AS THE RFC DOCUMENT REVEALS THAT ANY REQUEST IS LIMITED TO 512 OCTETS, IMPLYING THAT ANY OACK MAY BE THE SAME.
-			socket.receive(packet); //NOT WORKING
-
+			socket.connect(this.target, this.DATAPORT); //SWITCH OVER PACKET TO SPECIFIED DATAPORT AND NOT TO PORT 69
+			socket.receive(packet);
+			
 			//Trim excess bytes from packets
 			u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Trimming OACK packet...");
 			byte[] trimmedPacket = new byte[packet.getLength()]; //TRIMMED RCV
@@ -170,18 +173,17 @@ public class Client {
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "isOACK and !isError");
 				String[][] checking = tftp.extractOACK(trimmedPacket);
 				int match = 0;
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Sent opts: " + u.arrayToString(opts));
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Sent vals: " + u .arrayToString(vals));
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "OACK opts: " + u.arrayToString(checking[0]));
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "OACK vals: " + u .arrayToString(checking[1]));
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Checking matches...");
-				for(int i=0;i<vals.length;i++){
-					for(int j=0;j<checking[1].length;j++){
+				for(int i=0;i<vals.length;i++)
+					for(int j=0;j<checking[1].length;j++)
 						if(vals[i].equals(checking[1][j]))
 							match++;
-					}
-				}
-				if(match == vals.length) {
+				if(match == vals.length)
 					return true;
-				}
 			}else{
 				//Confirm that the packet is an Error
 				if(tftp.isError(trimmedPacket)){
@@ -222,11 +224,16 @@ public class Client {
 		 * String[] VALS = {0}
 		 * 
 		 * BLOCKSIZE OPTION:
-		 * OPTIONAL TO INCLUDE OPTS = {'blocksize'} and VALS {vals[blocksize]} (SET BY USER)
+		 * OPTIONAL TO INCLUDE OPTS = {'blksize'} and VALS {vals[blksize]} (SET BY USER)
 		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
 		 * 
-		 * TIMEOUT OPTION: 
-		 * OPTIONAL TO INCLUDE OPTS = {'timeout'} and VALS {vals['timeout']} (SET BY USER/SYSTEM CONFIG)
+		 * IF CONDUCTING socket.send(<packet>), DO THIS:
+		 * socket.connect(target, this.PORT); //USE 'CONTROL' SOCKET OF TFTP
+		 * socket.send(packet);
+		 * 
+		 * IF CONDUCTING socket.receive(<packet>, DO THIS:
+		 * socket.connect(this.target, this.DATAPORT); //SWITCH OVER PACKET TO SPECIFIED DATAPORT (61001) AND NOT TO PORT 69
+		 * socket.receive(packet);
 		 * 
 		 * IF ERROR WAS RECEIVED RETURN -1
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS (IF IT EVEN EXISTS)
@@ -236,7 +243,6 @@ public class Client {
 	}
 	
 	/**
-	 * TODO
 	 * Write file to the server.
 	 * File Bytestream Reference: https://www.codejava.net/java-se/file-io/java-io-fileinputstream-and-fileoutputstream-examples
 	 * @param f File to be transferred.
@@ -272,34 +278,48 @@ public class Client {
 			BLOCKCOUNT = (int)Math.ceil(blockcountD);
 			
 			//BUFFER BYTE[] CONFIGURATION
+			u.printMessage(this.className, "writeToServer()", "SIZE: " + SIZE + ", " + "BUFFER_SIZE: " + BUFFER_SIZE);
 			byte[] buffer = new byte[BUFFER_SIZE]; //DATA SEGMENT OF PACKET
             if(SIZE < BUFFER_SIZE) //IF FILE SIZE IS INITIALLY SMALLER THAN BUFFER SIZE THEN SET BUFFER TO JUST FILE'S SIZE
             	buffer = new byte[SIZE];
             
             u.printMessage(this.className, "writeToServer(File)", "Reading through f and transmitting to target...");            
             int ctr = 1; //COUNTER FOR BLOCK#
-            while((bytesRead = inputStream.read(buffer)) != -1) { //While file not done streaming.
-            	/***
-            	 * 
-            	 * TODO: SEND BYTES HERE
-            	 * EACH DATA BYTES ARE HELD IN buffer AND THE LENGTH IS 0-bytesRead 
-            	 * 
-            	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.SEND AND SOCKET.RECEIVE
-            	 * WITH THE FIRST (ODD NUMBERED) ACTION BEING SEND DATA AND RECEIVE ACKS
-            	 * 
-            	 * INCREMENT CTR FOR EVER ACK RECEIVED (AND IF ACK'S BLOCK# EQUAL TO CTR)
-            	 * 
-            	 * WATCH OUT FOR ERROR(!) AND ACKS
-            	 * 
-            	 * ERRORS TO WATCH OUT FOR: 
-            	 * 1. Timeout for unresponsive server
-            	 * 2. Handling of duplicate ACK
-            	 * 3. User prompt for file not found, access violation, and disk full errors
-            	 */
+            while((bytesRead = inputStream.read(buffer)) > 0) { //While file not done streaming.
+            	//Sending byte of file
+            	u.printMessage(this.className, "writeToServer()", "Sending part of file...");
+            	socket.connect(this.target, this.DATAPORT); //WHEN SENDING
+            	byte[] packetByte = tftp.getDataPacket(ctr, buffer); //BUILD A DATA TFTP PACKET
+            	packet = new DatagramPacket(packetByte,packetByte.length);
+            	socket.send(packet);
+            	
+            	//Await for response
+            	u.printMessage(this.className, "writeToServer()", "Awaiting for response...");
+            	//socket.connect(this.target, this.DATAPORT); //WHEN RECEIVING
+            	packet = new DatagramPacket(new byte[512], 512);
+            	socket.receive(packet);
+            	
+            	if(tftp.isACK(packet.getData()) && !tftp.isError(packet.getData())) {
+            		//u.printMessage(this.className, "writeToServer()", "isACK && !isError");
+            		ctr++;
+            	}else {
+            		u.printMessage(this.className, "writeToServer()", "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
+            		u.printMessage(this.className, "writeToServer()", "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
+            		String[] err = tftp.extractError(packet.getData());
+            		/**
+            		 * TODO:
+            		 * HANDLE ERRORS HERE
+            		 * 
+            		 * SUGGESTED TO FOLLOW THE ERROR HANDLING ON askWritePermission();
+            		 */
+            	}
             	//DO NOT MOVE THIS. LET IT BE PLACED LAST.
+            	u.printMessage(this.className, "writeToServer()", "Remaining bytes: " + inputStream.available());
             	if(inputStream.available() < BUFFER_SIZE) {
+            		u.printMessage(this.className, "writeToServer()", "Adjusting buffer size...");
 					BUFFER_SIZE = inputStream.available();
 					buffer = new byte[BUFFER_SIZE];
+					u.printMessage(this.className, "writeToServer()", "Buffersize adjusted to: " + buffer.length);
 				}
 			}
 			u.printMessage(this.className, "writeToServer(File)", "Closing stream...");
@@ -406,7 +426,7 @@ public class Client {
 			try {
 				//Attempt connection
 				u.printMessage(this.className,"openConnection()", "Creating DatagramSocket()...");
-				this.socket = new DatagramSocket();
+				this.socket = new DatagramSocket(61000);
 				socket.connect(this.target, this.PORT);
 				u.printMessage(this.className,"openConnection()", "Socket connected!");
 				u.printMessage(this.className,"openConnection()", "Socket: " + getConnectionDetails(this.socket));

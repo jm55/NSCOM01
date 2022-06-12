@@ -75,7 +75,11 @@ public class Controller implements ActionListener {
 			//============================================================================
 			
 			File f = fh.getFile(); //USE THIS FILE TO SEND ON CLIENT
-			sendFile(f);
+			if(sendFile(f)) {
+				gui.appendOutputText("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " successful!");
+			}else {
+				gui.appendOutputText("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " not successful!");
+			}
 		}
 		
 		if(act.equals("RecvFile")) {
@@ -128,7 +132,7 @@ public class Controller implements ActionListener {
 			String blkSize = "512";
 			if(setBlkSize != 512)
 				blkSize = setBlkSize + "";
-			String[] opts = {"tsize","blocksize"};
+			String[] opts = {"tsize","blksize"};
 			String[] vals = {Files.size(f.toPath())+"",blkSize};
 			
 			//DELEGATE RECEIVE
@@ -141,9 +145,6 @@ public class Controller implements ActionListener {
 			gui.popDialog("Error on selected file.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > IOException: ", e.getLocalizedMessage());
 		}
-		
-		state = true; //====REMOVE BEFORE FLIGHT====
-		
 		return state;
 	}
 	
@@ -168,8 +169,8 @@ public class Controller implements ActionListener {
 			String blkSize = "512";
 			if(setBlkSize != 512)
 				blkSize = setBlkSize + "";
-			String[] opts = {"tsize","blocksize","timeout"};
-			String[] vals = {"0",blkSize,"1"};
+			String[] opts = {"tsize","blksize"};
+			String[] vals = {"0",blkSize};
 			
 			//DELEGATE RECEIVE
 			receivedFile = c.receive(f, saveAs.getAbsolutePath(), opts, vals);
