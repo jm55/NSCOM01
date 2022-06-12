@@ -27,25 +27,7 @@ public class Controller implements ActionListener{
 		this.gui = g;
 		this.gui.setListener(this);
 	}
-	
-	private boolean pingServer() {
-		boolean state = false;
-		String act = "pingServer()";
-		String host = gui.getServerIPInput();
-		int port = Integer.parseInt(gui.getServerPortInput());
-		c = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
-		u.printMessage(this.className, act, "Opening connection...");
-		c.openConnection();
-		u.printMessage(this.className, act, "Pinging: " + c.getConnectionDetails());
-		String ping = "Target " + c.getConnectionDetails() + " online: " + c.targetIsOnline();
-		state = c.targetIsOnline();
-		this.printConsole(ping);
-		u.printMessage(this.className, act, "c.targetIsOnline(): " + c.targetIsOnline());
-		u.printMessage(this.className, act, "Closing connection...");
-		c.closeConnection();
-		return state;
-	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String act = e.getActionCommand();
@@ -128,6 +110,8 @@ public class Controller implements ActionListener{
 			printConsole("Blocksize Set to: " + gui.getBlockSize());
 		}
 	}
+
+	
 	/**
 	 * Conduct sending of file to the TFTP server. Return boolean value indicating success or failure.
 	 * @param f File to be sent
@@ -153,9 +137,6 @@ public class Controller implements ActionListener{
 					blkSize = setBlkSize + "";
 				String[] opts = {"blksize", "tsize"};
 				String[] vals = {blkSize,Files.size(f.toPath())+""};
-				
-				//DELEGATE RECEIVE
-				state = c.send(f, opts, vals);
 			}else {
 				u.printMessage(this.className, "sendFile(f)", "Target does not respond to ping");
 			}
@@ -229,5 +210,27 @@ public class Controller implements ActionListener{
 	
 	private void printConsole(String message) {
 		this.gui.appendOutputText(u.getGUIConsoleMessage(message));
+	}
+	
+	/**
+	 * Pings the server/target specified and returns boolean value if the server is reachable or not.
+	 * @return True if reachable, false if otherwise.
+	 */
+	private boolean pingServer() {
+		boolean state = false;
+		String act = "pingServer()";
+		String host = gui.getServerIPInput();
+		int port = Integer.parseInt(gui.getServerPortInput());
+		c = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
+		u.printMessage(this.className, act, "Opening connection...");
+		c.openConnection();
+		u.printMessage(this.className, act, "Pinging: " + c.getConnectionDetails());
+		String ping = "Target " + c.getConnectionDetails() + " online: " + c.targetIsOnline();
+		state = c.targetIsOnline();
+		this.printConsole(ping);
+		u.printMessage(this.className, act, "c.targetIsOnline(): " + c.targetIsOnline());
+		u.printMessage(this.className, act, "Closing connection...");
+		c.closeConnection();
+		return state;
 	}
 }

@@ -15,7 +15,7 @@ import javax.swing.*;
  * Contains functions for sending, receiving, and pinging target host.
  * Also handles file writing.
  */
-public class Client {
+public class Client{
 	private Utility u = new Utility();
 	private final String className = "Client";
 	private final int DATAPORT = 61001;
