@@ -244,9 +244,10 @@ public class TFTP {
 	 * @param packetBytes
 	 * @return Block# indicated by ACK, returns -1 if packetBytes is null.
 	 */
-	public Integer extractACK(byte[] packetBytes) {
-		if(isACK(packetBytes))
-			return (int)packetBytes[3];
+	public byte extractACK(byte[] packetBytes) {
+		if(isACK(packetBytes)) {
+			return packetBytes[3];
+		}
 		return -1;
 	}
 	

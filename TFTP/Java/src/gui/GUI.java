@@ -431,7 +431,7 @@ public class GUI extends JFrame{
 		ta.setBounds(x,y,width,height);
 		ta.setEditable(editable);
 		ta.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		ta.setLineWrap(true);
+		ta.setLineWrap(false);
 		
 		if(debug) {
 			ta.setText(lorem_ipsum);

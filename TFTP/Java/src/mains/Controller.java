@@ -149,8 +149,8 @@ public class Controller implements ActionListener {
 				String blkSize = "512";
 				if(setBlkSize != 512)
 					blkSize = setBlkSize + "";
-				String[] opts = {"tsize","blksize"};
-				String[] vals = {Files.size(f.toPath())+"",blkSize};
+				String[] opts = {"blksize", "tsize"};
+				String[] vals = {blkSize,Files.size(f.toPath())+""};
 				
 				//DELEGATE RECEIVE
 				state = c.send(f, opts, vals);
@@ -161,7 +161,7 @@ public class Controller implements ActionListener {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
 			return state;
-		} catch (IOException e) {
+		}catch (IOException e) {
 			gui.popDialog("Error on selected file.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > IOException: ", e.getLocalizedMessage());
 		}

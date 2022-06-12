@@ -169,16 +169,27 @@ public class Client {
 			if(tftp.isOACK(trimmedPacket) && !tftp.isError(trimmedPacket)){
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "isOACK and !isError");
 				String[][] checking = tftp.extractOACK(trimmedPacket);
-				int match = 0;
+				
+				int match = 0;	
+				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Checking matches...");
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Sent opts: " + u.arrayToString(opts));
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Sent vals: " + u .arrayToString(vals));
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "OACK opts: " + u.arrayToString(checking[0]));
 				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "OACK vals: " + u .arrayToString(checking[1]));
-				u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Checking matches...");
-				for(int i=0;i<vals.length;i++)
-					for(int j=0;j<checking[1].length;j++)
-						if(vals[i].equals(checking[1][j]))
+				
+				//Revamped design which now considers the insisted blksize of the TFTP server as noted on a Wireshark test.
+				for(int i = 0; i < vals.length; i++) {
+					for(int j = 0;  j < checking[0].length; j++) {
+						if(opts[i].equalsIgnoreCase(checking[0][j])) {
+							if(checking[0][j].equalsIgnoreCase("blksize")){ //Check if TFTP asserts a blksize
+								this.BUFFER_SIZE = Integer.parseInt(checking[1][j]);
+								u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Server's blksize: " + this.BUFFER_SIZE);
+							}
 							match++;
+						}
+					}
+				}		
+				
 				if(match == vals.length)
 					return true;
 			}else{
@@ -213,20 +224,20 @@ public class Client {
 		if(!isConnected() || filename == null || filename.length() == 0)
 			return -1;
 		/**
-				 * BUILD READ REQUEST via TFTP.getRRQPacket();
-				 * WHERE OPTSVALS ARE:
+		 * BUILD READ REQUEST via TFTP.getRRQPacket();
+		 * WHERE OPTSVALS ARE:
 		 * String[] OPTS = {tsize}
 		 * String[] VALS = {0}
-				 * BLOCKSIZE OPTION:
+		 * BLOCKSIZE OPTION:
 		 * OPTIONAL TO INCLUDE OPTS = {'blksize'} and VALS {vals[blksize]} (SET BY USER)
 		 * IF BLOCK_SIZE != 512, BUT CONSIDER AS LOW PRIORITY.
-				 * IF CONDUCTING socket.send(<packet>), DO THIS:
+		 * IF CONDUCTING socket.send(<packet>), DO THIS:
 		 * socket.connect(target, this.PORT); //USE 'CONTROL' SOCKET OF TFTP
 		 * socket.send(packet);
-				 * IF CONDUCTING socket.receive(<packet>, DO THIS:
+		 * IF CONDUCTING socket.receive(<packet>, DO THIS:
 		 * socket.connect(this.target, this.DATAPORT); //SWITCH OVER PACKET TO SPECIFIED DATAPORT (61001) AND NOT TO PORT 69
 		 * socket.receive(packet);
-				 * IF ERROR WAS RECEIVED RETURN -1
+		 * IF ERROR WAS RECEIVED RETURN -1
 		 * ELSE CHECK OACK AND CONFIRM IF VALS SET WAS WHAT THE OACK CONTAINS (IF IT EVEN EXISTS)
 		 * AND RETURN VALS OF OPTS-tsize.
 		 */
@@ -255,8 +266,8 @@ public class Client {
 				for(int i = 0; i < opts.length; i++) {
 					if(opts[i].equals("tsize"))
 						tsize = Integer.parseInt(vals[i]);
-					if(opts[i].equals("blocksize"))
-						blocksize = Integer.parseInt(vals[i]);
+					if(opts[i].equals("blksize"))
+						blocksize = this.BUFFER_SIZE;
 					if(opts[i].equals("timeout"))
 						timeout = Integer.parseInt(vals[i]);
 				}
@@ -264,7 +275,7 @@ public class Client {
 			
 			//BLOCKCOUNT
 			if(blocksize != -1)
-				this.BUFFER_SIZE = blocksize;
+				BUFFER_SIZE = blocksize;
 			double blockcountD = SIZE/BUFFER_SIZE;
 			BLOCKCOUNT = (int)Math.ceil(blockcountD);
 			
@@ -287,12 +298,20 @@ public class Client {
             	//Await for response
             	u.printMessage(this.className, "writeToServer()", "Awaiting for response...");
             	//socket.connect(this.target, this.DATAPORT); //WHEN RECEIVING
-            	packet = new DatagramPacket(new byte[512], 512);
+            	packet = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
             	socket.receive(packet);
             	
             	if(tftp.isACK(packet.getData()) && !tftp.isError(packet.getData())) {
             		//u.printMessage(this.className, "writeToServer()", "isACK && !isError");
-            		ctr++;
+            		u.printMessage(this.className, "writeToServer()","ACK Block#: " + tftp.extractACK(packet.getData()));
+            		/**
+            		 * Not a necessary TODO but can help on error management. Specifically ACK handling.
+            		 * TODO (?): Verify the ACK value that the packet has. 
+            		 * 			 Current issue being, on tftp.extractACK, that it reads it in an overflow once the values
+            		 * 			 are >= 128.
+            		 */
+            		if(true) //Change to comparing received block number in ACK to ctr
+            			ctr++;
             	}else {
             		u.printMessage(this.className, "writeToServer()", "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
             		u.printMessage(this.className, "writeToServer()", "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
@@ -300,7 +319,7 @@ public class Client {
             		/**
             		 * TODO:
             		 * HANDLE ERRORS HERE
-            		            		 * SUGGESTED TO FOLLOW THE ERROR HANDLING ON askWritePermission();
+            		 * SUGGESTED TO FOLLOW THE ERROR HANDLING ON askWritePermission();
             		 */
             	}
             	//DO NOT MOVE THIS. LET IT BE PLACED LAST.
@@ -315,10 +334,9 @@ public class Client {
 			u.printMessage(this.className, "writeToServer(File)", "Closing stream...");
 			inputStream.close();
 			return true;
-		} catch (IOException e) {
-			u.printMessage(this.className, "writeToServer(File)", "IOException: " + e.getLocalizedMessage());
-		} catch (NullPointerException e) {
-			u.printMessage(this.className, "writeToServer(File)", "NullPointerException: " + e.getLocalizedMessage());
+		} catch (IOException | NullPointerException e) {
+			u.printMessage(this.className, "writeToServer(File)", "Exception: " + e.getLocalizedMessage());
+			gui.popDialog("Error", "Exception occured!", JOptionPane.ERROR_MESSAGE);
 		}
 		return false; //A fatal error (non-TFTP) occurs.
 	}
@@ -354,13 +372,13 @@ public class Client {
 			outputStream = new FileOutputStream(tempFile);
 			do {
 				/***
-		    			    	 * TODO: RECEIVE BYTES HERE
+		    	 * TODO: RECEIVE BYTES HERE
 		    	 * EACH DATA BYTES ARE HELD IN buffer AND THE LENGTH IS 0-bytesRead 
-		    			    	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.RECEIVE AND SOCKET.SEND
+		    	 * IT IS A MATTER OF SWITCHING BETWEEN SOCKET.RECEIVE AND SOCKET.SEND
 		    	 * WITH THE FIRST (ODD NUMBERED) ACTION BEING RECEIVE DATA AND SEND ACKS
-		    			    	 * COPY BLOCK# OF DATA RECEIVED AS ACK
-		    			    	 * WATCH OUT FOR ERROR(!) AND ACKS
-		    			    	 * ERRORS TO WATCH OUT FOR: 
+		    	 * COPY BLOCK# OF DATA RECEIVED AS ACK
+		    	 * WATCH OUT FOR ERROR(!) AND ACKS
+		    	 * ERRORS TO WATCH OUT FOR: 
             	 * 1. Timeout for unresponsive server
             	 * 2. Handling of duplicate ACK
             	 * 3. User prompt for file not found, access violation, and disk full errors
@@ -369,10 +387,9 @@ public class Client {
 				outputStream.write(buffer, 0, bytesRead);
 			}while(false);
 			outputStream.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			u.printMessage(this.className, "readFromServer(String, File, String[], String[]", "Exception: " + e.getLocalizedMessage());
+			gui.popDialog("Error", "Exception occured!", JOptionPane.ERROR_MESSAGE);
 		}
 		return tempFile;
 	}
@@ -391,6 +408,7 @@ public class Client {
 				return true;
 			} catch (IOException e) {
 				u.printMessage(this.className,"sendScratch(byte[])",e.getLocalizedMessage());
+				gui.popDialog("Error", "Exception occured!", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		return false;
@@ -416,8 +434,8 @@ public class Client {
 				//Check if reachable;
 				u.printMessage(this.className,"openConnection()", "Checking if target is online: " + targetIsOnline());
 			} catch (SocketException e) {
-				u.printMessage(this.className,"openConnection()", "TryCatch: Creating connection failed.");
-				u.printMessage(this.className, "openConnection()", "TryCatch: " + e.getLocalizedMessage());
+				u.printMessage(this.className,"openConnection()", "Exception: " + e.getLocalizedMessage());
+				gui.popDialog("Error", "Exception occured!", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 		}
@@ -477,7 +495,9 @@ public class Client {
 					return true;
 				}
 			} catch (IOException e) {
-				u.printMessage(this.className, "targetIsOnline()", "target: " + target.getHostAddress() + " is unreachable.");
+				u.printMessage(this.className, "targetIsOnline()", "Exception: " + e.getLocalizedMessage());
+				u.printMessage(this.className, "targetIsOnline()", target.getHostAddress() + " is unreachable.");
+				gui.popDialog("Error", "Exception occured!", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		u.printMessage(this.className, "targetIsOnline(target)", "Specified target is cannot be reached");
