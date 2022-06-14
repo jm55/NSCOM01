@@ -27,7 +27,6 @@ public class Client{
 	private final int CheckTimeout = 5000; //NETWORK TARGET CHECKING, NOT RELATED TO TFTP
 	private TFTP tftp = new TFTP();
 	private GUI gui = new GUI();
-	private String[] globalOpts = null, globalVals = null;
 	
 	public Client() {
 		setDefaults();
@@ -181,19 +180,16 @@ public class Client{
 				//Revamped design which now considers the insisted blksize of the TFTP server as noted on a Wireshark test.
 				for(int i = 0; i < vals.length; i++) {
 					for(int j = 0;  j < checking[0].length; j++) {
-						if(opts[i].equalsIgnoreCase(checking[0][j])) { //Same Item
+						if(opts[i].equalsIgnoreCase(checking[0][j])) {
 							if(checking[0][j].equalsIgnoreCase("blksize")){ //Check if TFTP asserts a blksize
 								this.BUFFER_SIZE = Integer.parseInt(checking[1][j]);
 								u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Server's blksize: " + this.BUFFER_SIZE);
-								match++;
 							}
-							if(checking[1][j].equalsIgnoreCase(vals[i]) && !checking[0][j].equalsIgnoreCase("blksize")){
-								u.printMessage(this.className, "askWritePermission(File f, String[] opts, String[] vals)", "Matched @ " + checking[1][j]);
-								match++;
-							}
+							match++;
 						}
 					}
 				}		
+				
 				if(match == vals.length)
 					return true;
 			}else{

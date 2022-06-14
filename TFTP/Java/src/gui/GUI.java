@@ -18,7 +18,7 @@ public class GUI extends JFrame{
 	private Utility u = new Utility();
 	private final String className = "GUI";
 	
-	private final String[] blockSizeValues = {"Default","128","512","1024","1428","2048","4096","8192","16384","32768","65536","131072","262144","524288","1048576","2097152","4194304","8388608","16777216"};
+	private final String[] blockSizeValues = {"Default","128","512","1024","1428","2048","4096","8192","16384","32768"};
 	
 	//PRIVATE GLOBAL VALUES
 	private boolean debug = false;
@@ -262,7 +262,7 @@ public class GUI extends JFrame{
 		panel.add(localSelectedFileLabel);
 		remoteSelectedFileLabel = createLabel("Remote Selected File:", newFont(Font.BOLD, 16),256+64,64*2,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
 		panel.add(remoteSelectedFileLabel);
-		blockSizeLabel = createLabel("Block Size (Bytes):", newFont(Font.BOLD, 16),32,64*3,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
+		blockSizeLabel = createLabel("Block Size:", newFont(Font.BOLD, 16),32,64*3,256,32, SwingConstants.LEFT, SwingConstants.CENTER);
 		panel.add(blockSizeLabel);
 		
 		//INPUT/OUTPUT FIELDS/AREAS
