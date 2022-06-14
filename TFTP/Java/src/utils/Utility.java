@@ -2,6 +2,7 @@ package utils;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -33,8 +34,13 @@ public class Utility {
 	 * @param text Details about the verbose print out
 	 */
 	public void printMessage(String className, String methodName, String text) {
-		if(state)
-			System.out.println("(" + dtNow()  + ") " + className + "." + methodName + ": " + text);
+		if(state){
+			if(text.length() > 0)
+				System.out.println("(" + dtNow()  + ") " + className + "." + methodName + ": " + text);
+			else
+			System.out.println("(" + dtNow()  + ") " + className + "." + methodName);
+		}
+			
 	}
 	/**
 	 * Print out format for GUI's console.
@@ -174,6 +180,15 @@ public class Utility {
     	return buffer.array();
     }
     /**
+     * Turns byte into hex (preventing overflow issue when directly reading bytes as int)
+     * @param b byte to turn into hex
+     * @return Hex string equivalent of b
+     */
+    public String byteToHex(byte b) {
+    	int res = b & 0xFF;
+    	return Integer.toHexString(res);
+    }
+    /**
      * Converts ArrayList<Byte> to byte[]
      * @param list ArrayList to be converted
      * @return byte[] equivalent of list.
@@ -253,5 +268,20 @@ public class Utility {
     	}
     	out += "]";
     	return out;
+    }
+    
+    public void printOptsValsComparison(String className, String methodName, String[] opts, String[] vals, String[][] checking) {
+    	printMessage(className, methodName, "Checking matches...");
+		printMessage(className, methodName, "Sent opts: " + arrayToString(opts));
+		printMessage(className, methodName, "Sent vals: " + arrayToString(vals));
+		printMessage(className, methodName, "OACK opts: " + arrayToString(checking[0]));
+		printMessage(className, methodName, "OACK vals: " + arrayToString(checking[1]));
+    }
+    
+    public byte[] trimPacket(DatagramPacket packet, String className, String methodName) {
+    	printMessage(className, methodName, "Trimming OACK packet...");
+    	byte[] trimmedPacket = new byte[packet.getLength()]; //TRIMMED RCV
+		System.arraycopy(packet.getData(), packet.getOffset(), trimmedPacket, 0, packet.getLength());
+		return trimmedPacket;
     }
 }

@@ -172,7 +172,7 @@ public class TFTP {
 	 */
 	public int extractBlockNumber(byte[] packetBytes){
 		if(this.getOpCode(packetBytes) == 3 || this.getOpCode(packetBytes) == 4){
-			return packetBytes[3];
+			return Integer.parseInt(u.byteToHex(packetBytes[3]),16);
 		}else
 			return -1;
 	}
@@ -235,6 +235,28 @@ public class TFTP {
 	 */
 	public boolean isACK(byte[] packetBytes) {
 		if(getOpCode(packetBytes)==4)
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Checks if a packet is data packet.
+	 * @param packet Packet in DatagramPacket format. 
+	 * @return True if packet is a data packet, false if otherwise.
+	 */
+	public boolean isData(DatagramPacket packet) {
+		if(getOpCode(packet) == 3)
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Checks if a packet is data packet.
+	 * @param packet Packet in byte[] format. 
+	 * @return True if packet is a data packet, false if otherwise.
+	 */
+	public boolean isData(byte[] packetBytes) {
+		if(getOpCode(packetBytes)==3)
 			return true;
 		return false;
 	}
@@ -460,6 +482,7 @@ public class TFTP {
 	 */
 	public String getErrMsg(Integer err) {
 		String[] msg = {
+				"Unknown Error",
 				"File not found",
 				"Access violation",
 				"Disk full",
@@ -469,9 +492,8 @@ public class TFTP {
 				"No such user",
 				"Invalid option"
 		};
-		err--;
 		if(err > 7 || !validErrCode(err))
-			return null;		
+			return null;
 		return msg[err];
 	}
 	

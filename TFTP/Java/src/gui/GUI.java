@@ -39,6 +39,7 @@ public class GUI extends JFrame{
 	 * Default constructor that builds the window.
 	 */
 	public GUI() {
+		
 	}
 	
 	/**
@@ -244,12 +245,13 @@ public class GUI extends JFrame{
 	 */
 	
 	private void buildDisplayContents(){
-		u.printMessage(this.className, "buildDisplayContents()", "Setting DefaultDisplay...");
+		String methodName = "buildDisplayContents()";
+		u.printMessage(this.className, methodName, "Setting DefaultDisplay...");
 		JPanel panel = new JPanel();
 		panel.setLayout(null);
 		
 		//LABELS
-		u.printMessage(this.className, "buildDisplayContents()", "Setting Labels...");
+		u.printMessage(this.className, methodName, "Setting Labels...");
 		titleLabel = createLabel(WindowTitle, newFont(Font.BOLD, 24), WIDTH/2-200,24,400,32, SwingConstants.CENTER, SwingConstants.TOP);
 		panel.add(titleLabel);
 		serverIPLabel = createLabel("Server IP:", newFont(Font.BOLD, 16),32,64*1,128,32, SwingConstants.LEFT, SwingConstants.CENTER);
@@ -266,7 +268,7 @@ public class GUI extends JFrame{
 		panel.add(blockSizeLabel);
 		
 		//INPUT/OUTPUT FIELDS/AREAS
-		u.printMessage(this.className, "buildDisplayContents()", "Setting I/O Fields...");
+		u.printMessage(this.className, methodName, "Setting I/O Fields...");
 		serverIPField = createTextField(newFont(Font.PLAIN, 16),32,(64*1)+32,256,32);
 		panel.add(serverIPField);
 		serverPortField = createTextField(newFont(Font.PLAIN, 16),32,(64*2)+32,256,32);
@@ -292,7 +294,7 @@ public class GUI extends JFrame{
 		
 		
 		//BUTTONS
-		u.printMessage(this.className, "buildDisplayContents()", "Setting Buttons...");
+		u.printMessage(this.className, methodName, "Setting Buttons...");
 		pingBtn = createButton("Ping Server", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"ServerConnection");
 		panel.add(pingBtn);
 		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"OpenFile");

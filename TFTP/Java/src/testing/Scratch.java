@@ -11,8 +11,10 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.util.Scanner;
 
 import data.*;
+import network.Client;
 import utils.*;
 
 /**
@@ -22,16 +24,20 @@ import utils.*;
 public class Scratch {
 	private static Utility u = new Utility();
 	private static final String className = "Scratch";
+	private static Scanner scan = null;
 	public static void main(String[] args) {
 		u.setState(true);
-		RunScratch();
+		scan = new Scanner(System.in);
+		long time_diff = RunScratch();
+		System.out.print("Testing time elapsed: " + (double)(time_diff/1000) + "seconds");
 		//System.gc();
+		scan.close();
 		System.exit(0);
 	}
 	
-	public static void RunScratch() {
+	public static long RunScratch() {
 		TFTP t = new TFTP();
-		System.out.println("Running scratch...\n\n");
+		System.out.println("Running scratch tester...");
 		//Wireshark
 		String hex_raw = "";
 		byte[] hex = null;
@@ -41,11 +47,23 @@ public class Scratch {
 		byte[] sysbyte = null;
 		String[] opts = {"tsize"}, vals = {"81967"};
 		
+		String[] target = {"",""};
+		System.out.print("Enter target IP: ");
+		target[0] = scan.nextLine();
+		System.out.print("Enter target port: ");
+		target[1] = scan.nextLine();
+		
+		long start = System.currentTimeMillis();
 		
 		/**
-		 * TESTING DATA PACKET BUILDING ON A FILE WHERE
-		 * THE INPUT AND OUTPUT FILES MUST RESULT THE SAME.
+		 * PACKET ASSEMBLY ZONE
 		 */
+		
+		System.out.println("\n\n");
+		System.out.println("================================================");
+		System.out.println("========THIS IS THE PACKET ASSEMBLY ZONE========");
+		System.out.println("================================================");
+		System.out.println("\n\n");
 
 		//THIS TEST CONTAINS ISSUES ON BYTE TO HEX DECODING, THUS THE OUTPUTS MAY SEEM OF FROM THE ORIGINAL.
 		//HOWEVER, SOME OF THE COMPONENTS FOR THE TRUE RESULT CAN BE FOUND (THOUGH OBSCURED) IN THE SYSTEM OUTPUT.
@@ -69,7 +87,7 @@ public class Scratch {
 		
 		System.out.println("WRQ Packet Without Opts & Vals");
 		System.out.println("System: ");
-		syspacket = t.getWRQPacket(new File("bitdefender.jpg"), "octet", null, null);
+		syspacket = t.getWRQPacket(new File("test.png"), "octet", null, null);
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
@@ -88,7 +106,7 @@ public class Scratch {
 		System.out.println("System: ");
 		opts[0] = "tsize";
 		vals[0] = "81967";
-		syspacket = t.getWRQPacket(new File("tote_tilt.jpg"), "octet", opts, vals);
+		syspacket = t.getWRQPacket(new File("test.png"), "octet", opts, vals);
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
@@ -228,8 +246,8 @@ public class Scratch {
 		System.out.println("System Result Block#: " + block);
 		
 		/***
-				 * NETWORK RELATED ZONE
-				 */
+		 * NETWORK RELATED ZONE
+		 */
 		
 		System.out.println("\n\n");
 		System.out.println("========================================");
@@ -237,116 +255,44 @@ public class Scratch {
 		System.out.println("========================================");
 		System.out.println("\n\n");
 		
-		InetAddress target = null;
-		try {
-			target = InetAddress.getByName("192.168.24.2");
-		}catch(UnknownHostException e) {
-			System.out.println("Scratch Network Related: " + e.getLocalizedMessage());
+		//FILES
+		FileHandlers fh = new FileHandlers();
+		File f = new File("test.png");
+		
+		//CONNECTION CONFIGURATION
+		System.out.println("Target details: " + u.arrayToString(target));
+		Client c = new Client(target[0],Integer.parseInt(target[1]),512);
+		System.out.println("Target is online: " + c.targetIsOnline());
+		
+		//OPTS AND VALS
+		String[] vals4 = {"0"};
+		String[] opts4 = {"tsize"};
+		try {vals4[0] = Files.size(f.toPath())+"";
+		} catch (IOException e) {
+			System.out.println("Scratch Network Related - OPTS & VALS: " + e.getLocalizedMessage());
 		}
-		int port = 69, localport = 61000;
-		DatagramSocket socket = null;
-		DatagramSocket socketIn = null;
-		try {
-			SocketAddress sa = new InetSocketAddress(InetAddress.getLocalHost(), localport);
-			socket = new DatagramSocket(localport);
-			//socketIn = new DatagramSocket(localport);
-			socket.connect(target, port);
-			//socketIn.bind(sa);
-			System.out.println("Socket bind: " + socket.isBound());
-			System.out.println("Socket connected: " + socket.isConnected());
-		} catch (SocketException | UnknownHostException e1) {
-			System.out.println("Scratch Network Related: " + e1.getLocalizedMessage());
-		}
-		if(socket.isConnected())
-			System.out.println("Scratch Connection: " + socket.isConnected());
-		DatagramPacket p = null;
+		
+		//WRITE TO SERVER
+		System.out.println("File Details: " + f.getName() + " with size: " + vals4[0]);
+		System.out.println("Writing To Server...");
+		boolean state = c.send(f, opts4, vals4);
+		if(state)
+			System.out.println("Write to server successful");
+		else
+			System.out.println("Write to server failed");
 		
 		System.out.println("\n\n");
-		System.out.println("WRQ Send");
-		FileHandlers fh = new FileHandlers();
-		File f = fh.openAsFile();
-		int fileSize = 0;
-		try {
-			fileSize = (int)Files.size(f.toPath());
-		} catch (IOException e) {
-			System.out.println("Scratch Network Related - File Size: " + e.getLocalizedMessage());
-		}
-		String[] opts2 = {"tsize","blocksize"};
-		String[] vals2 = {fileSize+"","512"};
-		byte[] wrq = t.getWRQPacket(f, "octet", opts2, vals2);
-		p = new DatagramPacket(wrq, wrq.length, target, port);
-		try {
-			System.out.println(System.currentTimeMillis() + " - WRQ Sending from " + socket.getLocalPort() + " to " + socket.getPort());
-			socket.send(p);
-			socket.connect(target, localport); //SWITCH OVER TO RESPONSE PORT BY TFTPD
-			System.out.println(System.currentTimeMillis() + " - WRQ Sent!");
-			p = new DatagramPacket(new byte[512], 512);
-			System.out.println(System.currentTimeMillis() + " - Awaiting reply from " + socket.getPort() + " to " + socket.getLocalPort());
-			socket.receive(p);
-			System.out.println(System.currentTimeMillis() + " - Reply received!");
-		} catch (IOException e) {
-			System.out.println("Scratch Network Related - WRQ Send: " + e.getLocalizedMessage());
-			socket.close();
-		}
 		
-//		System.out.println("\n\n");
-//		System.out.println("RRQ Send");
-//		String filename = "Hello World.txt";
-//		String[] opts3 = {"blocksize"};
-//		String[] vals3 = {"512"};
-//		byte[] rrq = t.getRRQPacket(filename, "octet", opts3, vals3);
-//		p = new DatagramPacket(rrq, rrq.length);
-//		try {
-//			System.out.println("RRQ Sending...");
-//			socket.send(p);
-//			System.out.println("RRQ Sent!");
-//		} catch (IOException e) {
-//			System.out.println("Scratch Network Related - RRQ Send: " + e.getLocalizedMessage());
-//		}
+		//READ FROM SERVER
+		vals4[0] = "0";
+		opts4[0] = "tsize";
+		System.out.println("File Details: " + f.getName());
+		System.out.println("Reading From Server...");
+		if(c.receive(f.getName(), "test_recv.jpg", opts4, vals4) != null)
+			System.out.println("Read from server successful");
+		else
+			System.out.println("Read to server failed");
 		
-//		System.out.println("\n\n");
-//		System.out.println("ACK Send");
-//		byte[] ack = t.getACK(1);
-//		p = null;
-//		p = new DatagramPacket(ack, ack.length);
-//		try {
-//			System.out.println("ACK Sending...");
-//			socket.send(p);
-//			System.out.println("ACK Sent!");
-//		} catch (IOException e) {
-//			System.out.println("Scratch Network Related - ACK Send: " + e.getLocalizedMessage());
-//		}
-		
-//		System.out.println("\n\n");
-//		System.out.println("OACK Send");
-//		String[] opts4 = {"tsize"};
-//		String[] vals4 = {"12"};
-//		byte[] oack = t.getOACK(opts4, vals4);
-//		p = null;
-//		p = new DatagramPacket(oack, oack.length);
-//		try {
-//			System.out.println("OACK Sending...");
-//			socket.send(p);
-//			System.out.println("OACK Sent!");
-//		} catch (IOException e) {
-//			System.out.println("Scratch Network Related - OACK Send: " + e.getLocalizedMessage());
-//		}
-		
-//		System.out.println("\n\n");
-//		System.out.println("Data Send");
-//		byte[] data2 = "Hello World!".getBytes();
-//		byte[] dataPacket = t.getDataPacket(1, data2);
-//		p = null;
-//		p = new DatagramPacket(dataPacket, dataPacket.length);
-//		try {
-//			System.out.println("Data Sending...");
-//			socket.send(p);
-//			System.out.println("Data Sent!");
-//		} catch (IOException e) {
-//			System.out.println("Scratch Network Related - Data Send: " + e.getLocalizedMessage());
-//		}
-		
-		
-		socket.close();
+		return System.currentTimeMillis() - start;
 	}	
 }

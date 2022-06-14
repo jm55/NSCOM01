@@ -28,29 +28,11 @@ public class Controller implements ActionListener{
 		this.gui.setListener(this);
 	}
 	
-	private boolean pingServer() {
-		boolean state = false;
-		String act = "pingServer()";
-		String host = gui.getServerIPInput();
-		int port = Integer.parseInt(gui.getServerPortInput());
-		c = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
-		u.printMessage(this.className, act, "Opening connection...");
-		c.openConnection();
-		u.printMessage(this.className, act, "Pinging: " + c.getConnectionDetails());
-		String ping = "Target " + c.getConnectionDetails() + " online: " + c.targetIsOnline();
-		state = c.targetIsOnline();
-		this.printConsole(ping);
-		u.printMessage(this.className, act, "c.targetIsOnline(): " + c.targetIsOnline());
-		u.printMessage(this.className, act, "Closing connection...");
-		c.closeConnection();
-		return state;
-	}
-	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String act = e.getActionCommand();
-		
-		u.printMessage(this.className, "actionPerformed(e)", act);
+		String methodName = "actionPerformed(e)";
+		u.printMessage(this.className, methodName, act);
 		
 		if(act.equals("ServerConnection")) {
 			if(!validNetwork())
@@ -88,12 +70,13 @@ public class Controller implements ActionListener{
 		
 		if(act.equals("RecvFile")) {
 			String targetFile = gui.getRemoteSelectedFileText();
+			File saveAs = fh.saveFile();
 			if(targetFile.equals("")) {
 				this.printConsole("No Remote File Specified");
 				gui.popDialog("No Remote File Specified", "Receive File", JOptionPane.WARNING_MESSAGE);
 			}else {
 				this.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ "...");
-				File recvFile = receiveFile(targetFile);
+				File recvFile = receiveFile(targetFile, saveAs);
 				if(recvFile != null) {
 					this.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " successful!");
 				}else {
@@ -134,15 +117,16 @@ public class Controller implements ActionListener{
 	 * @return True if successful, false if otherwise.
 	 */
 	private boolean sendFile(File f) {
+		String methodName = "sendFile(f)";
 		if(!validNetwork())
 			return false;
-		u.printMessage(this.className, "sendFile(f)", "Network is valid!");
-		u.printMessage(this.className, "sendFile(f)", "File to send is: " + f.getName());
+		u.printMessage(this.className, methodName, "Network is valid!");
+		u.printMessage(this.className, methodName, "File to send is: " + f.getName());
 		boolean state = false;
 		try {
 			//Ping Server
 			if(pingServer()) {
-				u.printMessage(this.className, "sendFile(f)", "Target does respond to ping");
+				u.printMessage(this.className, methodName, "Target does respond to ping");
 				//CREATE SEND CLIENT
 				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
 				
@@ -157,7 +141,7 @@ public class Controller implements ActionListener{
 				//DELEGATE RECEIVE
 				state = c.send(f, opts, vals);
 			}else {
-				u.printMessage(this.className, "sendFile(f)", "Target does not respond to ping");
+				u.printMessage(this.className, methodName, "Target does not respond to ping");
 			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -175,20 +159,20 @@ public class Controller implements ActionListener{
 	 * @param f Filename of file to be received.
 	 * @return True if successful, false if otherwise.
 	 */
-	private File receiveFile(String f) {
+	private File receiveFile(String f, File saveAs) {
+		String methodName = "receiveFile(f)";
 		if(!validNetwork())
 			return null;
-		u.printMessage(this.className, "receiveFile(f)", "Network is valid!");
-		u.printMessage(this.className, "sendFile(f)", "File to receive is: " + f);
+		u.printMessage(this.className, methodName, "Network is valid!");
+		u.printMessage(this.className, methodName, "File to receive is: " + f);
 		File receivedFile = null;
 		try {
 			if(pingServer()) {
-				u.printMessage(this.className, "receiveFile(f)", "Target does respond to ping");
+				u.printMessage(this.className, methodName, "Target does respond to ping");
 				//CREATE SEND CLIENT
 				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
 				
-				//RECEIVE PARAETERS
-				File saveAs = fh.openAsFile();
+				//RECEIVE PARAMETER
 				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
 				String blkSize = "512";
 				if(setBlkSize != 512)
@@ -199,16 +183,13 @@ public class Controller implements ActionListener{
 				//DELEGATE RECEIVE
 				receivedFile = c.receive(f, saveAs.getAbsolutePath(), opts, vals);
 			}else {
-				u.printMessage(this.className, "receiveFile(f)", "Target does not respond to ping");
+				u.printMessage(this.className, methodName, "Target does not respond to ping");
 			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
 			return receivedFile;
 		}
-		
-		receivedFile = new File("loremipsum.txt"); //====REMOVE BEFORE FLIGHT====
-		
 		return receivedFile;
 	}
 	
@@ -227,7 +208,31 @@ public class Controller implements ActionListener{
 		return true;
 	}
 	
+	/**
+	 * Print text to GUI's console
+	 * @param message
+	 */
 	private void printConsole(String message) {
 		this.gui.appendOutputText(u.getGUIConsoleMessage(message));
+	}
+	
+	/**
+	 * Pings the server
+	 * @return True if online, false if otherwise
+	 */
+	private boolean pingServer() {
+		boolean state = false;
+		String methodString = "pingServer()";
+		String host = gui.getServerIPInput();
+		int port = Integer.parseInt(gui.getServerPortInput());
+		c = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
+		u.printMessage(this.className, methodString, "Opening connection...");
+		c.openConnection();
+		u.printMessage(this.className, methodString, "Pinging: " + c.getConnectionDetails());
+		this.printConsole("Target " + c.getConnectionDetails() + " online: " + c.targetIsOnline());
+		state = c.targetIsOnline();
+		u.printMessage(this.className, methodString, "Closing connection...");
+		c.closeConnection();
+		return state;
 	}
 }
