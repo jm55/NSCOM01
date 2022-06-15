@@ -117,10 +117,11 @@ public class TFTP {
 		if(!validOpCode(opcode))
 			return null;
 		if(opcode == 3) {
-			//Find length from idx 4 to last idx
-			byte[] data = new byte[packetBytes.length - 4];
-			for(int i = 4; i < packetBytes.length; i++)
-				data[i-4] = packetBytes[i];
+			int offset = 4;
+			byte[] data = new byte[packetBytes.length - offset];
+			for(int i = offset; i < packetBytes.length; i++)
+				data[i-offset] = packetBytes[i];
+			u.printMessage(this.className, "extractData()", u.getBytesAsBits(data,true));
 			return data;
 		}
 		return null;

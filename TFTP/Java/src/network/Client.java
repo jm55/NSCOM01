@@ -302,28 +302,18 @@ public class Client{
 			return false;
 		
 		try {
-			Integer BUFFER_SIZE = 512; //BUFFER/BLOCKSIZE DEFAULT TO 512
 			Integer SIZE = (int)Files.size(f.toPath()); //SIZE OF FILE
 			Integer bytesRead = -1; //FOR FILE STREAMING
 			
 			InputStream inputStream = new FileInputStream(f.getAbsolutePath()); //FILE STREAMING
 			
-			int tsize = -1, blocksize = -1, timeout = -1; //FOR CONFIGURATION BY USER
-			if(tftp.validOptVal(opts, vals)) {
-				for(int i = 0; i < opts.length; i++) {
-					if(opts[i].equals("tsize"))
-						tsize = Integer.parseInt(vals[i]);
-					if(opts[i].equals("blksize"))
-						blocksize = this.BUFFER_SIZE;
-					if(opts[i].equals("timeout"))
-						timeout = Integer.parseInt(vals[i]);
-				}
-			}
+			int tsize = this.TSIZE, blocksize = this.BUFFER_SIZE, timeout = -1; //FOR CONFIGURATION
+			
 			
 			//BUFFER BYTE[] CONFIGURATION
 			u.printMessage(this.className, methodName, "SIZE: " + SIZE + ", " + "BUFFER_SIZE: " + BUFFER_SIZE);
-			byte[] buffer = new byte[BUFFER_SIZE]; //DATA SEGMENT OF PACKET
-            if(SIZE < BUFFER_SIZE) //IF FILE SIZE IS INITIALLY SMALLER THAN BUFFER SIZE THEN SET BUFFER TO JUST FILE'S SIZE
+			byte[] buffer = new byte[blocksize]; //DATA SEGMENT OF PACKET
+            if(SIZE < blocksize) //IF FILE SIZE IS INITIALLY SMALLER THAN BUFFER SIZE THEN SET BUFFER TO JUST FILE'S SIZE
             	buffer = new byte[SIZE];
             
             u.printMessage(this.className, methodName, "Sending file to target...");            
@@ -339,12 +329,12 @@ public class Client{
                 	
                 	//Await for response
                 	//socket.connect(this.target, this.DATAPORT); //WHEN RECEIVING
-                	packet = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
+                	packet = new DatagramPacket(new byte[blocksize], blocksize);
                 	socket.receive(packet);
                 	
-                	boolean ack = tftp.isACK(packet.getData()), ackerror = !tftp.isError(packet.getData());
-                	u.printMessage(this.className, methodName, "isACK: " + ack + ", isError: " + ackerror);
-                	if(ack && ackerror) {
+                	boolean isACK = tftp.isACK(packet.getData()), isError = !tftp.isError(packet.getData());
+                	u.printMessage(this.className, methodName, "isACK: " + isACK + ", !isError: " + isError);
+                	if(isACK && isError) {
                 		ACKval = tftp.extractBlockNumber(packetByte);
                 		u.printMessage(this.className, methodName,"ACK Block#: " + tftp.extractBlockNumber(packet.getData()) + " = " + ACKval + ", Remaining bytes: " + inputStream.available());
                 		if(ACKval == ctr) { //Change to comparing received block number in ACK to ctr
@@ -353,7 +343,7 @@ public class Client{
                 		}
                 	}else {
                 		u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
-                		if(ackerror) {
+                		if(isError) {
                 			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
                     		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
                     		/**
@@ -366,11 +356,11 @@ public class Client{
                 	}
             	}while(!validACK && !error); //Repeat if sending if the ACK received is not a 'new' block of data.
             	
-            	//DO NOT MOVE THIS. LET IT BE PLACED LAST.
-            	if(inputStream.available() < BUFFER_SIZE) {
-					BUFFER_SIZE = inputStream.available();
-					buffer = new byte[BUFFER_SIZE];
-					u.printMessage(this.className, methodName, "Buffersize adjusted to: " + buffer.length);
+            	//RECOMPUTES BLKSIZE IF AVAILABLE DATA IS LESS THAN THE BLKSIZE; DO NOT MOVE THIS. LET IT BE PLACED LAST.
+            	if(inputStream.available() < blocksize) {
+					blocksize = inputStream.available();
+					buffer = new byte[blocksize];
+					u.printMessage(this.className, methodName, "blksize adjusted to: " + buffer.length);
 				}
 			}
 			u.printMessage(this.className, methodName, "Closing stream...");
@@ -384,7 +374,6 @@ public class Client{
 	}
 	
 	/**
-	 * TODO: Stuck at 'Receiving file from target...'
 	 * Read File from server.
 	 * File Bytestream Reference: https://www.codejava.net/java-se/file-io/java-io-fileinputstream-and-fileoutputstream-examples
 	 * @param filename Filename of target file on server.
@@ -407,63 +396,86 @@ public class Client{
 			}
 		
 		OutputStream outputStream = null; //BYTE STREAM FILE WRITING
-		int tsize = -1, blocksize = -1, timeout = -1; //FOR CONFIGURATION
-		if(tftp.validOptVal(opts, vals)) {
-			for(int i = 0; i < opts.length; i++) {
-				if(opts[i].equals("tsize"))
-					tsize = Integer.parseInt(vals[i]);
-				if(opts[i].equals("blocksize"))
-					blocksize = Integer.parseInt(vals[i]);
-				if(opts[i].equals("timeout"))
-					timeout = Integer.parseInt(vals[i]);
-			}
-		}
-		
-		if(blocksize != -1)
-			this.BUFFER_SIZE = blocksize;
+		int tsize = this.TSIZE, blocksize = this.BUFFER_SIZE + 4, timeout = -1; //FOR CONFIGURATION
 		
 		int subtotal = 0;
 		try {
 			outputStream = new FileOutputStream(tempFile);
 			u.printMessage(this.className,methodName,"Receiving file from target...");
+			
+			int ctr = 0;
+			boolean validBlock = false, error = false;
 			do {
-				byte[] buffer = new byte[this.BUFFER_SIZE];
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				
-				socket.receive(packet);
-				
-				boolean ack = tftp.isACK(packet.getData()), ackerror = !tftp.isError(packet.getData());
-            	u.printMessage(this.className, methodName, "isACK: " + ack + ", isError: " + ackerror);
-				if(ack && ackerror) {
-					//SAVE BUFFER TO FILE
-					byte[] data = tftp.extractData(packet);
-					int block = tftp.extractBlockNumber(packet);
-					subtotal += data.length;
-					u.printMessage(this.className, methodName, "Received data");
+				do {
+					validBlock = false;
+					byte[] ackbyte = tftp.getACK(ctr);
 					
-					//BUILD & SEND ACK
-					byte[] ackByte = tftp.getACK(block);
-					DatagramPacket ackPacket = new DatagramPacket(ackByte, ackByte.length);
-					socket.send(ackPacket);
-					
-					int bytesRead = data.length; //BYTE LENGTH OF PACKET'S DATA SEGMENT
-					outputStream.write(data, 0, bytesRead);
-				}else {
-					if(ackerror) {
-						u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
-                		if(tftp.isError(packet)) {
-                			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
-                    		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
-                    		/**
-                    		 * TODO:
-                    		 * HANDLE ERRORS HERE
-                    		 * To display errors, call 'displayError(error, methodName)' as is
-                    		 */
-                    		tempFile.delete();
-                		}else
-                			u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
+					//RECOMPUTE BLKCSIZE IF COMPUTED REMAINING BYTES OF FILE IS LESS THAN BUFFER/BLKSIZE; DO NOT MOVE
+					if(tsize-subtotal < blocksize) {
+						u.printMessage(this.className, methodName, "Adjusting blksize: " + (tsize-subtotal));
+						blocksize = tsize-subtotal + 4;
 					}
-				}				
+					
+					//SEND AN ACK FIRST
+					if(ctr == 0) { //TO SYNC WITH FUTURE DATAPACKETS THAT START AT 1	
+						packet = new DatagramPacket(ackbyte, ackbyte.length);
+						socket.send(packet);
+						ctr++;
+					}
+					
+					//AWAIT FOR DATA RESPONSE
+					byte[] buffer = new byte[blocksize];
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+					socket.receive(packet);
+					
+					boolean isData = tftp.isData(packet.getData()), isError = !tftp.isError(packet.getData());
+	            	u.printMessage(this.className, methodName, "isData: " + isData + ", !isError: " + isError);
+					if(isData && isError) {
+						//SAVE BUFFER TO FILE
+						byte[] data = tftp.extractData(packet);
+						int block = tftp.extractBlockNumber(packet);
+						subtotal += data.length;
+						u.printMessage(this.className, methodName, "Received data, ACK#: " + block + ", Curr#: " + ctr + ", DataLen: " + data.length + ", Completed: " + subtotal + "/" + tsize + " (" + u.percentageValue(subtotal,tsize)+ "%)");
+						
+						if(block == ctr) { //CLIENT AND SERVER ARE IN SYNCH
+							validBlock = true;
+							int bytesRead = data.length; //BYTE LENGTH OF PACKET'S DATA SEGMENT
+							outputStream.write(data, 0, bytesRead);
+						}if(block > ctr) { //SERVER IS ADVANCED THAN CLIENT
+							/**
+							 * TODO
+							 * 
+							 * THIS STATES THAT THE SERVER GIVES YOU DATA 
+							 * THAT IS BEYOND THE CURRENT BLOCK POINTER THAT YOU HAVE
+							 * 
+							 * CONSIDER AS AN ERROR, DELETE FILE, DISPLAY AS UNKNOWN ERROR (0) AND RETURN NULL
+							 */
+						}else{ // SERVER IS LATE THAN CLIENT
+							packet = new DatagramPacket(ackbyte, ackbyte.length);
+							socket.send(packet);
+						}
+					}else {
+						if(isError) {
+							u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
+	                		if(tftp.isError(packet)) {
+	                			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
+	                    		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
+	                    		/**
+	                    		 * TODO:
+	                    		 * HANDLE ERRORS HERE
+	                    		 * To display errors, call 'displayError(error, methodName)' as is
+	                    		 */
+	                    		tempFile.delete();
+	                		}else
+	                			u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
+						}
+					}	
+				}while(!validBlock && !error);
+				byte[] ackbyte = tftp.getACK(ctr);
+				packet = new DatagramPacket(ackbyte, ackbyte.length);
+				socket.send(packet);
+				u.printMessage(this.className, methodName, "ACK: " + ctr + " sent");
+				ctr++;
 			}while(subtotal < tsize);
 			outputStream.close();
 		} catch (Exception e) {
@@ -476,6 +488,7 @@ public class Client{
 		return tempFile;
 	}
 	
+	
 	/**
 	 * ==========================================================
 	 * 				AUXILLIARY NETWORK FUNCTIONS
@@ -485,6 +498,7 @@ public class Client{
 	public void reset() {
 		u.printMessage(this.className, "reset()","");
 		this.BUFFER_SIZE = 512;
+		this.TSIZE = 0;
 	}
 	
 	/**

@@ -25,7 +25,7 @@ public class Automated_Testing {
 		System.out.println("Check OpCode Assembly: ");
 		byte[] opcodes = {1,2,3,4,5,6,7,8};
 		for(byte o : opcodes)
-			System.out.println(o + ": " + u.getBytesAsBits(t.checkOpCode(o)));
+			System.out.println(o + ": " + u.getBytesAsBits(t.checkOpCode(o),true));
 	}
 	
 	private void check_buildOACK(TFTP t) {
@@ -34,7 +34,7 @@ public class Automated_Testing {
 		String[] opts = {"opts1", "opts2"};
 		String[] vals = {"vals1", "vals2"};
 		if(opts.length == vals.length) {
-			System.out.println(u.getBytesAsBits(t.checkOACK(opts, vals)));
+			System.out.println(u.getBytesAsBits(t.checkOACK(opts, vals),true));
 		}
 	}
 	

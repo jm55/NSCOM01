@@ -75,13 +75,13 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "000300a1" + data;
 		hex = u.hexStringToByteArray(hex_raw);
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
@@ -91,14 +91,14 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0002746f74655f74696c742e6a7067006f6374657400";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
 		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
@@ -110,7 +110,7 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0002746f74655f74696c742e6a7067006f63746574007473697a6500383139363700";
@@ -119,7 +119,7 @@ public class Scratch {
 		String[][] oacks = t.extractOACKFromRQ(hex);
 		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
 		System.out.println("extractOACKFromRQ: " + u.stringArrToString(oacks[0]) + ", " + u.stringArrToString(oacks[1]));
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
@@ -129,14 +129,14 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00016e656e656368692e706e67006f6374657400";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
 		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
@@ -148,13 +148,13 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00016e656e656368692e706e67006f63746574007473697a65003000";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		oacks = t.extractOACKFromRQ(hex);
 		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
 		System.out.println("extractOACKFromRQ: " + u.stringArrToString(oacks[0]) + ", " + u.stringArrToString(oacks[1]));
@@ -169,13 +169,13 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00067473697a6500383139363700";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		oacks = t.extractOACK(hex);
 		System.out.println("extractOACK: " + u.stringArrToString(oacks[0]) + ", " + u.stringArrToString(oacks[1]));
 		
@@ -188,13 +188,13 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00040054";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		System.out.println("isACK: " + t.isACK(hex));
 		System.out.println("extractACK: Block " + t.extractACK(hex));
 		
@@ -206,15 +206,15 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0003000168656c6c6f20776f726c64";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		System.out.println("getOpCode: " + t.getOpCode(hex));
-		System.out.println("Extract Data: " + u.getBytesAsBits(t.extractData(hex)));
+		System.out.println("Extract Data: " + u.getBytesAsBits(t.extractData(hex),true));
 		
 		System.out.println("\n\n");
 		
@@ -224,13 +224,13 @@ public class Scratch {
 		syshex  = u.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
 		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte));
+		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0005000146696c65206e6f7420666f756e640000";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
 		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex));
+		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
 		System.out.println("isError: " + t.isError(hex));
 		String[] error = t.extractError(hex);
 		System.out.println("Extract Error: " + error[0] + " = " + error[1]);
@@ -240,7 +240,7 @@ public class Scratch {
 		System.out.println("Extract Block Number");
 		hex_raw = "0003000168656c6c6f20776f726c64";
 		System.out.println("Hex Raw: " + hex_raw);
-		System.out.println("Bits: " + u.getBytesAsBits(u.hexStringToByteArray(hex_raw)));
+		System.out.println("Bits: " + u.getBytesAsBits(u.hexStringToByteArray(hex_raw),true));
 		System.out.println("Expected output: " + 1);
 		int block = t.extractBlockNumber(u.hexStringToByteArray(hex_raw));
 		System.out.println("System Result Block#: " + block);
@@ -292,6 +292,7 @@ public class Scratch {
 			System.out.println("Read from server successful");
 		else
 			System.out.println("Read to server failed");
+		//new File("test_recv.jpg").deleteOnExit();
 		
 		return System.currentTimeMillis() - start;
 	}	

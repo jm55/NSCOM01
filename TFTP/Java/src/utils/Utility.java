@@ -1,7 +1,9 @@
 package utils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -79,13 +81,15 @@ public class Utility {
 	 * Example format: 00000001 00000010 00000011 ...
 	 * Reference: https://stackoverflow.com/a/62318518
 	 * @param bytes byte[] to be converted into bits
+	 * @param space True if add space in between 8-bits, false if otherwise
 	 * @return Bit string equivalent of bytes
 	 */
-	public String getBytesAsBits(byte[] bytes) {
+	public String getBytesAsBits(byte[] bytes, boolean space) {
 		StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
             sb.append(String.format("%8s", Integer.toBinaryString(bytes[i] & 0xFF)).replace(' ', '0'));
-        	sb.append(' ');
+        	if(space)
+        		sb.append(' ');
         }
         return sb.toString();
 	}
@@ -270,6 +274,14 @@ public class Utility {
     	return out;
     }
     
+    /**
+     * Prints the list of opts and vals for both the sent and received values
+     * @param className
+     * @param methodName
+     * @param opts
+     * @param vals
+     * @param checking
+     */
     public void printOptsValsComparison(String className, String methodName, String[] opts, String[] vals, String[][] checking) {
     	printMessage(className, methodName, "Checking matches...");
 		printMessage(className, methodName, "Sent opts: " + arrayToString(opts));
@@ -277,11 +289,24 @@ public class Utility {
 		printMessage(className, methodName, "OACK opts: " + arrayToString(checking[0]));
 		printMessage(className, methodName, "OACK vals: " + arrayToString(checking[1]));
     }
-    
+   
+    /**
+     * Trims the packet to eliminate excess padding bytes if there are any.
+     * @param packet
+     * @param className
+     * @param methodName
+     * @return
+     */
     public byte[] trimPacket(DatagramPacket packet, String className, String methodName) {
     	printMessage(className, methodName, "Trimming OACK packet...");
     	byte[] trimmedPacket = new byte[packet.getLength()]; //TRIMMED RCV
 		System.arraycopy(packet.getData(), packet.getOffset(), trimmedPacket, 0, packet.getLength());
 		return trimmedPacket;
+    }
+    
+    public double percentageValue(int subtotal, int total) {
+    	double raw_percent = (((double)subtotal/(double)total)*100);
+    	BigDecimal bd = new BigDecimal(raw_percent).setScale(2, RoundingMode.HALF_UP);
+    	return bd.doubleValue();
     }
 }
