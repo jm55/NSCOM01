@@ -19,26 +19,31 @@ public class Driver {
 	private static Controller c;
     public static void main(String[] args){
     	u = new Utility();
-    	if(args.length > 0) {
-    		for(String a: args) {
-    			if(a.equals("-V") || a.equals("--verbose")) {
-    				u.setState(true);
-    				Production();
-    			}
-    			if(a.equals("-C") || a.equals("--console"))
-    				Console();
-    			if(a.equals("-T") || a.equals("--testing")) {
-    				System.out.println("THIS FUNCTION IS DEPRECATED!\nEXITING...");
-    				System.exit(0);
-    				Testing();
-    			}
-    			if(a.equals("-P") || a.equals("--production"))
-    				Production();
-    			if(a.equals("-H") || a.equals("--help"))
-    				Help();
-    		}
-    	}else
-    		Production();
+    	try {
+        	if(args.length > 0) {
+        		for(String a: args) {
+        			if(a.equals("-V") || a.equals("--verbose")) {
+        				u.setState(true);
+        				Production();
+        			}
+        			if(a.equals("-C") || a.equals("--console"))
+        				Console();
+        			if(a.equals("-T") || a.equals("--testing")) {
+        				System.out.println("THIS FUNCTION IS DEPRECATED!\nEXITING...");
+        				System.exit(0);
+        				Testing();
+        			}
+        			if(a.equals("-P") || a.equals("--production"))
+        				Production();
+        			if(a.equals("-H") || a.equals("--help"))
+        				Help();
+        		}
+        	}else
+        		Production();
+    	}catch(Exception e) {
+    		u.printMessage("Driver", "main()", "Error: " + e.getLocalizedMessage());
+    		
+    	}
     }
     
     private static void Help() {

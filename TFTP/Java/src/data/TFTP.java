@@ -121,7 +121,6 @@ public class TFTP {
 			byte[] data = new byte[packetBytes.length - offset];
 			for(int i = offset; i < packetBytes.length; i++)
 				data[i-offset] = packetBytes[i];
-			u.printMessage(this.className, "extractData()", u.getBytesAsBits(data,true));
 			return data;
 		}
 		return null;
@@ -148,7 +147,7 @@ public class TFTP {
 	public String[] extractError(byte[] packetBytes) {
 		if(!isError(packetBytes)) //If not an error
 			return null;
-		String[] errMessage = new String[2];
+		String[] errMessage = new String[3];
 		errMessage[0] = packetBytes[3] + "";
 		errMessage[1] = this.getErrMsg((int)packetBytes[3]);
 		
@@ -167,6 +166,7 @@ public class TFTP {
 	}
 
 	/**
+	 * TODO
 	 * Extracts the block number of a given TFTP data packet in byte[]
 	 * @param packetBytes TFTP data packet in byte[]
 	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
@@ -482,8 +482,10 @@ public class TFTP {
 	 * @return Error message if err is valid, null if otherwise.
 	 */
 	public String getErrMsg(Integer err) {
+		if(err > 7 || !validErrCode(err))
+			return null;
 		String[] msg = {
-				"Unknown Error",
+				"Undefined error code",
 				"File not found",
 				"Access violation",
 				"Disk full",
@@ -493,8 +495,6 @@ public class TFTP {
 				"No such user",
 				"Invalid option"
 		};
-		if(err > 7 || !validErrCode(err))
-			return null;
 		return msg[err];
 	}
 	
@@ -616,14 +616,12 @@ public class TFTP {
 	 * @return Returns a packet in its byte[] form. Returns null if error code is invalid.
 	 */
 	private byte[] buildErrPacket(Integer err, String emsg) {
-		if(emsg.charAt(emsg.length()-1) != '\0')
-			emsg += '\0';
 		//Error Packet 
 		if(!validErrCode(err))
 			return null;
 		byte opcodeVal = 5;
 		byte[] opcode = buildOpcode(opcodeVal), errcode = {getPaddingByte(), getPaddingByte(), getPaddingByte(),  err.byteValue()}, errMsg = emsg.getBytes();
-		byte[][] combined = {opcode, errcode, errMsg, getPaddingByteArr(), getPaddingByteArr(), getPaddingByteArr()}; //the 2nd and last paddings are for errMsg termination and err packet padding respectively
+		byte[][] combined = {getPaddingByteArr(),getPaddingByteArr(),opcode, errcode, errMsg, getPaddingByteArr(), getPaddingByteArr(), getPaddingByteArr(), getPaddingByteArr()}; //the 2nd and last paddings are for errMsg termination and err packet padding respectively
 		return combineBytes(combined);
 	}
 	

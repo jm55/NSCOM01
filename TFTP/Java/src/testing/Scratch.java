@@ -26,7 +26,7 @@ public class Scratch {
 	private static final String className = "Scratch";
 	private static Scanner scan = null;
 	public static void main(String[] args) {
-		u.setState(true);
+		u.setState(false);
 		scan = new Scanner(System.in);
 		long time_diff = RunScratch();
 		System.out.print("Testing time elapsed: " + (double)(time_diff/1000) + "seconds");
@@ -36,16 +36,8 @@ public class Scratch {
 	}
 	
 	public static long RunScratch() {
-		TFTP t = new TFTP();
+		
 		System.out.println("Running scratch tester...");
-		//Wireshark
-		String hex_raw = "";
-		byte[] hex = null;
-		//System
-		byte[] syspacket = null;
-		String syshex = "";
-		byte[] sysbyte = null;
-		String[] opts = {"tsize"}, vals = {"81967"};
 		
 		String[] target = {"",""};
 		System.out.print("Enter target IP: ");
@@ -54,6 +46,23 @@ public class Scratch {
 		target[1] = scan.nextLine();
 		
 		long start = System.currentTimeMillis();
+		
+		packetAssemblyTest();
+		networkTest(target);
+		
+		return System.currentTimeMillis() - start;
+	}
+	
+	private static void packetAssemblyTest() {
+		TFTP t = new TFTP();
+		//Wireshark
+		String hex_raw = "";
+		byte[] hex = null;
+		//System
+		byte[] syspacket = null;
+		String syshex = "";
+		byte[] sysbyte = null;
+		String[] opts = {"tsize"}, vals = {"81967"};
 		
 		/**
 		 * PACKET ASSEMBLY ZONE
@@ -244,7 +253,10 @@ public class Scratch {
 		System.out.println("Expected output: " + 1);
 		int block = t.extractBlockNumber(u.hexStringToByteArray(hex_raw));
 		System.out.println("System Result Block#: " + block);
-		
+	}
+	
+	private static void networkTest(String[] target) {
+		TFTP t = new TFTP();
 		/***
 		 * NETWORK RELATED ZONE
 		 */
@@ -263,6 +275,8 @@ public class Scratch {
 		System.out.println("Target details: " + u.arrayToString(target));
 		Client c = new Client(target[0],Integer.parseInt(target[1]),512);
 		System.out.println("Target is online: " + c.targetIsOnline());
+		
+		System.out.println("");
 		
 		//OPTS AND VALS
 		String[] vals4 = {"0"};
@@ -292,8 +306,12 @@ public class Scratch {
 			System.out.println("Read from server successful");
 		else
 			System.out.println("Read to server failed");
-		//new File("test_recv.jpg").deleteOnExit();
 		
-		return System.currentTimeMillis() - start;
-	}	
+//		//SEND ERROR
+//		try {
+//			new Client().forceSend(new DatagramPacket(t.getErrPacket(1),t.getErrPacket(1).length), InetAddress.getByName("localhost"), 60001);
+//		} catch (UnknownHostException e) {
+//			System.out.println("Error occured on SEND ERROR: " + e.getLocalizedMessage());
+//		}
+	}
 }

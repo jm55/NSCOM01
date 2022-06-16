@@ -50,7 +50,6 @@ public class Client{
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
-			
 		}
 		if(this.target == null)
 			u.printMessage(this.className, methodName, "Building Client as " + host + ":" + port + " failed.");
@@ -149,8 +148,10 @@ public class Client{
 	 */
 	private boolean askWritePermission(File f, String[] opts, String[] vals) {
 		String methodName = "askWritePermission(f,opts,vals)";
+		
+		boolean permission = false;
 		if(!isConnected() || f == null)
-			return false;
+			return permission;
 		u.printMessage(this.className, methodName, "Building write request packet...");
 		String mode = "octet";
 		byte[] wrq = tftp.getWRQPacket(f, mode, opts, vals);
@@ -171,10 +172,10 @@ public class Client{
 			byte[] trimmedPacket = u.trimPacket(packet, this.className, methodName); //TRIMMED RCV
 
 			//Confirm that the packet is an OACK and not an Error
-			if(tftp.isOACK(trimmedPacket) && !tftp.isError(trimmedPacket)){
-				u.printMessage(this.className, methodName, "isOACK and !isError");
+			boolean isOACK = tftp.isOACK(trimmedPacket), isError = tftp.isError(trimmedPacket);
+			u.printMessage(this.className, methodName, "isOACK: " + isOACK + ", isError: " + isError);	
+			if(isOACK){
 				String[][] checking = tftp.extractOACK(trimmedPacket);
-				
 				int match = 0;	
 				u.printOptsValsComparison(this.className, methodName, opts, vals, checking);
 				
@@ -184,31 +185,30 @@ public class Client{
 						if(opts[i].equalsIgnoreCase(checking[0][j])) { //Same Item
 							if(checking[0][j].equalsIgnoreCase("blksize")){ //Check if TFTP asserts a blksize
 								this.BUFFER_SIZE = Integer.parseInt(checking[1][j]);
-								u.printMessage(this.className, methodName, "Server's blksize: " + this.BUFFER_SIZE);
 								match++;
+								u.printMessage(this.className, methodName, "Server's blksize: " + this.BUFFER_SIZE);
 							}
 							if(checking[1][j].equalsIgnoreCase(vals[i]) && !checking[0][j].equalsIgnoreCase("blksize")){
-								u.printMessage(this.className, methodName, "Matched @ " + checking[1][j]);
 								match++;
+								u.printMessage(this.className, methodName, "Matched @ " + checking[1][j]);
 							}
 						}
 					}
 				}		
 				if(match == vals.length)
-					return true;
-			}else{
+					permission = true;
+			}else if(isError){
 				//Confirm that the packet is an Error
-				if(tftp.isError(trimmedPacket)){
-					String[] error = tftp.extractError(trimmedPacket);
-					displayError(error, methodName);
-					return false;
-				}
+				String[] error = tftp.extractError(trimmedPacket);
+				displayError(error, methodName);
+			}else {
+				u.printMessage(this.className, methodName, "Unexpected packet received.");
 			}
 		}catch (Exception e) {
 			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(),"Error", JOptionPane.ERROR_MESSAGE);
 			u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
 		}
-		return false;
+		return permission;
 	}
 	
 	/**
@@ -242,16 +242,16 @@ public class Client{
 			byte[] trimmedPacket = u.trimPacket(packet, this.className, methodName); //TRIMMED RCV
 
 			//Confirm that the packet is an OACK and not an Error
-			boolean isOACK = tftp.isOACK(trimmedPacket), isError = !tftp.isError(trimmedPacket);
+			boolean isOACK = tftp.isOACK(trimmedPacket), isError = tftp.isError(trimmedPacket);
 			u.printMessage(this.className, methodName, "isOACK: " + isOACK + ", isError: " + isError);
-			if(isOACK && isError){
+			if(isOACK){
 				u.printMessage(this.className, methodName, "isOACK and !isError");
 				String[][] checking = tftp.extractOACK(trimmedPacket);
 				
 				int match = 0;
 				u.printOptsValsComparison(this.className, methodName, opts, vals, checking);
 				
-				//Revamped design which now considers the insisted blksize of the TFTP server as noted on a Wireshark test.
+				//Revamped design which now considers the insisted blksize and tsize by the TFTP server as noted on a Wireshark test.
 				for(int i = 0; i < vals.length; i++) {
 					for(int j = 0;  j < checking[0].length; j++) {
 						if(opts[i].equalsIgnoreCase(checking[0][j])) { //Same Item
@@ -270,15 +270,15 @@ public class Client{
 						}
 					}
 				}		
-				if(match == vals.length)
-					return this.TSIZE;
-			}else{
-				//Confirm that the packet is an Error
-				if(isError){
-					String[] error = tftp.extractError(trimmedPacket);
-					displayError(error, methodName);
+				if(match != vals.length)
 					this.TSIZE = -1;
-				}
+			}else if(isError){
+				//Confirm that the packet is an Error
+				String[] error = tftp.extractError(trimmedPacket);
+				displayError(error, methodName);
+				this.TSIZE = -1;
+			}else {
+				u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
 			}
 		}catch (Exception e) {
 			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(),"Error", JOptionPane.ERROR_MESSAGE);
@@ -309,7 +309,6 @@ public class Client{
 			
 			int tsize = this.TSIZE, blocksize = this.BUFFER_SIZE, timeout = -1; //FOR CONFIGURATION
 			
-			
 			//BUFFER BYTE[] CONFIGURATION
 			u.printMessage(this.className, methodName, "SIZE: " + SIZE + ", " + "BUFFER_SIZE: " + BUFFER_SIZE);
 			byte[] buffer = new byte[blocksize]; //DATA SEGMENT OF PACKET
@@ -332,18 +331,17 @@ public class Client{
                 	packet = new DatagramPacket(new byte[blocksize], blocksize);
                 	socket.receive(packet);
                 	
-                	boolean isACK = tftp.isACK(packet.getData()), isError = !tftp.isError(packet.getData());
-                	u.printMessage(this.className, methodName, "isACK: " + isACK + ", !isError: " + isError);
-                	if(isACK && isError) {
+                	boolean isACK = tftp.isACK(packet.getData()), isError = tftp.isError(packet.getData());
+                	u.printMessage(this.className, methodName, "isACK: " + isACK + ", isError: " + isError);
+                	if(isACK) {
                 		ACKval = tftp.extractBlockNumber(packetByte);
                 		u.printMessage(this.className, methodName,"ACK Block#: " + tftp.extractBlockNumber(packet.getData()) + " = " + ACKval + ", Remaining bytes: " + inputStream.available());
-                		if(ACKval == ctr) { //Change to comparing received block number in ACK to ctr
+                		if(true/**ACKval == ctr*/) { //Change to comparing received block number in ACK to ctr TODO
                 			validACK = true;
                 			ctr++;
                 		}
-                	}else {
+                	}else if(isError){
                 		u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
-                		if(isError) {
                 			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
                     		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
                     		/**
@@ -351,8 +349,8 @@ public class Client{
                     		 * HANDLE ERRORS HERE
                     		 * To display errors, call 'displayError(error, methodName)' as is
                     		 */
-                		}else
-                			u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
+                	}else {
+                		u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
                 	}
             	}while(!validACK && !error); //Repeat if sending if the ACK received is not a 'new' block of data.
             	
@@ -428,16 +426,16 @@ public class Client{
 					DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 					socket.receive(packet);
 					
-					boolean isData = tftp.isData(packet.getData()), isError = !tftp.isError(packet.getData());
-	            	u.printMessage(this.className, methodName, "isData: " + isData + ", !isError: " + isError);
-					if(isData && isError) {
+					boolean isData = tftp.isData(packet.getData()), isError = tftp.isError(packet.getData());
+	            	u.printMessage(this.className, methodName, "isData: " + isData + ", isError: " + isError);
+					if(isData) {
 						//SAVE BUFFER TO FILE
 						byte[] data = tftp.extractData(packet);
 						int block = tftp.extractBlockNumber(packet);
 						subtotal += data.length;
 						u.printMessage(this.className, methodName, "Received data, ACK#: " + block + ", Curr#: " + ctr + ", DataLen: " + data.length + ", Completed: " + subtotal + "/" + tsize + " (" + u.percentageValue(subtotal,tsize)+ "%)");
 						
-						if(block == ctr) { //CLIENT AND SERVER ARE IN SYNCH
+						if(true/*block == ctr*/) { //CLIENT AND SERVER ARE IN SYNC TODO
 							validBlock = true;
 							int bytesRead = data.length; //BYTE LENGTH OF PACKET'S DATA SEGMENT
 							outputStream.write(data, 0, bytesRead);
@@ -454,22 +452,18 @@ public class Client{
 							packet = new DatagramPacket(ackbyte, ackbyte.length);
 							socket.send(packet);
 						}
-					}else {
-						if(isError) {
-							u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
-	                		if(tftp.isError(packet)) {
-	                			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
-	                    		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
-	                    		/**
-	                    		 * TODO:
-	                    		 * HANDLE ERRORS HERE
-	                    		 * To display errors, call 'displayError(error, methodName)' as is
-	                    		 */
-	                    		tempFile.delete();
-	                		}else
-	                			u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
-						}
-					}	
+					}else if(isError){
+						u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
+            			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
+                		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
+                		/**
+                		 * TODO:
+                		 * HANDLE ERRORS HERE
+                		 * To display errors, call 'displayError(error, methodName)' as is
+                		 */
+                		tempFile.delete();
+					}else
+            			u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
 				}while(!validBlock && !error);
 				byte[] ackbyte = tftp.getACK(ctr);
 				packet = new DatagramPacket(ackbyte, ackbyte.length);
@@ -512,7 +506,7 @@ public class Client{
 			try {
 				//Attempt connection
 				u.printMessage(this.className,methodName, "Creating DatagramSocket()...");
-				this.socket = new DatagramSocket(61000);
+				this.socket = new DatagramSocket(69);
 				socket.setSoTimeout(3000);
 				socket.connect(this.target, this.PORT);
 				u.printMessage(this.className,methodName, "Socket connected!");
@@ -623,5 +617,56 @@ public class Client{
 			return socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " <==> " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
 		u.printMessage(this.className, methodName, "Socket is null.");
 		return null;
+	}
+	
+	/**
+	 * Force send packet over the network
+	 * @param packet
+	 * @param target Custom target
+	 * @param port
+	 */
+	public void forceSend(DatagramPacket packet, InetAddress target, Integer port) {
+		String methodName = "forceSend(packet,target,port)";
+		if(target == null || port == null) {
+			
+		}else {
+			try {
+				if(isConnected()) {
+					u.printMessage(this.className, methodName, "Socket already in use: " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort()  + ", saving current state...");
+					InetAddress tempTarget = socket.getInetAddress();
+					int tempPort = socket.getPort();
+					
+					u.printMessage(this.className, methodName, "Closing current connection...");
+					closeConnection();
+					
+					u.printMessage(this.className, methodName, "Opening temporary connection...");
+					socket = new DatagramSocket(port);
+					socket.connect(target,port);
+					
+					u.printMessage(this.className, methodName, "Force sending packet...");
+					socket.send(packet);
+					u.printMessage(this.className, methodName, "Packet sent!");
+					
+					u.printMessage(this.className, methodName, "Restoring original connection...");
+					socket.connect(tempTarget, tempPort);
+				}else {
+					u.printMessage(this.className, methodName, "Socket not connected, creating connection...");
+					socket = new DatagramSocket();
+					socket.connect(target, port);
+					if(socket.isConnected()) {
+						u.printMessage(this.className, methodName, "Socket: " + getConnectionDetails());
+						u.printMessage(this.className, methodName, "Force sending packet...");
+						socket.send(packet);
+						u.printMessage(this.className, methodName, "Packet sent!");
+					}else
+						u.printMessage(this.className, methodName, "Cannot connect to newly created socket!");
+					u.printMessage(this.className, methodName, "Closing connection...");
+					socket.close();
+				}
+			}catch(Exception e) {
+				u.printMessage(this.className, methodName, "Error occured: " + e.getLocalizedMessage());
+				socket.close();
+			}
+		}
 	}
 }
