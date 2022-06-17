@@ -313,5 +313,43 @@ public class Scratch {
 //		} catch (UnknownHostException e) {
 //			System.out.println("Error occured on SEND ERROR: " + e.getLocalizedMessage());
 //		}
+		
+		System.out.println("\n\n");
+		
+		System.out.println("=========================");
+		System.out.println("====Network Benchmark====");
+		System.out.println("=========================");
+		
+		String[] blksizes = {"128","512","1024","1428","2048","4096","8192","16384","32768","65536"};
+		String[] vals5 = {"0","0"};
+		String[] opts5 = {"tsize","blksize"};
+		File benchfile = new File("demo.mp4");
+		
+		try {
+			vals5[0] = Files.size(benchfile.toPath())+"";
+		} catch (IOException e) {
+			System.out.println("Scratch Network Related - OPTS & VALS: " + e.getLocalizedMessage());
+		}
+		System.out.println("File Details: " + benchfile.getName() + " with size: " + vals5[0]);
+		System.out.println("Benchmarking...");
+				
+		for(int i = blksizes.length-1; i >= 0; i--) {
+			vals5[1] = blksizes[i];
+			System.out.println("Config: ");
+			System.out.println(u.arrayToString(opts5));
+			System.out.println(u.arrayToString(vals5));
+			
+			String benchStart = u.dtNow();
+			state = c.send(benchfile, opts5, vals5);
+			
+			if(state) {
+				String benchEnd = u.dtNow();
+				System.out.println("Benchmarking successful: " + benchStart + " - " + benchEnd);
+			}
+			else
+				System.out.println("Benchmarking failed!");
+			System.out.println("\n");
+		}		
+		System.out.println("\n\n");
 	}
 }

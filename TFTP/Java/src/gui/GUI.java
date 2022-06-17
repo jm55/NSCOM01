@@ -18,7 +18,7 @@ public class GUI extends JFrame{
 	private Utility u = new Utility();
 	private final String className = "GUI";
 	
-	private final String[] blockSizeValues = {"Default","128","512","1024","1428","2048","4096","8192","16384","32768","65536"};//,"131072","262144","524288","1048576","2097152","4194304","8388608","16777216"};
+	private final String[] blockSizeValues = {"Default","128","512","1024","1428","2048","4096","8192","16384","32768","65536"};
 	
 	//PRIVATE GLOBAL VALUES
 	private boolean debug = false;
@@ -188,7 +188,7 @@ public class GUI extends JFrame{
 	 * Appends the contents of GUI console with contents of text in newline.
 	 * @param text Text to be appended in new line.
 	 */
-	public void appendOutputText(String text) {
+	private void appendOutputText(String text) {
 		outputArea.setText(getOutputText() + "\n" + text);
 	}
 	
@@ -236,6 +236,14 @@ public class GUI extends JFrame{
 	public boolean showGUI() {
 		setVisible(true);
 		return isVisible();
+	}
+	
+	/**
+	 * Print text to GUI's console
+	 * @param message
+	 */
+	public void printConsole(String message) {
+		appendOutputText(u.getGUIConsoleMessage(message));
 	}
 	
 	/***

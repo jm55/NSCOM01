@@ -46,7 +46,7 @@ public class Controller implements ActionListener{
 			if(fh.openFile())
 				gui.setLocalSelectedFileText(fh.getFile().getAbsolutePath());
 			else {
-				printConsole(u.getGUIConsoleMessage("Error opening file"));
+				gui.printConsole(u.getGUIConsoleMessage("Error opening file"));
 				gui.popDialog("Error opening file", "Open File", JOptionPane.WARNING_MESSAGE);
 			}
 		}
@@ -63,12 +63,12 @@ public class Controller implements ActionListener{
 				return;
 			gui.setLocalSelectedFileText(fh.getFile().getAbsolutePath());
 			File f = fh.getFile(); //USE THIS FILE TO SEND ON CLIENT
-			printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ "...");
+			gui.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ "...");
 			gui.popDialog("Uploading file...\nClick OK to continue", "Upload", JOptionPane.INFORMATION_MESSAGE);
 			if(sendFile(f)) {
-				printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " successful!");
+				gui.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " successful!");
 			}else {
-				printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " not successful!");
+				gui.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " not successful!");
 			}
 		}
 		
@@ -78,16 +78,16 @@ public class Controller implements ActionListener{
 			String targetFile = gui.getRemoteSelectedFileText();
 			File saveAs = fh.saveFile();
 			if(targetFile.equals("")) {
-				printConsole("No Remote File Specified");
+				gui.printConsole("No Remote File Specified");
 				gui.popDialog("No Remote File Specified", "Receive File", JOptionPane.WARNING_MESSAGE);
 			}else {
-				printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ "...");
+				gui.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ "...");
 				gui.popDialog("Downloading file...\nClick OK to continue", "Download", JOptionPane.INFORMATION_MESSAGE);
 				File recvFile = receiveFile(targetFile, saveAs);
 				if(recvFile != null) {
-					printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " successful!");
+					gui.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " successful!");
 				}else {
-					printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " not successful!");
+					gui.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " not successful!");
 				}
 			}
 		}
@@ -115,7 +115,7 @@ public class Controller implements ActionListener{
 		
 		if(act.equals("BlockSelector")) {
 			u.printMessage(this.className, "actionPerformed(e) > " + act, "Value change: " + gui.getBlockSize());
-			printConsole("Blocksize Set to: " + gui.getBlockSize());
+			gui.printConsole("Blocksize Set to: " + gui.getBlockSize());
 		}
 	}
 	/**
@@ -216,14 +216,6 @@ public class Controller implements ActionListener{
 	}
 	
 	/**
-	 * Print text to GUI's console
-	 * @param message
-	 */
-	private void printConsole(String message) {
-		this.gui.appendOutputText(u.getGUIConsoleMessage(message));
-	}
-	
-	/**
 	 * Pings the server
 	 * @return True if online, false if otherwise
 	 */
@@ -236,7 +228,7 @@ public class Controller implements ActionListener{
 		u.printMessage(this.className, methodString, "Opening connection...");
 		pingClient.openConnection();
 		u.printMessage(this.className, methodString, "Pinging: " + pingClient.getConnectionDetails());
-		printConsole("Target " + pingClient.getConnectionDetails() + " online: " + pingClient.targetIsOnline());
+		gui.printConsole("Target " + pingClient.getConnectionDetails() + " online: " + pingClient.targetIsOnline());
 		state = pingClient.targetIsOnline();
 		u.printMessage(this.className, methodString, "Closing connection...");
 		pingClient.closeConnection();
