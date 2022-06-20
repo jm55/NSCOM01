@@ -344,11 +344,7 @@ public class Client{
                 		u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
                 			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
                     		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
-                    		/**
-                    		 * TODO:
-                    		 * HANDLE ERRORS HERE
-                    		 * To display errors, call 'displayError(error, methodName)' as is
-                    		 */
+                    		displayError(err, methodName);
                 	}else {
                 		u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
                 	}
@@ -440,14 +436,9 @@ public class Client{
 							int bytesRead = data.length; //BYTE LENGTH OF PACKET'S DATA SEGMENT
 							outputStream.write(data, 0, bytesRead);
 						}if(block > ctr) { //SERVER IS ADVANCED THAN CLIENT
-							/**
-							 * TODO
-							 * 
-							 * THIS STATES THAT THE SERVER GIVES YOU DATA 
-							 * THAT IS BEYOND THE CURRENT BLOCK POINTER THAT YOU HAVE
-							 * 
-							 * CONSIDER AS AN ERROR, DELETE FILE, DISPLAY AS UNKNOWN ERROR (0) AND RETURN NULL
-							 */
+							String[] e = {"0", tftp.getErrMsg(0)};
+							displayError(e, methodName);
+							return null;
 						}else{ // SERVER IS LATE THAN CLIENT
 							packet = new DatagramPacket(ackbyte, ackbyte.length);
 							socket.send(packet);
@@ -456,11 +447,7 @@ public class Client{
 						u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
             			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
                 		String[] err = tftp.extractError(packet.getData()); //Structure at {Error Code, Error Message}
-                		/**
-                		 * TODO:
-                		 * HANDLE ERRORS HERE
-                		 * To display errors, call 'displayError(error, methodName)' as is
-                		 */
+                		displayError(err, methodName);
                 		tempFile.delete();
 					}else
             			u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
@@ -475,9 +462,14 @@ public class Client{
 		} catch (Exception e) {
 			u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
 			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			byte[] errPacket = tftp.getErrPacket(0);
+			packet = new DatagramPacket(errPacket, errPacket.length);
+			try {
+				socket.send(packet);
+			} catch (Exception e1) {
+				gui.popDialog("Exception occured:\n" + e1.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
 			return null;
-			//TODO: FOR ANY CATCH(EXCEPTION) THAT OCCURS: SEND AN ERR PACKET, DELETE TEMPFILE, RETURN NULL
-			//Timeout localizedMessage value is "Receive timed out"
 		}
 		return tempFile;
 	}

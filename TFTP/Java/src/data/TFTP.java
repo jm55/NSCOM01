@@ -166,7 +166,6 @@ public class TFTP {
 	}
 
 	/**
-	 * TODO
 	 * Extracts the block number of a given TFTP data packet in byte[]
 	 * @param packetBytes TFTP data packet in byte[]
 	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
