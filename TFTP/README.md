@@ -6,6 +6,16 @@
 3. Fadrigo, J.A.M.
 4. Fortiz, P.R.
 
+## Directory
+1. [Deliverable](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Deliverable) - Contains the zipped archive of the files submitted to the LMS.
+2. [Documentation](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Documentation) - Contains all files and documents relating to development and usage of the program.
+    1. [Program Details](https://github.com/jm55DLSU/NSCOM01/blob/main/TFTP/Documentation/NSCOM01%20-%20Program%20Design.pdf)
+    2. [Runtime Instructions](https://github.com/jm55DLSU/NSCOM01/blob/main/TFTP/Documentation/Runtime%20Instructions.pdf)
+3. [Java](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Java) - Source code of the project.
+4. [References](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/References) - Contains third-party files used to explore/explain TFTP. None of it was used however.
+5. [Server](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Server) - Contains a copy of the TFTPd64 which the interaction between the create client and TFTP server was predominantly tested.
+6. [Wireshark](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Wireshark) - Contains the packet capture data that was used during the development of the TFTP Client.
+
 ## Program Specifications
 1. Program Language: Java
 2. Interface: GUI
@@ -26,4 +36,4 @@
         * Communicate transfer size to a server when uploading.
         * To allow the user to manually ping the target host prior to transmission.
 
-### [For Further Documentation](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Documentation)
+### [For Further Documentation](https://github.com/jm55DLSU/NSCOM01/blob/main/TFTP/Documentation/NSCOM01%20-%20Program%20Design.pdf)
