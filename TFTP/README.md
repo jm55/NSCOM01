@@ -1,10 +1,10 @@
 # NSCOM01 - TFTP Client
 
 ## Authors
-1. Balcueva, J.
-2. Escalona, J.M.
-3. Fadrigo, J.A.M.
-4. Fortiz, P.R.
+1. [Balcueva, J.](https://github.com/JushoB)
+2. [Escalona, J.M.](https://github.com/jm55DLSU)
+3. [Fadrigo, J.A.M.](https://github.com/ExME168)
+4. [Fortiz, P.R.](https://github.com/prpfortiz)
 
 ## Directory
 1. [Deliverable](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Deliverable) - Contains the zipped archive of the files submitted to the LMS.
