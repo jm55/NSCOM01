@@ -32,7 +32,7 @@ public class GUI extends JFrame{
 	private JTextArea outputArea;
 	private JScrollPane outputScroll;
 	//private JCheckBox P2PCheckBox;
-	private JButton pingBtn, openFileBtn, sendFileBtn, recvFileBtn, resetBtn, aboutBtn, exitBtn;
+	private JButton pingBtn, openFileBtn, sendFileBtn, recvFileBtn, resetBtn, aboutBtn, exitBtn, dataPortBtn;
 	private JComboBox blockSizes;
 	
 	/**
@@ -300,18 +300,19 @@ public class GUI extends JFrame{
 		blockSizes = createComboBox(blockSizeValues,newFont(Font.BOLD, 16),32,(64*3)+32,256,32,listener,"BlockSelector");
 		panel.add(blockSizes);
 		
-		
 		//BUTTONS
 		u.printMessage(this.className, methodName, "Setting Buttons...");
-		pingBtn = createButton("Ping Server", newFont(Font.BOLD,16),32,(64*5),this.BTNWIDTH,50,listener,"ServerConnection");
+		dataPortBtn = createButton("Set Data Port", newFont(Font.BOLD,16),32,(72*4), this.BTNWIDTH, 50, listener, "SetDataPort");
+		panel.add(dataPortBtn);
+		pingBtn = createButton("Ping Server", newFont(Font.BOLD,16),32,(72*5),this.BTNWIDTH,50,listener,"ServerConnection");
 		panel.add(pingBtn);
-		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(64*6),this.BTNWIDTH,50,listener,"OpenFile");
+		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(72*6),this.BTNWIDTH,50,listener,"OpenFile");
 		panel.add(openFileBtn);
 		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),656-this.BTNWIDTH,(64*3)+16,this.BTNWIDTH,50,listener,"SendFile");
 		panel.add(sendFileBtn);
 		recvFileBtn = createButton("Receive File", newFont(Font.BOLD,16),656+this.BTNWIDTH/2-this.BTNWIDTH/4,(64*3)+16,this.BTNWIDTH,50,listener,"RecvFile");
 		panel.add(recvFileBtn);
-		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(64*7),this.BTNWIDTH,50,listener,"AboutProgram");
+		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(72*7),this.BTNWIDTH,50,listener,"AboutProgram");
 		panel.add(aboutBtn);
 		resetBtn = createButton("Reset",newFont(Font.BOLD,16),this.WIDTH-(this.BTNWIDTH*2)-(2*48),(64*8),this.BTNWIDTH,50,listener,"Reset");
 		panel.add(resetBtn);

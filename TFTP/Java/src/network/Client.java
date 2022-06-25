@@ -18,7 +18,7 @@ import javax.swing.*;
 public class Client{
 	private Utility u = new Utility();
 	private final String className = "Client";
-	private final int DATAPORT = 61001;
+	private int DATAPORT = 61001;
 	private DatagramSocket socket = null;
 	private DatagramPacket packet = null;
 	private int PORT = -1, BUFFER_SIZE = 512, TSIZE = 0;
@@ -37,9 +37,10 @@ public class Client{
 	 * Builds a Client object
 	 * @param host Target host
 	 * @param port Target port
+	 * @param dataport Target data port
 	 * @param BUFFER_SIZE buffersize of packets, set as <= 0 if default
 	 */
-	public Client(String host, int port, int BUFFER_SIZE) {
+	public Client(String host, int port, int dataport, int BUFFER_SIZE) {
 		String methodName = "Client(host,port,BUFFER_SIZE)";
 		u.printMessage(this.className, methodName, "Building Client as " + host + ":" + port + "...");
 		try {
@@ -56,8 +57,15 @@ public class Client{
 		else 
 			u.printMessage(this.className, methodName, "Building Client as " + host + ":" + port + " successful.");
 	}
-	
-	public Client(InetAddress target, int port, int BUFFER_SIZE) {
+
+	/**
+	 * Constructor for Client
+	 * @param target Target host's address
+	 * @param port Target host's port
+	 * @param dataport Target host's dataport
+	 * @param BUFFER_SIZE Buffer size/blocksize for transmission
+	 */
+	public Client(InetAddress target, int port, int dataport, int BUFFER_SIZE) {
 		String methodName = "Client(target, port, BUFFER_SIZE)";
 		this.target = target;
 		this.PORT = port;
@@ -78,9 +86,21 @@ public class Client{
 			target = null;
 			this.PORT = -1;
 			u.printMessage(this.className, methodName, "TryCatch: " + e.getLocalizedMessage());
+		} finally{
+			this.DATAPORT = 61001;
+			u.printMessage(this.className, methodName, "Configuration: " + this.getConnectionDetails());
 		}
 	}
-	
+
+	/**
+	 * Set the client's dataport for the TFTP server.
+	 * @param dataport Port number of the target's data port
+	 */
+	public void setDataPort(int dataport){
+		this.DATAPORT = dataport;
+		u.printMessage(this.className, "setDataPort(dataport)", "DataPort has been set to: " + this.DATAPORT);
+	}
+
 	/**
 	 * Sets the BUFFER SIZE of the TFTP transmission.
 	 * @param BUFFER_SIZE

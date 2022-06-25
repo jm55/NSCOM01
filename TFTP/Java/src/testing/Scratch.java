@@ -273,7 +273,7 @@ public class Scratch {
 		
 		//CONNECTION CONFIGURATION
 		System.out.println("Target details: " + u.arrayToString(target));
-		Client c = new Client(target[0],Integer.parseInt(target[1]),512);
+		Client c = new Client(target[0],Integer.parseInt(target[1]),61001,512);
 		System.out.println("Target is online: " + c.targetIsOnline());
 		
 		System.out.println("");
