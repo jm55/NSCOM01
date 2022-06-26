@@ -66,7 +66,7 @@ public class Driver {
     		g = new GUI(true);
     		c = new Controller(g);
     		g.setDefaultDisplay();
-    		
+    		c.reset();
     		String[] bugs = {};
     		if(bugs.length > 0) {
     			String strBugs = "";

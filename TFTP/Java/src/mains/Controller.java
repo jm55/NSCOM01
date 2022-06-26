@@ -116,10 +116,7 @@ public class Controller implements ActionListener{
 		}
 		
 		if(act.equals("Reset")) {
-			gui.clearIO();
-			this.DATAPORT = 61001;
-			gui.printConsole("DataPort has been set to: " + this.DATAPORT);
-			u.printMessage(this.className, methodName, "Current configuration has been reset!");
+			reset();
 		}
 		
 		if(act.equals("EndProgram")) {
@@ -134,6 +131,18 @@ public class Controller implements ActionListener{
 			gui.printConsole("Blocksize has been set to: " + gui.getBlockSize());
 		}
 	}
+
+	/**
+	 * Reset the current state of the application to default values.
+	 */
+	protected void reset(){
+		String methodName = "reset()";
+		gui.clearIO();
+		this.DATAPORT = 61001;
+		gui.printConsole("DataPort has been set to: " + this.DATAPORT);
+		u.printMessage(this.className, methodName, "Current configuration has been reset!");
+	}
+
 	/**
 	 * Conduct sending of file to the TFTP server. Return boolean value indicating success or failure.
 	 * @param f File to be sent
