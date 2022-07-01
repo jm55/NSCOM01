@@ -302,21 +302,21 @@ public class GUI extends JFrame{
 		
 		//BUTTONS
 		u.printMessage(this.className, methodName, "Setting Buttons...");
-		dataPortBtn = createButton("Set Data Port", newFont(Font.BOLD,16),32,(72*4), this.BTNWIDTH, 50, listener, "SetDataPort");
+		dataPortBtn = createButton("Set Data Port", newFont(Font.BOLD,16),32,(72*4), this.BTNWIDTH, this.BTNHEIGHT, listener, "SetDataPort");
 		panel.add(dataPortBtn);
-		pingBtn = createButton("Ping Server", newFont(Font.BOLD,16),32,(72*5),this.BTNWIDTH,50,listener,"ServerConnection");
+		pingBtn = createButton("Ping Server", newFont(Font.BOLD,16),32,(72*5),this.BTNWIDTH,this.BTNHEIGHT,listener,"ServerConnection");
 		panel.add(pingBtn);
-		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(72*6),this.BTNWIDTH,50,listener,"OpenFile");
+		openFileBtn = createButton("Open File", newFont(Font.BOLD,16),32,(72*6),this.BTNWIDTH,this.BTNHEIGHT,listener,"OpenFile");
 		panel.add(openFileBtn);
-		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),656-this.BTNWIDTH,(64*3)+16,this.BTNWIDTH,50,listener,"SendFile");
+		sendFileBtn = createButton("Send File", newFont(Font.BOLD,16),656-this.BTNWIDTH,(64*3)+16,this.BTNWIDTH,this.BTNHEIGHT,listener,"SendFile");
 		panel.add(sendFileBtn);
-		recvFileBtn = createButton("Receive File", newFont(Font.BOLD,16),656+this.BTNWIDTH/2-this.BTNWIDTH/4,(64*3)+16,this.BTNWIDTH,50,listener,"RecvFile");
+		recvFileBtn = createButton("Receive File", newFont(Font.BOLD,16),656+this.BTNWIDTH/2-this.BTNWIDTH/4,(64*3)+16,this.BTNWIDTH,this.BTNHEIGHT,listener,"RecvFile");
 		panel.add(recvFileBtn);
-		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(72*7),this.BTNWIDTH,50,listener,"AboutProgram");
+		aboutBtn = createButton("About",newFont(Font.BOLD,16),32,(72*7),this.BTNWIDTH,this.BTNHEIGHT,listener,"AboutProgram");
 		panel.add(aboutBtn);
-		resetBtn = createButton("Reset",newFont(Font.BOLD,16),this.WIDTH-(this.BTNWIDTH*2)-(2*48),(64*8),this.BTNWIDTH,50,listener,"Reset");
+		resetBtn = createButton("Reset",newFont(Font.BOLD,16),this.WIDTH-(this.BTNWIDTH*2)-(2*48),(64*8),this.BTNWIDTH,this.BTNHEIGHT,listener,"Reset");
 		panel.add(resetBtn);
-		exitBtn = createButton("Exit",newFont(Font.BOLD,16),this.WIDTH-this.BTNWIDTH-48,(64*8),this.BTNWIDTH,50,listener,"EndProgram");
+		exitBtn = createButton("Exit",newFont(Font.BOLD,16),this.WIDTH-this.BTNWIDTH-48,(64*8),this.BTNWIDTH,this.BTNHEIGHT,listener,"EndProgram");
 		panel.add(exitBtn);
 		
 		add(panel);

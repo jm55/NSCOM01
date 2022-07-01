@@ -2,7 +2,6 @@ package utils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
@@ -10,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Base64;
 
 /**
  * Contains all utility functions for used by other class files.

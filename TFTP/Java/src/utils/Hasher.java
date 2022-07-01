@@ -31,9 +31,10 @@ public class Hasher {
 		u.printMessage(this.className, "hashFile(File,String)", "Computing hash...");
 		MessageDigest md;
 		String output = "";
+		FileInputStream stream;
 		try {
 			md = MessageDigest.getInstance(algo);
-			FileInputStream stream = new FileInputStream(f);
+			stream = new FileInputStream(f);
 			
 			byte[] buffer = new byte[1024];
 			int byteCount = -1;
@@ -48,6 +49,7 @@ public class Hasher {
 			for(byte b: bytes)
 				sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 			output = sb.toString();
+			stream.close();
 		} catch (NoSuchAlgorithmException e) {
 			u.printMessage(this.className, "hashFile(File,String)", "NoSuchAlgorithmException: " + e.getMessage());
 		} catch (IOException e) {
@@ -55,6 +57,7 @@ public class Hasher {
 		} catch(NullPointerException e) {
 			u.printMessage(this.className, "hashFile(File,String)", "NullPointerException: " + e.getMessage());
 		}
+		
 		u.printMessage(this.className, "hashFile(File,String)", "Computing hash completed!");
 		return output;
 	}

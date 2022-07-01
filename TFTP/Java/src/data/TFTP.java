@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 
-import testing.Scratch;
 import utils.Utility;
 
 /**
@@ -173,36 +172,15 @@ public class TFTP {
 	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
 	 */
 	public int extractBlockNumber(byte[] packetBytes){
-		int cycle = 0;
 		if(this.getOpCode(packetBytes) == 3 || this.getOpCode(packetBytes) == 4){
 			Integer a = Integer.parseInt(u.byteToHex(packetBytes[2]),16), b = Integer.parseInt(u.byteToHex(packetBytes[3]),16);
-			Integer c = Integer.parseInt(u.byteToHex(packetBytes[4]),16), d = Integer.parseInt(u.byteToHex(packetBytes[5]),16);
 			String aString = String.format("%8s", Integer.toBinaryString(a)).replace(' ', '0');
 			String bString = String.format("%8s", Integer.toBinaryString(b)).replace(' ', '0');
-			cycle *= 65535;
-			return cycle+Integer.parseInt(aString+bString,2);
+			return Integer.parseInt(aString+bString,2);
 		}else
 			return -1;
 	}
-	
-	/**
-	 * Extract the block number in raw form, without being augmented beyond 65535.
-	 * @param packet
-	 * @return
-	 */
-	public int extractRawBlockNumber(DatagramPacket packet) {
-		return extractBlockNumber(packet);
-	}
-	
-	/**
-	 * Extract the block number in raw form, without being augmented beyond 65535.
-	 * @param packetBytes
-	 * @return
-	 */
-	public int extractRawBlockNumber(byte[] packetBytes) {
-		return extractBlockNumber(packetBytes);
-	}
-	
+
 	/**
 	 * Extract OpCode of a packet.
 	 * @param packet Packet to extract the OpCode from.

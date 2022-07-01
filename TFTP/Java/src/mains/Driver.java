@@ -7,7 +7,6 @@ import javax.swing.JOptionPane;
 
 import utils.*;
 import gui.*;
-import testing.*;
 
 /**
  * Driver class of the program.
@@ -59,7 +58,7 @@ public class Driver {
     }
     
     private static void Testing() {
-    	new Testing();
+    	//new Testing();
     }
     
     private static void Production() {

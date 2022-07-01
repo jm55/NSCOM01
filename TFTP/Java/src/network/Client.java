@@ -23,12 +23,12 @@ public class Client{
 	private DatagramPacket packet = null;
 	private int PORT = -1, BUFFER_SIZE = 512;
 	private long TSIZE = 0;
-	private byte[] buffer = null;
+	//private byte[] buffer = null;
 	private InetAddress target = null;
 	private final int CheckTimeout = 5000; //NETWORK TARGET CHECKING, NOT RELATED TO TFTP
 	private TFTP tftp = new TFTP();
 	private GUI gui = new GUI();
-	private String[] globalOpts = null, globalVals = null;
+	//private String[] globalOpts = null, globalVals = null;
 	
 	public Client() {
 		setDefaults();
@@ -380,6 +380,8 @@ public class Client{
                 	u.printMessage(this.className, methodName, "isACK: " + isACK + ", isError: " + isError);
                 	if(isACK) {
                 		ACKval = tftp.extractBlockNumber(packetByte);
+                		//Succeeding if statement is implicitly non-duplicate ACK. 
+                		//If the case is otherwise then it will just repeat the entire process from sending byte of file.
                 		if(ACKval == ctr) { //Change to comparing received block number in ACK to ctr
                 			validACK = true;
                 			if(ACKval == 65535) {
@@ -388,7 +390,7 @@ public class Client{
                 			}else
                 				ctr++;
                 		}
-                		int totalBlock = (ACKval+(65535*cycle));
+                		int totalBlock = ACKval+(65535*cycle);
                 		u.printMessage(this.className, methodName,"ACK Block#: " + ACKval + ", Total: "+ totalBlock + ", ctr: " + ctr + ", Remaining bytes: " + inputStream.available()); //inputStream.available() is int thus limited to ~2.1B
                 	}else if(isError){
                 		u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
@@ -479,6 +481,8 @@ public class Client{
 						//SAVE BUFFER TO FILE
 						byte[] data = tftp.extractData(packet);
 						int block = tftp.extractBlockNumber(packet);
+						//Succeeding if statement is implicitly non-duplicate ACK. 
+                		//If the case is otherwise then it will just repeat the entire process from sending byte of file.
 						if(block == 65535) {
 							ctr = 0;
 							cycle++; //Cycle over 65535.
