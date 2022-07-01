@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 
-import testing.Scratch;
 import utils.Utility;
 
 /**
@@ -159,6 +158,7 @@ public class TFTP {
 	/**
 	 * Extracts the block number of a given TFTP data packet.
 	 * @param packet TFTP data packet
+	 * @param cycle Cycle of the block # once it exceeds 65535
 	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
 	 */
 	public int extractBlockNumber(DatagramPacket packet){
@@ -168,15 +168,19 @@ public class TFTP {
 	/**
 	 * Extracts the block number of a given TFTP data packet in byte[]
 	 * @param packetBytes TFTP data packet in byte[]
+	 * @param cycle Cycle of the block # once it exceeds 65535
 	 * @return Block number of the data in the data packet. Returns -1 if not a data or an ACK packet.
 	 */
 	public int extractBlockNumber(byte[] packetBytes){
 		if(this.getOpCode(packetBytes) == 3 || this.getOpCode(packetBytes) == 4){
-			return Integer.parseInt(u.byteToHex(packetBytes[3]),16);
+			Integer a = Integer.parseInt(u.byteToHex(packetBytes[2]),16), b = Integer.parseInt(u.byteToHex(packetBytes[3]),16);
+			String aString = String.format("%8s", Integer.toBinaryString(a)).replace(' ', '0');
+			String bString = String.format("%8s", Integer.toBinaryString(b)).replace(' ', '0');
+			return Integer.parseInt(aString+bString,2);
 		}else
 			return -1;
 	}
-	
+
 	/**
 	 * Extract OpCode of a packet.
 	 * @param packet Packet to extract the OpCode from.
@@ -503,7 +507,7 @@ public class TFTP {
 	 * @return ACK packet in byte[].
 	 */
 	public byte[] getACK(Integer block) {
-		return this.buildACKPacket(block.shortValue());
+		return this.buildACKPacket(block);
 	}
 	
 	/**
@@ -692,11 +696,11 @@ public class TFTP {
 	 * @param block Block# to be acknowledged.
 	 * @return Packet in byte[] form, null if block is invalid (such that it is < 0).
 	 */
-	private byte[] buildACKPacket(Short block) {
+	private byte[] buildACKPacket(Integer block) {
 		if(block < 0)
 			return null;
 		byte opcode = 4;
-		byte[][] combined = {buildOpcode(opcode), u.shortToByteArr(block)};
+		byte[][] combined = {buildOpcode(opcode), u.shortToByteArr(block.shortValue())};
 		byte[] ack = combineBytes(combined);
 		return ack;
 	}
@@ -852,7 +856,7 @@ public class TFTP {
 	 * @param block Block# in 2bytes (Short)
 	 * @return byte[] OptVals
 	 */
-	public byte[] checkACK(Short block) {
+	public byte[] checkACK(Integer block) {
 		return this.buildACKPacket(block);
 	}
 	

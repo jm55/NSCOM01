@@ -7,7 +7,6 @@ import javax.swing.JOptionPane;
 
 import utils.*;
 import gui.*;
-import testing.*;
 
 /**
  * Driver class of the program.
@@ -41,7 +40,7 @@ public class Driver {
         	}else
         		Production();
     	}catch(Exception e) {
-    		u.printMessage("Driver", "main()", "Error: " + e.getLocalizedMessage());
+    		u.printMessage("Driver", "main()", "Error: " + e.getMessage());
     		
     	}
     }
@@ -59,14 +58,14 @@ public class Driver {
     }
     
     private static void Testing() {
-    	new Testing();
+    	//new Testing();
     }
     
     private static void Production() {
     		g = new GUI(true);
     		c = new Controller(g);
     		g.setDefaultDisplay();
-    		
+    		c.reset();
     		String[] bugs = {};
     		if(bugs.length > 0) {
     			String strBugs = "";

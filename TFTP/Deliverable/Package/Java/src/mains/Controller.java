@@ -9,7 +9,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 /**
@@ -23,6 +22,8 @@ public class Controller implements ActionListener{
 	private Client c = null;
 	private GUI gui;
 	private FileHandlers fh = new FileHandlers();
+
+	private int DATAPORT = 61001;
 	
 	public Controller(GUI g) {
 		this.gui = g;
@@ -34,7 +35,18 @@ public class Controller implements ActionListener{
 		String act = e.getActionCommand();
 		String methodName = "actionPerformed(e)";
 		u.printMessage(this.className, methodName, act);
-		
+
+		if(act.equals("SetDataPort")){
+			u.printMessage(this.className, methodName + ": " + act, "Setting DataPort...");
+			try{
+				this.DATAPORT = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter specified data port: "));
+				gui.printConsole("Data port changed: " + this.DATAPORT);
+			}catch (NumberFormatException nf){
+				u.printMessage(this.className, methodName, "Exception occured setting DataPort: " + nf.getMessage());
+				gui.popDialog("Input not valid, please try again!", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+
 		if(act.equals("ServerConnection")) {
 			if(!validNetwork())
 				return;
@@ -103,21 +115,33 @@ public class Controller implements ActionListener{
 		}
 		
 		if(act.equals("Reset")) {
-			gui.clearIO();
+			reset();
 		}
 		
 		if(act.equals("EndProgram")) {
 			if(this.gui.confirmDialog("Exit Program?","Exit Program",JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-				u.printMessage(this.className, "actionPerformed(e) > " + act, "Exiting program...");
+				u.printMessage(this.className, "actionPerformed(e): " + act, "Exiting program...");
 				System.exit(0);
 			}
 		}
 		
 		if(act.equals("BlockSelector")) {
-			u.printMessage(this.className, "actionPerformed(e) > " + act, "Value change: " + gui.getBlockSize());
-			gui.printConsole("Blocksize Set to: " + gui.getBlockSize());
+			u.printMessage(this.className, "actionPerformed(e): " + act, "Value change: " + gui.getBlockSize());
+			gui.printConsole("Blocksize has been set to: " + gui.getBlockSize());
 		}
 	}
+
+	/**
+	 * Reset the current state of the application to default values.
+	 */
+	protected void reset(){
+		String methodName = "reset()";
+		gui.clearIO();
+		this.DATAPORT = 61001;
+		gui.printConsole("DataPort has been set to: " + this.DATAPORT);
+		u.printMessage(this.className, methodName, "Current configuration has been reset!");
+	}
+
 	/**
 	 * Conduct sending of file to the TFTP server. Return boolean value indicating success or failure.
 	 * @param f File to be sent
@@ -135,7 +159,7 @@ public class Controller implements ActionListener{
 			if(pingServer()) {
 				u.printMessage(this.className, methodName, "Target does respond to ping");
 				//CREATE SEND CLIENT
-				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
+				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),this.DATAPORT,Integer.parseInt(gui.getBlockSize()));
 				
 				//SEND PARAMETERS
 				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
@@ -152,11 +176,11 @@ public class Controller implements ActionListener{
 			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
+			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
 			return state;
 		}catch (IOException e) {
 			gui.popDialog("Error on selected file.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f) > IOException: ", e.getLocalizedMessage());
+			u.printMessage(this.className, "sendFile(f): IOException: ", e.getMessage());
 		}
 		return state;
 	}
@@ -177,7 +201,7 @@ public class Controller implements ActionListener{
 			if(pingServer()) {
 				u.printMessage(this.className, methodName, "Target does respond to ping");
 				//CREATE SEND CLIENT
-				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),Integer.parseInt(gui.getBlockSize()));
+				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),this.DATAPORT, Integer.parseInt(gui.getBlockSize()));
 				
 				//RECEIVE PARAMETER
 				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
@@ -194,7 +218,7 @@ public class Controller implements ActionListener{
 			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f) > NumberFormatException: ", e.getLocalizedMessage());
+			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
 			return receivedFile;
 		}
 		return receivedFile;
@@ -224,7 +248,7 @@ public class Controller implements ActionListener{
 		String methodString = "pingServer()";
 		String host = gui.getServerIPInput();
 		int port = Integer.parseInt(gui.getServerPortInput());
-		Client pingClient = new Client(host,port,Integer.parseInt(gui.getBlockSize()));
+		Client pingClient = new Client(host,port,this.DATAPORT,Integer.parseInt(gui.getBlockSize()));
 		u.printMessage(this.className, methodString, "Opening connection...");
 		pingClient.openConnection();
 		u.printMessage(this.className, methodString, "Pinging: " + pingClient.getConnectionDetails());

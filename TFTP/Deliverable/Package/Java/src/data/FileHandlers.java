@@ -48,7 +48,7 @@ public class FileHandlers {
 				return true;
 			}
 		}catch(NullPointerException e) {
-			u.printMessage(this.className, methodName, "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, methodName, "NullPointerException: " + e.getMessage());
 		}
 		u.printMessage(this.className, methodName, "Chosen file !exists...");
 		return false;
@@ -89,7 +89,7 @@ public class FileHandlers {
             } 
             
 		} catch (IOException e) {
-			u.printMessage(this.className, methodName, "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, methodName, "IOException: " + e.getMessage());
 		}
 		
 		return true;
@@ -205,7 +205,7 @@ public class FileHandlers {
 			u.printMessage(this.className, "getChunks(f, chunkSize)", "Computed chunks: " + chunk);
 			return chunk;
 		} catch (IOException e) {
-			u.printMessage(this.className, "getChunks(f, chunkSize)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "getChunks(f, chunkSize)", "IOException: " + e.getMessage());
 			return -1;
 		}
 	}
@@ -228,7 +228,7 @@ public class FileHandlers {
 			InputStream inputStream = new FileInputStream(this.f.getAbsolutePath());
 			return inputStream.available();
 		} catch (IOException e) {
-			u.printMessage(this.className, "getChunks(f)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "getChunks(f)", "IOException: " + e.getMessage());
 			return -1;
 		}
 	}
@@ -257,9 +257,9 @@ public class FileHandlers {
 				u.printMessage(this.className, methodName, "Open file cancelled!");
 			}
 		}catch(NullPointerException e) {
-			u.printMessage(this.className, methodName, "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, methodName, "NullPointerException: " + e.getMessage());
 		} catch (IOException e) {
-			u.printMessage(this.className, methodName, "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, methodName, "IOException: " + e.getMessage());
 		}
 		return null;
 	}
@@ -281,7 +281,7 @@ public class FileHandlers {
 				return null;
 			}
 		}catch(NullPointerException e) {
-			u.printMessage(this.className, methodName, "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, methodName, "NullPointerException: " + e.getMessage());
 			return null;
 		}
 	}

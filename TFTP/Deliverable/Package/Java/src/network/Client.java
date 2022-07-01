@@ -18,16 +18,17 @@ import javax.swing.*;
 public class Client{
 	private Utility u = new Utility();
 	private final String className = "Client";
-	private final int DATAPORT = 61001;
+	private int DATAPORT = 61001;
 	private DatagramSocket socket = null;
 	private DatagramPacket packet = null;
-	private int PORT = -1, BUFFER_SIZE = 512, TSIZE = 0;
-	private byte[] buffer = null;
+	private int PORT = -1, BUFFER_SIZE = 512;
+	private long TSIZE = 0;
+	//private byte[] buffer = null;
 	private InetAddress target = null;
 	private final int CheckTimeout = 5000; //NETWORK TARGET CHECKING, NOT RELATED TO TFTP
 	private TFTP tftp = new TFTP();
 	private GUI gui = new GUI();
-	private String[] globalOpts = null, globalVals = null;
+	//private String[] globalOpts = null, globalVals = null;
 	
 	public Client() {
 		setDefaults();
@@ -37,9 +38,10 @@ public class Client{
 	 * Builds a Client object
 	 * @param host Target host
 	 * @param port Target port
+	 * @param dataport Target data port
 	 * @param BUFFER_SIZE buffersize of packets, set as <= 0 if default
 	 */
-	public Client(String host, int port, int BUFFER_SIZE) {
+	public Client(String host, int port, int dataport, int BUFFER_SIZE) {
 		String methodName = "Client(host,port,BUFFER_SIZE)";
 		u.printMessage(this.className, methodName, "Building Client as " + host + ":" + port + "...");
 		try {
@@ -56,8 +58,15 @@ public class Client{
 		else 
 			u.printMessage(this.className, methodName, "Building Client as " + host + ":" + port + " successful.");
 	}
-	
-	public Client(InetAddress target, int port, int BUFFER_SIZE) {
+
+	/**
+	 * Constructor for Client
+	 * @param target Target host's address
+	 * @param port Target host's port
+	 * @param dataport Target host's dataport
+	 * @param BUFFER_SIZE Buffer size/blocksize for transmission
+	 */
+	public Client(InetAddress target, int port, int dataport, int BUFFER_SIZE) {
 		String methodName = "Client(target, port, BUFFER_SIZE)";
 		this.target = target;
 		this.PORT = port;
@@ -77,10 +86,22 @@ public class Client{
 		} catch (UnknownHostException e) {
 			target = null;
 			this.PORT = -1;
-			u.printMessage(this.className, methodName, "TryCatch: " + e.getLocalizedMessage());
+			u.printMessage(this.className, methodName, "TryCatch: " + e.getMessage());
+		} finally{
+			this.DATAPORT = 61001;
+			u.printMessage(this.className, methodName, "Configuration: " + this.getConnectionDetails());
 		}
 	}
-	
+
+	/**
+	 * Set the client's dataport for the TFTP server.
+	 * @param dataport Port number of the target's data port
+	 */
+	public void setDataPort(int dataport){
+		this.DATAPORT = dataport;
+		u.printMessage(this.className, "setDataPort(dataport)", "DataPort has been set to: " + this.DATAPORT);
+	}
+
 	/**
 	 * Sets the BUFFER SIZE of the TFTP transmission.
 	 * @param BUFFER_SIZE
@@ -127,14 +148,31 @@ public class Client{
 	 * @return Tempfile pointed at /downloads in program's folder.
 	 */
 	public File receive(String filename, String saveAs, String[] opts, String[] vals) {
+		String methodName =  "receive(filename, saveAs, opts, vals)";
 		if(filename == null)
 			return null;
 		File tempFile = new File(saveAs); //To save on a temp folder of the program.
 		openConnection();
-		int tsize = askReadPermission(filename, opts, vals);
-		u.printMessage(this.className, "receive(filename, saveAs, opts, vals)", "Returned tsize of " + filename + " = " + tsize + "bytes");
-		if(tsize > -1) {
-			tempFile = readFromServer(filename, tempFile, opts, vals);
+		Long tsize = askReadPermission(filename, opts, vals);
+		u.printMessage(this.className, methodName, "Returned tsize of " + filename + " = " + tsize + "bytes");
+		if(tsize != 0) {
+			u.printMessage(this.className, methodName, "Remaining storage: " + tempFile.getFreeSpace() + " bytes");
+			if(tempFile.getFreeSpace() >= tsize)
+				tempFile = readFromServer(filename, tempFile, opts, vals);
+			else {
+				//Disk size not suitable for incoming file.
+				byte[] diskfull = tftp.getErrPacket(3);
+				packet = new DatagramPacket(diskfull, diskfull.length);
+				try {
+					socket.send(packet);
+					gui.popDialog("Disk full, cannot write file.", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (IOException e) {
+					gui.popDialog("Exception occured:\n" + e.getMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+					u.printMessage(this.className, methodName, "Exception: " + e.getMessage());
+				}
+			}
+		}else{
+			tempFile = null;
 		}
 		closeConnection();
 		reset();
@@ -188,7 +226,12 @@ public class Client{
 								match++;
 								u.printMessage(this.className, methodName, "Server's blksize: " + this.BUFFER_SIZE);
 							}
-							if(checking[1][j].equalsIgnoreCase(vals[i]) && !checking[0][j].equalsIgnoreCase("blksize")){
+							else if(checking[0][j].equalsIgnoreCase("tsize")){ //Check if TFTP asserts a tsize
+								this.TSIZE = Long.parseLong(checking[1][j]);
+								match++;
+								u.printMessage(this.className, methodName, "Server's tsize: " + this.TSIZE);
+							}
+							else if(checking[1][j].equalsIgnoreCase(vals[i]) && !checking[0][j].equalsIgnoreCase("blksize")){
 								match++;
 								u.printMessage(this.className, methodName, "Matched @ " + checking[1][j]);
 							}
@@ -205,8 +248,8 @@ public class Client{
 				u.printMessage(this.className, methodName, "Unexpected packet received.");
 			}
 		}catch (Exception e) {
-			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(),"Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
+			gui.popDialog("Exception occured:\n" + e.getMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+			u.printMessage(this.className, methodName, "Exception: " + e.getMessage());
 		}
 		return permission;
 	}
@@ -216,9 +259,9 @@ public class Client{
 	 * @param filename Filename of the File requested.
 	 * @return True if allowed/possible, false if otherwise.
 	 */
-	private int askReadPermission(String filename, String[] opts, String[] vals) {
+	private long askReadPermission(String filename, String[] opts, String[] vals) {
 		String methodName = "askReadPermission(filename,opts,vals)";
-		this.TSIZE = -1;
+		this.TSIZE = 0;
 		this.BUFFER_SIZE = 512;
 		if(!isConnected() || filename == null || filename.length() == 0)
 			return this.TSIZE;
@@ -260,8 +303,9 @@ public class Client{
 								u.printMessage(this.className, methodName, "Server's blksize: " + this.BUFFER_SIZE);
 								match++;
 							}else if(checking[0][j].equalsIgnoreCase("tsize")){ //Check if what tsize TFTP returns
-								this.TSIZE = Integer.parseInt(checking[1][j]);
-								u.printMessage(this.className, methodName, "Server's tsize: " + this.TSIZE);
+								String tsizeSTR = Integer.toUnsignedString(Integer.parseInt(checking[1][j]));
+								this.TSIZE = Long.parseUnsignedLong(tsizeSTR);
+								u.printMessage(this.className, methodName, "Server's tsize: " + this.TSIZE + " = " + tsizeSTR);
 								match++;
 							}else if(checking[1][j].equalsIgnoreCase(vals[i]) && (!checking[0][j].equalsIgnoreCase("blksize") && !checking[0][j].equalsIgnoreCase("tsize"))){
 								u.printMessage(this.className, methodName, "Matched @ " + checking[1][j]);
@@ -281,8 +325,8 @@ public class Client{
 				u.printMessage(this.className, methodName, "Not an expected packet with opCode: " + tftp.getOpCode(packet));
 			}
 		}catch (Exception e) {
-			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(),"Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
+			gui.popDialog("Exception occured:\n" + e.getMessage(),"Error", JOptionPane.ERROR_MESSAGE);
+			u.printMessage(this.className, methodName, "Exception: " + e.getMessage());
 		}
 		return this.TSIZE; //Modify freely when needed.
 	}
@@ -302,21 +346,22 @@ public class Client{
 			return false;
 		
 		try {
-			Integer SIZE = (int)Files.size(f.toPath()); //SIZE OF FILE
+			long SIZE = Files.size(f.toPath()); //SIZE OF FILE
 			Integer bytesRead = -1; //FOR FILE STREAMING
 			
 			InputStream inputStream = new FileInputStream(f.getAbsolutePath()); //FILE STREAMING
 			
-			int tsize = this.TSIZE, blocksize = this.BUFFER_SIZE, timeout = -1; //FOR CONFIGURATION
+			long tsize = this.TSIZE;
+			int blocksize = this.BUFFER_SIZE, timeout = -1; //FOR CONFIGURATION
 			
 			//BUFFER BYTE[] CONFIGURATION
 			u.printMessage(this.className, methodName, "SIZE: " + SIZE + ", " + "BUFFER_SIZE: " + BUFFER_SIZE);
 			byte[] buffer = new byte[blocksize]; //DATA SEGMENT OF PACKET
             if(SIZE < blocksize) //IF FILE SIZE IS INITIALLY SMALLER THAN BUFFER SIZE THEN SET BUFFER TO JUST FILE'S SIZE
-            	buffer = new byte[SIZE];
+            	buffer = new byte[(int)SIZE];
             
             u.printMessage(this.className, methodName, "Sending file to target...");            
-            int ctr = 1, ACKval = 0; //COUNTERS FOR BLOCK#
+            int ctr = 1, ACKval = 0, cycle = 0; //COUNTERS FOR BLOCK#
             boolean error = false, validACK = false;
             while((bytesRead = inputStream.read(buffer)) > 0) { //While file not done streaming.
             	validACK = false;
@@ -335,11 +380,18 @@ public class Client{
                 	u.printMessage(this.className, methodName, "isACK: " + isACK + ", isError: " + isError);
                 	if(isACK) {
                 		ACKval = tftp.extractBlockNumber(packetByte);
-                		u.printMessage(this.className, methodName,"ACK Block#: " + tftp.extractBlockNumber(packet.getData()) + " = " + ACKval + ", Remaining bytes: " + inputStream.available());
-                		if(true/**ACKval == ctr*/) { //Change to comparing received block number in ACK to ctr TODO
+                		//Succeeding if statement is implicitly non-duplicate ACK. 
+                		//If the case is otherwise then it will just repeat the entire process from sending byte of file.
+                		if(ACKval == ctr) { //Change to comparing received block number in ACK to ctr
                 			validACK = true;
-                			ctr++;
+                			if(ACKval == 65535) {
+                				cycle++; //Cycle over beyond 65535.
+                				ctr=0;
+                			}else
+                				ctr++;
                 		}
+                		int totalBlock = ACKval+(65535*cycle);
+                		u.printMessage(this.className, methodName,"ACK Block#: " + ACKval + ", Total: "+ totalBlock + ", ctr: " + ctr + ", Remaining bytes: " + inputStream.available()); //inputStream.available() is int thus limited to ~2.1B
                 	}else if(isError){
                 		u.printMessage(this.className, methodName, "Possible Error @ OPVal: " + tftp.getOpCode(packet.getData()));
                 			u.printMessage(this.className, methodName, "Error: " + u.arrayToString(tftp.extractError(packet.getData())));
@@ -361,8 +413,8 @@ public class Client{
 			inputStream.close();
 			return true;
 		} catch (Exception e) {
-			u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
-			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			u.printMessage(this.className, methodName, "Exception: " + e.getMessage());
+			gui.popDialog("Exception occured:\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		return false; //A fatal error (non-TFTP) occurs.
 	}
@@ -385,19 +437,20 @@ public class Client{
 				tempFile.createNewFile();
 			} catch (Exception e1) {
 				gui.popDialog("Error creating new file for the download!", "Error", JOptionPane.ERROR_MESSAGE);
-				u.printMessage(this.className, methodName, "Error creating new file for the download: " + e1.getLocalizedMessage());
+				u.printMessage(this.className, methodName, "Error creating new file for the download: " + e1.getMessage());
 				return null;
 			}
 		
 		OutputStream outputStream = null; //BYTE STREAM FILE WRITING
-		int tsize = this.TSIZE, blocksize = this.BUFFER_SIZE + 4, timeout = -1; //FOR CONFIGURATION
+		long tsize = this.TSIZE;
+		int blocksize = this.BUFFER_SIZE + 4, timeout = -1; //FOR CONFIGURATION
 		
 		int subtotal = 0;
 		try {
 			outputStream = new FileOutputStream(tempFile);
 			u.printMessage(this.className,methodName,"Receiving file from target...");
 			
-			int ctr = 0;
+			int ctr = 0, cycle = 0;
 			boolean validBlock = false, error = false;
 			do {
 				do {
@@ -407,7 +460,7 @@ public class Client{
 					//RECOMPUTE BLKCSIZE IF COMPUTED REMAINING BYTES OF FILE IS LESS THAN BUFFER/BLKSIZE; DO NOT MOVE
 					if(tsize-subtotal < blocksize) {
 						u.printMessage(this.className, methodName, "Adjusting blksize: " + (tsize-subtotal));
-						blocksize = tsize-subtotal + 4;
+						blocksize = (int)tsize-subtotal + 4;
 					}
 					
 					//SEND AN ACK FIRST
@@ -428,10 +481,16 @@ public class Client{
 						//SAVE BUFFER TO FILE
 						byte[] data = tftp.extractData(packet);
 						int block = tftp.extractBlockNumber(packet);
+						//Succeeding if statement is implicitly non-duplicate ACK. 
+                		//If the case is otherwise then it will just repeat the entire process from sending byte of file.
+						if(block == 65535) {
+							ctr = 0;
+							cycle++; //Cycle over 65535.
+						}
 						subtotal += data.length;
-						u.printMessage(this.className, methodName, "Received data, ACK#: " + block + ", Curr#: " + ctr + ", DataLen: " + data.length + ", Completed: " + subtotal + "/" + tsize + " (" + u.percentageValue(subtotal,tsize)+ "%)");
-						
-						if(true/*block == ctr*/) { //CLIENT AND SERVER ARE IN SYNC TODO
+						int totalBlock = block + (cycle*65535);
+						u.printMessage(this.className, methodName, "Received data, ACK#: " + block + ", total: " + totalBlock + ", Curr#: " + ctr + ", DataLen: " + data.length + ", Completed: " + subtotal + "/" + tsize + " (" + u.percentageValue(subtotal,tsize)+ "%)");						
+						if(block == ctr) { //CLIENT AND SERVER ARE IN SYNC TODO
 							validBlock = true;
 							int bytesRead = data.length; //BYTE LENGTH OF PACKET'S DATA SEGMENT
 							outputStream.write(data, 0, bytesRead);
@@ -460,14 +519,14 @@ public class Client{
 			}while(subtotal < tsize);
 			outputStream.close();
 		} catch (Exception e) {
-			u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
-			gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			u.printMessage(this.className, methodName, "Exception: " + e.getMessage());
+			gui.popDialog("Exception occured:\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			byte[] errPacket = tftp.getErrPacket(0);
 			packet = new DatagramPacket(errPacket, errPacket.length);
 			try {
 				socket.send(packet);
 			} catch (Exception e1) {
-				gui.popDialog("Exception occured:\n" + e1.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				gui.popDialog("Exception occured:\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 			return null;
 		}
@@ -506,8 +565,8 @@ public class Client{
 				//Check if reachable;
 				u.printMessage(this.className,methodName, "Checking if target is online: " + targetIsOnline());
 			} catch (SocketException e) {
-				u.printMessage(this.className,methodName, "Exception: " + e.getLocalizedMessage());
-				gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				u.printMessage(this.className,methodName, "Exception: " + e.getMessage());
+				gui.popDialog("Exception occured:\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 		}
@@ -570,9 +629,9 @@ public class Client{
 					return true;
 				}
 			} catch (Exception e) {
-				u.printMessage(this.className, methodName, "Exception: " + e.getLocalizedMessage());
+				u.printMessage(this.className, methodName, "Exception: " + e.getMessage());
 				u.printMessage(this.className, methodName, target.getHostAddress() + " is unreachable.");
-				gui.popDialog("Exception occured:\n" + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				gui.popDialog("Exception occured:\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		u.printMessage(this.className, methodName, "Specified target is cannot be reached");
@@ -656,7 +715,7 @@ public class Client{
 					socket.close();
 				}
 			}catch(Exception e) {
-				u.printMessage(this.className, methodName, "Error occured: " + e.getLocalizedMessage());
+				u.printMessage(this.className, methodName, "Error occured: " + e.getMessage());
 				socket.close();
 			}
 		}
