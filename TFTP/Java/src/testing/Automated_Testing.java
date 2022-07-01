@@ -40,8 +40,8 @@ public class Automated_Testing {
 	
 	private void check_buildACK(TFTP t) {
 		System.out.println("Check ACK Assembly: ");
-		Short[] block = {1,3,5,7};
-		for(Short s:block) {
+		Integer[] block = {1,3,5,7};
+		for(Integer s:block) {
 			u.printBytes(t.checkACK(s));
 		}
 	}

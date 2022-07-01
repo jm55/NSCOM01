@@ -41,7 +41,7 @@ public class Driver {
         	}else
         		Production();
     	}catch(Exception e) {
-    		u.printMessage("Driver", "main()", "Error: " + e.getLocalizedMessage());
+    		u.printMessage("Driver", "main()", "Error: " + e.getMessage());
     		
     	}
     }

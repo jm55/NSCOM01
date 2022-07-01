@@ -49,11 +49,11 @@ public class Hasher {
 				sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 			output = sb.toString();
 		} catch (NoSuchAlgorithmException e) {
-			u.printMessage(this.className, "hashFile(File,String)", "NoSuchAlgorithmException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "hashFile(File,String)", "NoSuchAlgorithmException: " + e.getMessage());
 		} catch (IOException e) {
-			u.printMessage(this.className, "hashFile(File,String)", "IOException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "hashFile(File,String)", "IOException: " + e.getMessage());
 		} catch(NullPointerException e) {
-			u.printMessage(this.className, "hashFile(File,String)", "NullPointerException: " + e.getLocalizedMessage());
+			u.printMessage(this.className, "hashFile(File,String)", "NullPointerException: " + e.getMessage());
 		}
 		u.printMessage(this.className, "hashFile(File,String)", "Computing hash completed!");
 		return output;

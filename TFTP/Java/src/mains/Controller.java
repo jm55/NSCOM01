@@ -43,7 +43,7 @@ public class Controller implements ActionListener{
 				this.DATAPORT = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter specified data port: "));
 				gui.printConsole("Data port changed: " + this.DATAPORT);
 			}catch (NumberFormatException nf){
-				u.printMessage(this.className, methodName, "Exception occured setting DataPort: " + nf.getLocalizedMessage());
+				u.printMessage(this.className, methodName, "Exception occured setting DataPort: " + nf.getMessage());
 				gui.popDialog("Input not valid, please try again!", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -177,11 +177,11 @@ public class Controller implements ActionListener{
 			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getLocalizedMessage());
+			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
 			return state;
 		}catch (IOException e) {
 			gui.popDialog("Error on selected file.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f): IOException: ", e.getLocalizedMessage());
+			u.printMessage(this.className, "sendFile(f): IOException: ", e.getMessage());
 		}
 		return state;
 	}
@@ -219,7 +219,7 @@ public class Controller implements ActionListener{
 			}
 		}catch(NumberFormatException e) {
 			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getLocalizedMessage());
+			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
 			return receivedFile;
 		}
 		return receivedFile;

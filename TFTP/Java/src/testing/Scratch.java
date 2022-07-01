@@ -25,11 +25,12 @@ public class Scratch {
 	private static Utility u = new Utility();
 	private static final String className = "Scratch";
 	private static Scanner scan = null;
+	private static String benchFile = "";
 	public static void main(String[] args) {
-		u.setState(false);
+		u.setState(true);
 		scan = new Scanner(System.in);
 		long time_diff = RunScratch();
-		System.out.print("Testing time elapsed: " + (double)(time_diff/1000) + "seconds");
+		System.out.print("\nTesting time elapsed: " + (double)(time_diff/1000) + "seconds");
 		//System.gc();
 		scan.close();
 		System.exit(0);
@@ -44,6 +45,8 @@ public class Scratch {
 		target[0] = scan.nextLine();
 		System.out.print("Enter target port: ");
 		target[1] = scan.nextLine();
+		System.out.print("Enter bench filename (including file extension): ");
+		benchFile = scan.nextLine();
 		
 		long start = System.currentTimeMillis();
 		
@@ -283,7 +286,7 @@ public class Scratch {
 		String[] opts4 = {"tsize"};
 		try {vals4[0] = Files.size(f.toPath())+"";
 		} catch (IOException e) {
-			System.out.println("Scratch Network Related - OPTS & VALS: " + e.getLocalizedMessage());
+			System.out.println("Scratch Network Related - OPTS & VALS: " + e.getMessage());
 		}
 		
 		//WRITE TO SERVER
@@ -311,24 +314,27 @@ public class Scratch {
 //		try {
 //			new Client().forceSend(new DatagramPacket(t.getErrPacket(1),t.getErrPacket(1).length), InetAddress.getByName("localhost"), 60001);
 //		} catch (UnknownHostException e) {
-//			System.out.println("Error occured on SEND ERROR: " + e.getLocalizedMessage());
+//			System.out.println("Error occured on SEND ERROR: " + e.getMessage());
 //		}
 		
 		System.out.println("\n\n");
 		
-		System.out.println("=========================");
-		System.out.println("====Network Benchmark====");
-		System.out.println("=========================");
+		System.out.println("=================================");
+		System.out.println("========NETWORK BENCHMARK========");
+		System.out.println("=================================");
 		
-		String[] blksizes = {"128","512","1024","1428","2048","4096","8192","16384","32768","65536"};
+		String[] blksizes = {/*"128","512","1024","1428","2048","4096","8192","16384","32768",*/"65536"};
 		String[] vals5 = {"0","0"};
 		String[] opts5 = {"tsize","blksize"};
-		File benchfile = new File("demo.mp4");
+		File benchfile = new File(benchFile);
+		
+		if(!benchfile.exists())
+			return;
 		
 		try {
 			vals5[0] = Files.size(benchfile.toPath())+"";
 		} catch (IOException e) {
-			System.out.println("Scratch Network Related - OPTS & VALS: " + e.getLocalizedMessage());
+			System.out.println("Scratch Network Related - OPTS & VALS: " + e.getMessage());
 		}
 		System.out.println("File Details: " + benchfile.getName() + " with size: " + vals5[0]);
 		System.out.println("Benchmarking...");
@@ -348,8 +354,6 @@ public class Scratch {
 			}
 			else
 				System.out.println("Benchmarking failed!");
-			System.out.println("\n");
-		}		
-		System.out.println("\n\n");
+		}
 	}
 }

@@ -304,7 +304,7 @@ public class Utility {
 		return trimmedPacket;
     }
     
-    public double percentageValue(int subtotal, int total) {
+    public double percentageValue(int subtotal, long total) {
     	double raw_percent = (((double)subtotal/(double)total)*100);
     	BigDecimal bd = new BigDecimal(raw_percent).setScale(2, RoundingMode.HALF_UP);
     	return bd.doubleValue();
