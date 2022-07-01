@@ -37,3 +37,5 @@
         * To allow the user to manually ping the target host prior to transmission.
 
 ### [For Further Documentation](https://github.com/jm55DLSU/NSCOM01/blob/main/TFTP/Documentation/NSCOM01%20-%20Program%20Design.pdf)
+
+### Pre-demo during development phase (also used as test file in succeding developments and testing): [Video](https://github.com/jm55DLSU/NSCOM01/blob/main/TFTP/Java/demo.mp4)
