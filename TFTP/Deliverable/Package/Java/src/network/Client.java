@@ -265,7 +265,7 @@ public class Client{
 		this.BUFFER_SIZE = 512;
 		if(!isConnected() || filename == null || filename.length() == 0)
 			return this.TSIZE;
-		u.printMessage(this.className, methodName, "Building write request packet...");
+		u.printMessage(this.className, methodName, "Building read request packet...");
 		String mode = "octet";
 		byte[] rrq = tftp.getRRQPacket(filename, mode, opts, vals);
 		packet = new DatagramPacket(rrq, rrq.length);
