@@ -1,6 +1,7 @@
 package mains;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
@@ -18,6 +19,19 @@ public class Driver {
 	private static Controller c;
     public static void main(String[] args){
     	u = new Utility();
+    	
+    	Properties p = System.getProperties();
+    	String jre =  p.getProperty("java.version");
+    	
+    	if(jre.contains("."))
+    		jre = jre.substring(0,jre.indexOf('.'));
+    	
+    	if(Integer.parseInt(jre) < 17) {
+    		int ans = new GUI().confirmDialog("The program was not tested for the version of Java installed (version " + jre +  ").\nProgram requires at least Java 17.\nDo you want to continue?", "Java Compatibility Check", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+    		if(ans == JOptionPane.NO_OPTION)
+    			exit(0);
+    	}
+    	
     	try {
         	if(args.length > 0) {
         		for(String a: args) {
@@ -29,7 +43,7 @@ public class Driver {
         				Console();
         			if(a.equals("-T") || a.equals("--testing")) {
         				System.out.println("THIS FUNCTION IS DEPRECATED!\nEXITING...");
-        				System.exit(0);
+        				exit(0);
         				Testing();
         			}
         			if(a.equals("-P") || a.equals("--production"))
@@ -41,7 +55,7 @@ public class Driver {
         		Production();
     	}catch(Exception e) {
     		u.printMessage("Driver", "main()", "Error: " + e.getMessage());
-    		
+    		exit(0);
     	}
     }
     
@@ -76,7 +90,6 @@ public class Driver {
         		}
     			g.popDialog("Program Bugs:\n" + strBugs, "Bugs List", JOptionPane.WARNING_MESSAGE);
     		}
-    			
     }
     
     private static void Console() {
@@ -86,7 +99,7 @@ public class Driver {
     		select = Menu(scan);
     		cls();
     	}while(select != 0);
-    	System.exit(0);
+    	exit(0);
     }
     
     private static int Menu(Scanner scan) {
@@ -97,6 +110,11 @@ public class Driver {
     	System.out.println("============");
     	System.out.print("Enter choice: ");
     	return Integer.parseInt(scan.nextLine());
+    }
+    
+    private static void exit(int status) {
+    	System.gc();
+    	System.exit(status);
     }
     
     //Reference: https://stackoverflow.com/a/38365871

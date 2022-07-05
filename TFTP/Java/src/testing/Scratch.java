@@ -3,9 +3,13 @@ package testing;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Properties;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 import data.*;
+import gui.GUI;
 import network.Client;
 import utils.*;
 
@@ -19,12 +23,28 @@ public class Scratch {
 	private static Scanner scan = null;
 	private static String benchFile = "";
 	public static void main(String[] args) {
+		
+		Properties p = System.getProperties();
+    	String jre =  p.getProperty("java.version");
+    	
+    	if(jre.contains("."))
+    		jre = jre.substring(0,jre.indexOf('.'));
+    	
+    	if(Integer.parseInt(jre) < 17) {
+    		System.out.println("The program was not tested for the version of Java installed (version \" + jre +  \").\\nProgram requires at least Java 17.");
+    		System.exit(0);
+    	}
+		
+    	System.gc();
+		
 		u.setState(true);
 		scan = new Scanner(System.in);
 		long time_diff = RunScratch();
 		System.out.print("\nTesting time elapsed: " + (double)(time_diff/1000) + "seconds");
 		//System.gc();
 		scan.close();
+		
+		System.gc();
 		System.exit(0);
 	}
 	

@@ -121,6 +121,7 @@ public class Controller implements ActionListener{
 		if(act.equals("EndProgram")) {
 			if(this.gui.confirmDialog("Exit Program?","Exit Program",JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 				u.printMessage(this.className, "actionPerformed(e): " + act, "Exiting program...");
+				System.gc();
 				System.exit(0);
 			}
 		}
