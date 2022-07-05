@@ -17,7 +17,7 @@
 6. [Wireshark](https://github.com/jm55DLSU/NSCOM01/tree/main/TFTP/Wireshark) - Contains the packet capture data that was used during the development of the TFTP Client.
 
 ## Program Specifications
-1. Program Language: Java
+1. Program Language: Java **(Java 17)**
 2. Interface: GUI
 3. Target Features:
     * Key Features
