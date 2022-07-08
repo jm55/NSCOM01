@@ -1,5 +1,9 @@
 # NSCOM01 - TFTP Client
 
+## Coding Timelapse (TFTP Part): https://youtu.be/bEAS6tHReIk?t=1369
+
+## Presentation and Demo: https://www.youtube.com/watch?v=gAvzzi8m4pg
+
 ## Authors
 1. [Balcueva, J.](https://github.com/JushoB)
 2. [Escalona, J.M.](https://github.com/jm55DLSU)
