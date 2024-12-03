@@ -1,4 +1,4 @@
-# NSCOM01
+# Network Application Protocols
 ## Description
 This repository holds the codebase for all pair/group Machine Projects for the course NSCOM01.
 
