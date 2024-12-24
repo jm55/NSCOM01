@@ -17,12 +17,11 @@ import javax.swing.JOptionPane;
  *
  */
 public class Controller implements ActionListener{
-	private Utility u = new Utility();
 	private final String className = "Controller";
 	private Client c = null;
 	private GUI gui;
-	private FileHandlers fh = new FileHandlers();
 
+	private File file = null;
 	private int DATAPORT = 61001;
 	
 	public Controller(GUI g) {
@@ -32,138 +31,135 @@ public class Controller implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String act = e.getActionCommand();
-		String methodName = "actionPerformed(e)";
-		u.printMessage(this.className, methodName, act);
-
-		if(act.equals("SetDataPort")){
-			u.printMessage(this.className, methodName + ": " + act, "Setting DataPort...");
-			try{
-				this.DATAPORT = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter specified data port: "));
-				gui.printConsole("Data port changed: " + this.DATAPORT);
-			}catch (NumberFormatException nf){
-				u.printMessage(this.className, methodName, "Exception occured setting DataPort: " + nf.getMessage());
-				gui.popDialog("Input not valid, please try again!", "Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-
-		if(act.equals("ServerConnection")) {
-			if(!validNetwork())
-				return;
-			pingServer();
-		}
+		String action = e.getActionCommand();
 		
-		if(act.equals("OpenFile")) {
-			u.printMessage(this.className, act, "Opening File...");
-			if(fh.openFile())
-				gui.setLocalSelectedFileText(fh.getFile().getAbsolutePath());
-			else {
-				gui.printConsole(u.getGUIConsoleMessage("Error opening file"));
-				gui.popDialog("Error opening file", "Open File", JOptionPane.WARNING_MESSAGE);
-			}
-		}
-		
-		if(act.equals("SendFile")) {
-			if(!validNetwork())
-				return;
-			if(fh.getFile()==null)
-				if(!fh.openFile()) {
-					u.getGUIConsoleMessage("Error opening file");
-					return;
-				}
-			if(fh.getFile() == null)
-				return;
-			gui.setLocalSelectedFileText(fh.getFile().getAbsolutePath());
-			File f = fh.getFile(); //USE THIS FILE TO SEND ON CLIENT
-			gui.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ "...");
-			gui.popDialog("Uploading file...\nClick OK to continue", "Upload", JOptionPane.INFORMATION_MESSAGE);
-			if(sendFile(f)) {
-				gui.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " successful!");
-			}else {
-				gui.printConsole("Sending \'" + f.getName() + "\' to " + gui.getServerIPInput()+ " not successful!");
-			}
-		}
-		
-		if(act.equals("RecvFile")) {
-			if(!validNetwork())
-				return;
-			String targetFile = gui.getRemoteSelectedFileText();
-			File saveAs = fh.saveFile();
-			if(targetFile.equals("")) {
-				gui.printConsole("No Remote File Specified");
-				gui.popDialog("No Remote File Specified", "Receive File", JOptionPane.WARNING_MESSAGE);
-			}else {
-				gui.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ "...");
-				gui.popDialog("Downloading file...\nClick OK to continue", "Download", JOptionPane.INFORMATION_MESSAGE);
-				File recvFile = receiveFile(targetFile, saveAs);
-				if(recvFile != null) {
-					gui.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " successful!");
-				}else {
-					gui.printConsole("Receiving \'" + targetFile + "\' from " + gui.getServerIPInput()+ " not successful!");
-				}
-			}
-		}
-		
-		if(act.equals("AboutProgram")) {
-			String message = "©2022\n\nNSCOM01 - TFTP Client Project\nS12\n\n"
-					+ "Balcueva, J.\n"
-					+ "Escalona, J.M.\n"
-					+ "Fadrigo, J.A.M.\n"
-					+ "Fortiz, P.R.\n";
-			String title = "About";
-			gui.popDialog(message, title, JOptionPane.PLAIN_MESSAGE);
-		}
-		
-		if(act.equals("Reset")) {
+		switch(action) {
+		case "SetDataPort":
+			setDataPort();
+			break;
+		case "ServerConnection":
+			serverConnection();
+			break;
+		case "OpenFile":
+			openFile();
+			break;
+		case "SendFile":
+			sndFile();
+			break;
+		case "RecvFile":
+			recvFile();
+			break;
+		case "AboutProgram":
+			aboutProgram();
+			break;
+		case "Reset":
 			reset();
-		}
-		
-		if(act.equals("EndProgram")) {
-			if(this.gui.confirmDialog("Exit Program?","Exit Program",JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-				u.printMessage(this.className, "actionPerformed(e): " + act, "Exiting program...");
+			break;
+		case "EndProgram":
+			if(GUI.confirmDialog(this.gui, "Exit Program?","Exit Program",JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 				System.gc();
 				System.exit(0);
 			}
-		}
-		
-		if(act.equals("BlockSelector")) {
-			u.printMessage(this.className, "actionPerformed(e): " + act, "Value change: " + gui.getBlockSize());
-			gui.printConsole("Blocksize has been set to: " + gui.getBlockSize());
+			break;
+		case "BlockSelector":
+			this.gui.printConsole("Blocksize has been set to: " + this.gui.getBlockSize());
+			break;
+		default:
+			break;
 		}
 	}
 
-	/**
-	 * Reset the current state of the application to default values.
-	 */
+	private void aboutProgram() {
+		String message = "©2022\n\nNSCOM01 - TFTP Client Project\nS12\n\n"
+				+ "Balcueva, J.\n"
+				+ "Escalona, J.M.\n"
+				+ "Fadrigo, J.A.M.\n"
+				+ "Fortiz, P.R.\n";
+		String title = "About";
+		GUI.popDialog(this.gui,message, title, JOptionPane.PLAIN_MESSAGE);
+	}
+	
+	private void recvFile() {
+		if(!validNetwork())
+			return;
+		String targetFile = this.gui.getRemoteSelectedFileText();
+		if(targetFile.equals("")) {
+			this.gui.printConsole("No Remote File Specified");
+			GUI.warningDialog(this.gui,"No Remote File Specified");
+		}else {
+			this.gui.printConsole("Receiving \'" + targetFile + "\' from " + this.gui.getServerIPInput()+ "...");
+			File saveAs = receiveFile(targetFile, FileHandlers.saveAsFile());
+			if(saveAs != null)
+				this.gui.printConsole("Receiving \'" + targetFile + "\' from " + this.gui.getServerIPInput()+ " successful!");
+			else
+				this.gui.printConsole("Receiving \'" + targetFile + "\' from " + this.gui.getServerIPInput()+ " not successful!");
+		}
+	}
+	
+	private void sndFile() {
+		if(!validNetwork())
+			return;
+		if(this.file==null) {
+			GUI.warningDialog(this.gui, "No file found, please choose a file.");
+			this.file = FileHandlers.openFile();
+			if(this.file == null) //If still no file, just stop asking.
+				return;
+		}
+		this.gui.setLocalSelectedFileText(file.getAbsolutePath());
+		this.gui.printConsole("Sending \'" + this.file.getAbsolutePath() + "\' to " + this.gui.getServerIPInput()+ "...");
+		GUI.popDialog(this.gui, "Uploading file...\nClick OK to start", "Upload", JOptionPane.INFORMATION_MESSAGE);
+		if(sendFile(file)) {
+			this.gui.printConsole("Sending \'" + file.getName() + "\' to " + this.gui.getServerIPInput()+ " successful!");
+		}else {
+			this.gui.printConsole("Sending \'" + file.getName() + "\' to " + this.gui.getServerIPInput()+ " not successful!");
+		}
+	}
+	
+	private void openFile() {
+		file = FileHandlers.openFile();
+		if(file.exists())
+			this.gui.setLocalSelectedFileText(file.getAbsolutePath());
+		else {
+			this.gui.printConsole(Utility.getGUIConsoleMessage("File \"" + file.getName() + "\" not found."));
+			GUI.errorDialog(this.gui, "File \"" + file.getName() + "\" not found.\nPlease try again.");
+		}
+	}
+	
+	private void serverConnection() {
+		if(!validNetwork())
+			return;	
+		pingServer();
+	}
+	
+	private void setDataPort() {
+		try{
+			this.DATAPORT = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter specified data port: "));
+			this.gui.printConsole("Data port changed: " + this.DATAPORT);
+		}catch (NumberFormatException nf){
+			Utility.printMessage(this.className, "setDataPort(action)", "Exception occured setting DataPort: " + nf.getMessage());
+			GUI.errorDialog(this.gui, "Invalid input. Please try again.");
+		}
+	}
+	
 	protected void reset(){
-		String methodName = "reset()";
-		gui.clearIO();
+		this.gui.clearIO();
 		this.DATAPORT = 61001;
-		gui.printConsole("DataPort has been set to: " + this.DATAPORT);
-		u.printMessage(this.className, methodName, "Current configuration has been reset!");
+		this.gui.printConsole("DataPort has been set to: " + this.DATAPORT);
 	}
-
-	/**
-	 * Conduct sending of file to the TFTP server. Return boolean value indicating success or failure.
-	 * @param f File to be sent
-	 * @return True if successful, false if otherwise.
-	 */
+	
 	private boolean sendFile(File f) {
-		String methodName = "sendFile(f)";
+		String method = "sendFile(f)";
 		if(!validNetwork())
 			return false;
-		u.printMessage(this.className, methodName, "Network is valid!");
-		u.printMessage(this.className, methodName, "File to send is: " + f.getName());
+		Utility.printMessage(this.className, method, "Network is valid!");
+		Utility.printMessage(this.className, method, "File to send is: " + f.getName());
 		boolean state = false;
 		try {
 			//Ping Server
 			if(pingServer()) {
-				u.printMessage(this.className, methodName, "Target does respond to ping");
-				//CREATE SEND CLIENT
-				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),this.DATAPORT,Integer.parseInt(gui.getBlockSize()));
-				
+				c = new Client(this.gui.getServerIPInput(),Integer.parseInt(this.gui.getServerPortInput()),this.DATAPORT,Integer.parseInt(this.gui.getBlockSize()));
 				//SEND PARAMETERS
-				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
+				Integer setBlkSize = Integer.parseInt(this.gui.getBlockSize());
 				String blkSize = "512";
 				if(setBlkSize != 512)
 					blkSize = setBlkSize + "";
@@ -173,89 +169,61 @@ public class Controller implements ActionListener{
 				//DELEGATE RECEIVE
 				state = c.send(f, opts, vals);
 			}else {
-				u.printMessage(this.className, methodName, "Target does not respond to ping");
+				Utility.printMessage(this.className, method, "Unable to connect to target (ping).");
 			}
 		}catch(NumberFormatException e) {
-			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
+			GUI.errorDialog(this.gui, "Error parsing inputs.\nPlease check your inputs.");
+			Utility.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
 			return state;
 		}catch (IOException e) {
-			gui.popDialog("Error on selected file.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f): IOException: ", e.getMessage());
+			GUI.errorDialog(this.gui, "Error opening file.\nPlease try again.");
+			Utility.printMessage(this.className, "sendFile(f): IOException: ", e.getMessage());
 		}
 		return state;
 	}
 	
-	/**
-	 * Conduct receiving file from the TFTP server. Return File object or null if successful or not respectively.
-	 * @param f Filename of file to be received.
-	 * @return True if successful, false if otherwise.
-	 */
 	private File receiveFile(String f, File saveAs) {
-		String methodName = "receiveFile(f)";
 		if(!validNetwork())
 			return null;
-		u.printMessage(this.className, methodName, "Network is valid!");
-		u.printMessage(this.className, methodName, "File to receive is: " + f);
 		File receivedFile = null;
 		try {
-			if(pingServer()) {
-				u.printMessage(this.className, methodName, "Target does respond to ping");
-				//CREATE SEND CLIENT
-				c = new Client(gui.getServerIPInput(),Integer.parseInt(gui.getServerPortInput()),this.DATAPORT, Integer.parseInt(gui.getBlockSize()));
-				
-				//RECEIVE PARAMETER
-				Integer setBlkSize = Integer.parseInt(gui.getBlockSize());
-				String blkSize = "512";
-				if(setBlkSize != 512)
-					blkSize = setBlkSize + "";
-				String[] opts = {"tsize","blksize"};
-				String[] vals = {"0",blkSize};
-				
-				//DELEGATE RECEIVE
-				receivedFile = c.receive(f, saveAs.getAbsolutePath(), opts, vals);
-			}else {
-				u.printMessage(this.className, methodName, "Target does not respond to ping");
+			if(!pingServer()) {
+				GUI.popDialog(this.gui,"Target does not respond to client.", "Network Issue", JOptionPane.ERROR_MESSAGE);
+				return null;
 			}
+			//CREATE SEND CLIENT
+			this.c = new Client(this.gui.getServerIPInput(),Integer.parseInt(this.gui.getServerPortInput()),this.DATAPORT, Integer.parseInt(this.gui.getBlockSize()));
+			//RECEIVE PARAMETERS
+			Integer setBlkSize = Integer.parseInt(this.gui.getBlockSize());
+			String blkSize = "512";
+			if(setBlkSize != 512)
+				blkSize = setBlkSize + "";
+			String[][] optsvals = {{"tsize","blksize"}, {"0", blkSize}};
+			//DELEGATE RECEIVE
+			receivedFile = this.c.receive(f, saveAs.getAbsolutePath(), optsvals[0], optsvals[1]);
 		}catch(NumberFormatException e) {
-			gui.popDialog("Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-			u.printMessage(this.className, "sendFile(f): NumberFormatException: ", e.getMessage());
+			GUI.popDialog(this.gui,"Error parsing inputs, please check again.", "Error", JOptionPane.ERROR_MESSAGE);
+			Utility.printMessage(this.className, "receiveFile(f): NumberFormatException: ", e.getMessage());
 			return receivedFile;
 		}
 		return receivedFile;
 	}
 	
-	/**
-	 * Checks if network configuration on GUI is valid or not.
-	 * This in terms if there is input or not.
-	 * Displays warning if invalid.
-	 * @return True if fields for IP and port are filled, false if not.
-	 */
 	private boolean validNetwork() {
-		String[] conn = gui.getServerConfigInput();
+		String[] conn = this.gui.getServerConfigInput();
 		if(conn[0].equals("")||conn[1].equals("")) {
-			gui.popDialog("Please check your network configuration.", "Network", JOptionPane.WARNING_MESSAGE);
+			GUI.warningDialog(this.gui, "Please check your network configuration.");
 			return false;
 		}
 		return true;
 	}
 	
-	/**
-	 * Pings the server
-	 * @return True if online, false if otherwise
-	 */
 	private boolean pingServer() {
-		boolean state = false;
-		String methodString = "pingServer()";
-		String host = gui.getServerIPInput();
-		int port = Integer.parseInt(gui.getServerPortInput());
-		Client pingClient = new Client(host,port,this.DATAPORT,Integer.parseInt(gui.getBlockSize()));
-		u.printMessage(this.className, methodString, "Opening connection...");
+		int port = Integer.parseInt(this.gui.getServerPortInput());
+		Client pingClient = new Client(this.gui.getServerIPInput(), port, this.DATAPORT,Integer.parseInt(this.gui.getBlockSize()));
 		pingClient.openConnection();
-		u.printMessage(this.className, methodString, "Pinging: " + pingClient.getConnectionDetails());
-		gui.printConsole("Target " + pingClient.getConnectionDetails() + " online: " + pingClient.targetIsOnline());
-		state = pingClient.targetIsOnline();
-		u.printMessage(this.className, methodString, "Closing connection...");
+		this.gui.printConsole("Target " + pingClient.getConnectionDetails() + " online: " + pingClient.targetIsOnline());
+		boolean state = pingClient.targetIsOnline();
 		pingClient.closeConnection();
 		return state;
 	}

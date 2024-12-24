@@ -18,7 +18,6 @@ import utils.*;
  * Executable on its own.
  */
 public class Scratch {
-	private static Utility u = new Utility();
 	private static final String className = "Scratch";
 	private static Scanner scan = null;
 	private static String benchFile = "";
@@ -37,7 +36,6 @@ public class Scratch {
 		
     	System.gc();
 		
-		u.setState(true);
 		scan = new Scanner(System.in);
 		long time_diff = RunScratch();
 		System.out.print("\nTesting time elapsed: " + (double)(time_diff/1000) + "seconds");
@@ -69,7 +67,6 @@ public class Scratch {
 	}
 	
 	private static void packetAssemblyTest() {
-		TFTP t = new TFTP();
 		//Wireshark
 		String hex_raw = "";
 		byte[] hex = null;
@@ -93,36 +90,36 @@ public class Scratch {
 		//HOWEVER, SOME OF THE COMPONENTS FOR THE TRUE RESULT CAN BE FOUND (THOUGH OBSCURED) IN THE SYSTEM OUTPUT.
 		System.out.println("Data Packet");
 		String data = "9452d14009452d14009452d14009452d14009452d14009452d14009452d14009452d14009452d14009452d1401ffd9";
-		byte[] data_hexbyte = u.hexStringToByteArray(data);
+		byte[] data_hexbyte = Utility.hexStringToByteArray(data);
 		System.out.println("System: ");
-		syspacket = t.getDataPacket(161,data_hexbyte);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getDataPacket(161,data_hexbyte);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "000300a1" + data;
-		hex = u.hexStringToByteArray(hex_raw);
+		hex = Utility.hexStringToByteArray(hex_raw);
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
 		System.out.println("WRQ Packet Without Opts & Vals");
 		System.out.println("System: ");
-		syspacket = t.getWRQPacket(new File("test.png"), "octet", null, null);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getWRQPacket(new File("test.png"), "octet", null, null);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0002746f74655f74696c742e6a7067006f6374657400";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("RQHasOACK: " + TFTP.RQHasOACK(hex));
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
@@ -130,37 +127,37 @@ public class Scratch {
 		System.out.println("System: ");
 		opts[0] = "tsize";
 		vals[0] = "81967";
-		syspacket = t.getWRQPacket(new File("test.png"), "octet", opts, vals);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getWRQPacket(new File("test.png"), "octet", opts, vals);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0002746f74655f74696c742e6a7067006f63746574007473697a6500383139363700";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		String[][] oacks = t.extractOACKFromRQ(hex);
-		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
-		System.out.println("extractOACKFromRQ: " + u.stringArrToString(oacks[0]) + ", " + u.stringArrToString(oacks[1]));
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		String[][] oacks = TFTP.extractOACKFromRQ(hex);
+		System.out.println("RQHasOACK: " + TFTP.RQHasOACK(hex));
+		System.out.println("extractOACKFromRQ: " + Utility.stringArrToString(oacks[0]) + ", " + Utility.stringArrToString(oacks[1]));
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
 		System.out.println("RRQ Packet Without Opts & Vals");
 		System.out.println("System: ");
-		syspacket = t.getRRQPacket("nenechi.png", "octet", null, null);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getRRQPacket("nenechi.png", "octet", null, null);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00016e656e656368692e706e67006f6374657400";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("RQHasOACK: " + TFTP.RQHasOACK(hex));
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
 		
 		System.out.println("\n\n");
 		
@@ -168,20 +165,20 @@ public class Scratch {
 		System.out.println("System: ");
 		opts[0] = "tsize";
 		vals[0] = "0";
-		syspacket = t.getRRQPacket("nenechi.png", "octet", opts, vals);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getRRQPacket("nenechi.png", "octet", opts, vals);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00016e656e656368692e706e67006f63746574007473697a65003000";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
-		oacks = t.extractOACKFromRQ(hex);
-		System.out.println("RQHasOACK: " + t.RQHasOACK(hex));
-		System.out.println("extractOACKFromRQ: " + u.stringArrToString(oacks[0]) + ", " + u.stringArrToString(oacks[1]));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
+		oacks = TFTP.extractOACKFromRQ(hex);
+		System.out.println("RQHasOACK: " + TFTP.RQHasOACK(hex));
+		System.out.println("extractOACKFromRQ: " + Utility.stringArrToString(oacks[0]) + ", " + Utility.stringArrToString(oacks[1]));
 		
 		System.out.println("\n\n");
 		
@@ -189,74 +186,74 @@ public class Scratch {
 		System.out.println("System: ");
 		opts[0] = "tsize";
 		vals[0] = "81967";
-		syspacket = t.getOACK(opts, vals);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getOACK(opts, vals);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00067473697a6500383139363700";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
-		oacks = t.extractOACK(hex);
-		System.out.println("extractOACK: " + u.stringArrToString(oacks[0]) + ", " + u.stringArrToString(oacks[1]));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
+		oacks = TFTP.extractOACK(hex);
+		System.out.println("extractOACK: " + Utility.stringArrToString(oacks[0]) + ", " + Utility.stringArrToString(oacks[1]));
 		
 		
 		System.out.println("\n\n");
 		
 		System.out.println("ACK Packet");
 		System.out.println("System: ");
-		syspacket = t.getACK(84);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getACK(84);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "00040054";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
-		System.out.println("isACK: " + t.isACK(hex));
-		System.out.println("extractACK: Block " + t.extractACK(hex));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
+		System.out.println("isACK: " + TFTP.isACK(hex));
+		System.out.println("extractACK: Block " + TFTP.extractACK(hex));
 		
 		System.out.println("\n\n");
 		
 		System.out.println("Data Packet");
 		System.out.println("System: ");
-		syspacket = t.getDataPacket(1,"hello world".getBytes());
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getDataPacket(1,"hello world".getBytes());
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0003000168656c6c6f20776f726c64";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
-		System.out.println("getOpCode: " + t.getOpCode(hex));
-		System.out.println("Extract Data: " + u.getBytesAsBits(t.extractData(hex),true));
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
+		System.out.println("getOpCode: " + TFTP.getOpCode(hex));
+		System.out.println("Extract Data: " + Utility.getBytesAsBits(TFTP.extractData(hex),true));
 		
 		System.out.println("\n\n");
 		
 		System.out.println("Error Packet");
 		System.out.println("System: ");
-		syspacket = t.getErrPacket(1);
-		syshex  = u.getBytesHex(syspacket);
+		syspacket = TFTP.getErrPacket(1);
+		syshex  = Utility.getBytesHex(syspacket);
 		System.out.println("System Hex from Processed Byte: " + syshex);
-		sysbyte = u.hexStringToByteArray(syshex);
-		System.out.println("System Bits: " + u.getBytesAsBits(sysbyte,true));
+		sysbyte = Utility.hexStringToByteArray(syshex);
+		System.out.println("System Bits: " + Utility.getBytesAsBits(sysbyte,true));
 		//=============================================
 		System.out.println("Wireshark: ");
 		hex_raw = "0005000146696c65206e6f7420666f756e640000";
 		System.out.println("Wireshark Hex Raw: " + hex_raw);
-		hex = u.hexStringToByteArray(hex_raw);
-		System.out.println("Wireshark Bits: " + u.getBytesAsBits(hex,true));
-		System.out.println("isError: " + t.isError(hex));
-		String[] error = t.extractError(hex);
+		hex = Utility.hexStringToByteArray(hex_raw);
+		System.out.println("Wireshark Bits: " + Utility.getBytesAsBits(hex,true));
+		System.out.println("isError: " + TFTP.isError(hex));
+		String[] error = TFTP.extractError(hex);
 		System.out.println("Extract Error: " + error[0] + " = " + error[1]);
 
 		System.out.println("\n\n");
@@ -264,18 +261,16 @@ public class Scratch {
 		System.out.println("Extract Block Number");
 		hex_raw = "0003000168656c6c6f20776f726c64";
 		System.out.println("Hex Raw: " + hex_raw);
-		System.out.println("Bits: " + u.getBytesAsBits(u.hexStringToByteArray(hex_raw),true));
+		System.out.println("Bits: " + Utility.getBytesAsBits(Utility.hexStringToByteArray(hex_raw),true));
 		System.out.println("Expected output: " + 1);
-		int block = t.extractBlockNumber(u.hexStringToByteArray(hex_raw));
+		int block = TFTP.extractBlockNumber(Utility.hexStringToByteArray(hex_raw));
 		System.out.println("System Result Block#: " + block);
 	}
 	
 	private static void networkTest(String[] target) {
-		TFTP t = new TFTP();
 		/***
 		 * NETWORK RELATED ZONE
 		 */
-		
 		System.out.println("\n\n");
 		System.out.println("========================================");
 		System.out.println("========THIS IS THE NETWORK ZONE========");
@@ -283,11 +278,10 @@ public class Scratch {
 		System.out.println("\n\n");
 		
 		//FILES
-		FileHandlers fh = new FileHandlers();
 		File f = new File("test.png");
 		
 		//CONNECTION CONFIGURATION
-		System.out.println("Target details: " + u.arrayToString(target));
+		System.out.println("Target details: " + Utility.arrayToString(target));
 		Client c = new Client(target[0],Integer.parseInt(target[1]),61001,512);
 		System.out.println("Target is online: " + c.targetIsOnline());
 		
@@ -354,14 +348,14 @@ public class Scratch {
 		for(int i = blksizes.length-1; i >= 0; i--) {
 			vals5[1] = blksizes[i];
 			System.out.println("Config: ");
-			System.out.println(u.arrayToString(opts5));
-			System.out.println(u.arrayToString(vals5));
+			System.out.println(Utility.arrayToString(opts5));
+			System.out.println(Utility.arrayToString(vals5));
 			
-			String benchStart = u.dtNow();
+			String benchStart = Utility.dtNow();
 			state = c.send(benchfile, opts5, vals5);
 			
 			if(state) {
-				String benchEnd = u.dtNow();
+				String benchEnd = Utility.dtNow();
 				System.out.println("Benchmarking successful: " + benchStart + " - " + benchEnd);
 			}
 			else
