@@ -78,7 +78,7 @@ public class Client{
 			if(askWritePermission(f, opts, vals))
 				state = writeToServer(f, opts, vals);
 			else
-				GUI.errorDialog(null, "Writing to server failed, please try again.");
+				GUI.errorDialog(null, "Uploading failed, please try again.");
 		closeConnection();
 		reset();
 		return state;
